@@ -18,7 +18,16 @@ const navItems = [
     label: 'Todos los Casos',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+      </svg>
+    ),
+  },
+  {
+    href: '/cx',
+    label: 'CX',
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
       </svg>
     ),
   },
@@ -65,10 +74,10 @@ export default function Sidebar() {
   const pathname = usePathname()
 
   return (
-    <aside className="w-64 min-h-screen bg-verde-oscuro flex flex-col shadow-xl">
-      <div className="p-6 border-b border-white/10">
+    <aside className="w-60 min-h-screen bg-verde-oscuro flex flex-col shadow-xl flex-shrink-0">
+      <div className="p-5 border-b border-white/10">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-verde-medio flex items-center justify-center">
+          <div className="w-8 h-8 rounded-full bg-verde-medio flex items-center justify-center flex-shrink-0">
             <span className="text-verde-oscuro font-bold text-sm">TT</span>
           </div>
           <div>
@@ -78,7 +87,7 @@ export default function Sidebar() {
         </div>
       </div>
 
-      <nav className="flex-1 p-4 space-y-1">
+      <nav className="flex-1 p-3 space-y-0.5">
         {navItems.map((item) => {
           const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href))
           return (
@@ -91,7 +100,7 @@ export default function Sidebar() {
                   : 'text-white/70 hover:bg-white/10 hover:text-white'
               }`}
             >
-              <span className={isActive ? 'text-verde-oscuro' : 'text-white/60'}>{item.icon}</span>
+              <span className={`flex-shrink-0 ${isActive ? 'text-verde-oscuro' : 'text-white/50'}`}>{item.icon}</span>
               {item.label}
             </Link>
           )
@@ -99,7 +108,7 @@ export default function Sidebar() {
       </nav>
 
       <div className="p-4 border-t border-white/10">
-        <p className="text-white/30 text-xs text-center">Gestión de casos v1.0</p>
+        <p className="text-white/30 text-xs text-center">v2.0</p>
       </div>
     </aside>
   )
