@@ -5,30 +5,19 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { Caso } from '@/types'
 import StatusBadge from '@/components/StatusBadge'
-import { PAISES, ESTADOS_GENERAL } from '@/lib/tipos-caso'
+import { PAISES, AREA_BADGE } from '@/lib/tipos-caso'
 
 export default function CasosPage() {
   const [casos, setCasos] = useState<Caso[]>([])
   const [loading, setLoading] = useState(true)
-  const [filters, setFilters] = useState({
-    pais: '',
-    area: '',
-    estado_general: '',
-    search: '',
-  })
-  const [expandedId, setExpandedId] = useState<string | null>(null)
+  const [filters, setFilters] = useState({ area: '', estado: '', pais: '', search: '' })
 
   const fetchCasos = useCallback(async () => {
     setLoading(true)
-    let query = supabase
-      .from('casos')
-      .select('*')
-      .order('created_at', { ascending: false })
-
-    if (filters.pais) query = query.eq('pais', filters.pais)
+    let query = supabase.from('casos').select('*').order('created_at', { ascending: false })
     if (filters.area) query = query.eq('area', filters.area)
-    if (filters.estado_general) query = query.eq('estado_general', filters.estado_general)
-
+    if (filters.estado) query = query.eq('estado_general', filters.estado)
+    if (filters.pais) query = query.eq('pais', filters.pais)
     const { data, error } = await query
     if (!error && data) {
       let result = data as Caso[]
@@ -37,10 +26,9 @@ export default function CasosPage() {
         result = result.filter(c =>
           c.pac_nombre?.toLowerCase().includes(s) ||
           c.psi_nombre?.toLowerCase().includes(s) ||
-          c.pac_mail?.toLowerCase().includes(s) ||
-          c.psi_mail?.toLowerCase().includes(s) ||
           c.nro_caso?.toLowerCase().includes(s) ||
-          c.tipo_caso?.toLowerCase().includes(s)
+          c.tipo_caso?.toLowerCase().includes(s) ||
+          c.pac_mail?.toLowerCase().includes(s)
         )
       }
       setCasos(result)
@@ -48,12 +36,13 @@ export default function CasosPage() {
     setLoading(false)
   }, [filters])
 
-  useEffect(() => {
-    fetchCasos()
-  }, [fetchCasos])
+  useEffect(() => { fetchCasos() }, [fetchCasos])
 
-  function handleFilter(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
-    setFilters(prev => ({ ...prev, [e.target.name]: e.target.value }))
+  const counts = {
+    Nuevo: casos.filter(c => c.estado_general === 'Nuevo').length,
+    'En curso': casos.filter(c => c.estado_general === 'En curso').length,
+    Resuelto: casos.filter(c => c.estado_general === 'Resuelto').length,
+    Cerrado: casos.filter(c => c.estado_general === 'Cerrado').length,
   }
 
   return (
@@ -61,12 +50,9 @@ export default function CasosPage() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-verde-oscuro">Todos los Casos</h1>
-          <p className="text-gray-500 text-sm mt-0.5">{casos.length} casos encontrados</p>
+          <p className="text-gray-400 text-sm mt-0.5">{casos.length} casos</p>
         </div>
-        <Link
-          href="/nuevo-caso"
-          className="flex items-center gap-2 px-4 py-2 bg-verde-oscuro text-white text-sm font-medium rounded-xl hover:bg-verde-oscuro/90 transition-colors shadow-sm"
-        >
+        <Link href="/nuevo-caso" className="flex items-center gap-2 px-4 py-2 bg-verde-oscuro text-white text-sm font-medium rounded-xl hover:bg-verde-oscuro/90 transition-colors shadow-sm">
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
@@ -74,147 +60,111 @@ export default function CasosPage() {
         </Link>
       </div>
 
-      {/* Filters */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 mb-6 grid grid-cols-4 gap-3">
+      {/* Stats rápidas */}
+      <div className="grid grid-cols-4 gap-3 mb-6">
+        {Object.entries(counts).map(([estado, count]) => (
+          <button
+            key={estado}
+            onClick={() => setFilters(f => ({ ...f, estado: f.estado === estado ? '' : estado }))}
+            className={`rounded-xl border p-3 text-left transition-all ${
+              filters.estado === estado
+                ? 'border-verde-oscuro bg-verde-oscuro/5'
+                : 'border-gray-100 bg-white hover:border-gray-200'
+            }`}
+          >
+            <p className="text-2xl font-bold text-gray-800">{count}</p>
+            <p className="text-xs text-gray-500 mt-0.5">{estado}</p>
+          </button>
+        ))}
+      </div>
+
+      {/* Filtros */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 mb-6 flex flex-wrap gap-3">
         <input
           type="text"
-          name="search"
           value={filters.search}
-          onChange={handleFilter}
+          onChange={e => setFilters(f => ({ ...f, search: e.target.value }))}
           placeholder="Buscar por nombre, email, nro..."
-          className="col-span-2"
+          className="flex-1 min-w-[200px]"
         />
-        <select name="pais" value={filters.pais} onChange={handleFilter}>
-          <option value="">Todos los países</option>
-          {PAISES.map(p => <option key={p} value={p}>{p}</option>)}
-        </select>
-        <select name="area" value={filters.area} onChange={handleFilter}>
+        <select value={filters.area} onChange={e => setFilters(f => ({ ...f, area: e.target.value }))} className="min-w-[130px]">
           <option value="">Todas las áreas</option>
           <option value="Admin">Admin</option>
           <option value="Talent">Talent</option>
-          <option value="Admin+Talent">Admin+Talent</option>
+          <option value="Admin+Talent">Admin + Talent</option>
           <option value="CX">CX</option>
         </select>
-        <select name="estado_general" value={filters.estado_general} onChange={handleFilter} className="col-span-2">
-          <option value="">Todos los estados</option>
-          {ESTADOS_GENERAL.map(e => <option key={e} value={e}>{e}</option>)}
+        <select value={filters.pais} onChange={e => setFilters(f => ({ ...f, pais: e.target.value }))} className="min-w-[130px]">
+          <option value="">Todos los países</option>
+          {PAISES.map(p => <option key={p} value={p}>{p}</option>)}
         </select>
-        <button
-          onClick={() => setFilters({ pais: '', area: '', estado_general: '', search: '' })}
-          className="col-span-2 text-sm text-gray-500 hover:text-gray-700 underline underline-offset-2"
-        >
-          Limpiar filtros
-        </button>
-      </div>
-
-      {/* Table */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        {loading ? (
-          <div className="p-12 text-center text-gray-400">Cargando casos...</div>
-        ) : casos.length === 0 ? (
-          <div className="p-12 text-center text-gray-400">No hay casos que coincidan con los filtros</div>
-        ) : (
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-gray-50 border-b border-gray-100">
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Nro</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Fecha</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">País</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Paciente</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Psicólogo</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Tipo</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Área</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Estado</th>
-                <th className="px-4 py-3"></th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50">
-              {casos.map(caso => (
-                <>
-                  <tr
-                    key={caso.id}
-                    className="hover:bg-crema/50 cursor-pointer transition-colors"
-                    onClick={() => setExpandedId(expandedId === caso.id ? null : caso.id || null)}
-                  >
-                    <td className="px-4 py-3 font-mono text-xs text-gray-500">{caso.nro_caso}</td>
-                    <td className="px-4 py-3 text-gray-600">{caso.fecha}</td>
-                    <td className="px-4 py-3 text-gray-600">{caso.pais}</td>
-                    <td className="px-4 py-3">
-                      <div className="font-medium text-gray-800">{caso.pac_nombre}</div>
-                      <div className="text-xs text-gray-400">{caso.pac_mail}</div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="font-medium text-gray-800">{caso.psi_nombre}</div>
-                      <div className="text-xs text-gray-400">{caso.psi_mail}</div>
-                    </td>
-                    <td className="px-4 py-3 text-gray-600 max-w-[180px]">
-                      <span className="truncate block" title={caso.tipo_caso}>{caso.tipo_caso}</span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <StatusBadge status={caso.area} type="area" />
-                    </td>
-                    <td className="px-4 py-3">
-                      <StatusBadge status={caso.estado_general} />
-                    </td>
-                    <td className="px-4 py-3">
-                      <svg
-                        className={`w-4 h-4 text-gray-400 transition-transform ${expandedId === caso.id ? 'rotate-180' : ''}`}
-                        fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
-                    </td>
-                  </tr>
-                  {expandedId === caso.id && (
-                    <tr key={`${caso.id}-detail`} className="bg-crema/30">
-                      <td colSpan={9} className="px-6 py-4">
-                        <div className="grid grid-cols-3 gap-4 text-sm">
-                          <div>
-                            <p className="text-xs font-semibold text-gray-400 uppercase mb-1">Descripción</p>
-                            <p className="text-gray-700">{caso.descripcion || '—'}</p>
-                          </div>
-                          {caso.accion_admin && (
-                            <div>
-                              <p className="text-xs font-semibold text-gray-400 uppercase mb-1">Acción Admin</p>
-                              <p className="text-gray-700">{caso.accion_admin}</p>
-                              <StatusBadge status={caso.estado_admin || ''} />
-                            </div>
-                          )}
-                          {caso.accion_talent && (
-                            <div>
-                              <p className="text-xs font-semibold text-gray-400 uppercase mb-1">Acción Talent</p>
-                              <p className="text-gray-700">{caso.accion_talent}</p>
-                              <StatusBadge status={caso.estado_talent || ''} />
-                            </div>
-                          )}
-                          {caso.requiere_descuento && (
-                            <div>
-                              <p className="text-xs font-semibold text-gray-400 uppercase mb-1">Descuento</p>
-                              <p className="text-gray-700 font-medium">
-                                {caso.monto_descuento ? `$${caso.monto_descuento}` : 'Sin monto'}
-                              </p>
-                            </div>
-                          )}
-                          {caso.observaciones && (
-                            <div>
-                              <p className="text-xs font-semibold text-gray-400 uppercase mb-1">Observaciones</p>
-                              <p className="text-gray-700">{caso.observaciones}</p>
-                            </div>
-                          )}
-                          <div>
-                            <p className="text-xs font-semibold text-gray-400 uppercase mb-1">Cargado por</p>
-                            <p className="text-gray-700">{caso.cargado_por}</p>
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
-                  )}
-                </>
-              ))}
-            </tbody>
-          </table>
+        {(filters.area || filters.estado || filters.pais || filters.search) && (
+          <button onClick={() => setFilters({ area: '', estado: '', pais: '', search: '' })} className="text-xs text-gray-400 hover:text-gray-600 underline px-2">
+            Limpiar
+          </button>
         )}
       </div>
+
+      {/* Cards */}
+      {loading ? (
+        <div className="text-center py-16 text-gray-400">Cargando...</div>
+      ) : casos.length === 0 ? (
+        <div className="text-center py-16 text-gray-400 bg-white rounded-2xl border border-gray-100">
+          No hay casos que coincidan con los filtros
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          {casos.map(caso => (
+            <div key={caso.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-3 hover:border-gray-200 transition-colors">
+              <div className="flex items-start justify-between gap-2">
+                <span className="font-mono text-xs text-gray-400 font-medium">{caso.nro_caso}</span>
+                <StatusBadge status={caso.estado_general} />
+              </div>
+
+              <div>
+                <p className="font-semibold text-gray-800 text-sm leading-snug">{caso.tipo_caso}</p>
+                {caso.descripcion && (
+                  <p className="text-xs text-gray-400 mt-1 line-clamp-2">{caso.descripcion}</p>
+                )}
+              </div>
+
+              <div className="space-y-1">
+                <div className="flex items-center gap-2 text-xs text-gray-600">
+                  <svg className="w-3.5 h-3.5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                  <span className="font-medium text-gray-700">{caso.pac_nombre}</span>
+                  <span className="text-gray-300">·</span>
+                  <span className="text-gray-400">{caso.pac_mail}</span>
+                </div>
+                {caso.psi_nombre && (
+                  <div className="flex items-center gap-2 text-xs text-gray-500">
+                    <svg className="w-3.5 h-3.5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                    <span>{caso.psi_nombre}</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex items-center justify-between pt-1 border-t border-gray-50">
+                <div className="flex items-center gap-2">
+                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${AREA_BADGE[caso.area] || 'bg-gray-100 text-gray-500'}`}>
+                    {caso.area === 'Admin+Talent' ? 'Admin + Talent' : caso.area}
+                  </span>
+                </div>
+                <div className="text-xs text-gray-400">
+                  {caso.pais} · {caso.fecha}
+                </div>
+              </div>
+
+              {caso.cargado_por && (
+                <p className="text-xs text-gray-400">Creado por {caso.cargado_por}</p>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

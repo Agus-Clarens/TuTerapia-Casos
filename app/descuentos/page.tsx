@@ -54,7 +54,7 @@ export default function DescuentosPage() {
       <div className="mb-6">
         <div className="flex items-center gap-3 mb-1">
           <div className="w-2 h-6 bg-teal rounded-full" />
-          <h1 className="text-2xl font-bold text-verde-oscuro">Descuentos a Psicólogos</h1>
+          <h1 className="text-2xl font-bold text-verde-oscuro">Descuento sesiones psicólogos</h1>
         </div>
         <p className="text-gray-500 text-sm">Vista de liquidación mensual — Sofi</p>
       </div>

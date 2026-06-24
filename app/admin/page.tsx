@@ -4,32 +4,28 @@ import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { Caso } from '@/types'
-import { PAISES, ESTADOS_ADMIN, ESTADOS_GENERAL } from '@/lib/tipos-caso'
+import StatusBadge from '@/components/StatusBadge'
+import { PAISES } from '@/lib/tipos-caso'
 
 export default function AdminPage() {
   const [casos, setCasos] = useState<Caso[]>([])
   const [loading, setLoading] = useState(true)
-  const [filters, setFilters] = useState({ pais: '', estado_admin: '', estado_general: '', search: '' })
-  const [expandedId, setExpandedId] = useState<string | null>(null)
-  const [updating, setUpdating] = useState<string | null>(null)
+  const [filtroEstado, setFiltroEstado] = useState('')
+  const [filtroPais, setFiltroPais] = useState('')
+  const [search, setSearch] = useState('')
+  const [actions, setActions] = useState<Record<string, string>>({})
+  const [saving, setSaving] = useState<string | null>(null)
 
   const fetchCasos = useCallback(async () => {
     setLoading(true)
-    let query = supabase
-      .from('casos')
-      .select('*')
-      .in('area', ['Admin', 'Admin+Talent'])
-      .order('created_at', { ascending: false })
-
-    if (filters.pais) query = query.eq('pais', filters.pais)
-    if (filters.estado_admin) query = query.eq('estado_admin', filters.estado_admin)
-    if (filters.estado_general) query = query.eq('estado_general', filters.estado_general)
-
+    let query = supabase.from('casos').select('*').in('area', ['Admin', 'Admin+Talent']).order('created_at', { ascending: false })
+    if (filtroEstado) query = query.eq('estado_general', filtroEstado)
+    if (filtroPais) query = query.eq('pais', filtroPais)
     const { data, error } = await query
     if (!error && data) {
       let result = data as Caso[]
-      if (filters.search) {
-        const s = filters.search.toLowerCase()
+      if (search) {
+        const s = search.toLowerCase()
         result = result.filter(c =>
           c.pac_nombre?.toLowerCase().includes(s) ||
           c.psi_nombre?.toLowerCase().includes(s) ||
@@ -38,24 +34,44 @@ export default function AdminPage() {
         )
       }
       setCasos(result)
+      const initial: Record<string, string> = {}
+      result.forEach(c => { initial[c.id!] = c.accion_admin || '' })
+      setActions(initial)
     }
     setLoading(false)
-  }, [filters])
+  }, [filtroEstado, filtroPais, search])
 
   useEffect(() => { fetchCasos() }, [fetchCasos])
 
-  async function updateEstadoAdmin(id: string, estado: string) {
-    setUpdating(id)
-    await supabase.from('casos').update({ estado_admin: estado }).eq('id', id)
+  async function tomarCaso(id: string) {
+    setSaving(id)
+    await supabase.from('casos').update({ estado_general: 'En curso', estado_admin: 'En curso' }).eq('id', id)
     await fetchCasos()
-    setUpdating(null)
+    setSaving(null)
   }
 
-  async function updateEstadoGeneral(id: string, estado: string) {
-    setUpdating(id)
-    await supabase.from('casos').update({ estado_general: estado }).eq('id', id)
+  async function resolverCaso(id: string) {
+    setSaving(id)
+    await supabase.from('casos').update({
+      estado_general: 'Resuelto',
+      estado_admin: 'Resuelto',
+      accion_admin: actions[id] || null,
+    }).eq('id', id)
     await fetchCasos()
-    setUpdating(null)
+    setSaving(null)
+  }
+
+  async function cerrarCaso(id: string) {
+    setSaving(id)
+    await supabase.from('casos').update({ estado_general: 'Cerrado' }).eq('id', id)
+    await fetchCasos()
+    setSaving(null)
+  }
+
+  const counts = {
+    Nuevo: casos.filter(c => c.estado_general === 'Nuevo').length,
+    'En curso': casos.filter(c => c.estado_general === 'En curso').length,
+    Resuelto: casos.filter(c => c.estado_general === 'Resuelto').length,
   }
 
   return (
@@ -64,9 +80,9 @@ export default function AdminPage() {
         <div>
           <div className="flex items-center gap-3 mb-1">
             <div className="w-2 h-6 bg-blue-500 rounded-full" />
-            <h1 className="text-2xl font-bold text-verde-oscuro">Vista Admin</h1>
+            <h1 className="text-2xl font-bold text-verde-oscuro">Admin</h1>
           </div>
-          <p className="text-gray-500 text-sm">{casos.length} casos · Área Admin y Admin + Talent</p>
+          <p className="text-gray-400 text-sm">{casos.length} casos · Admin y Admin + Talent</p>
         </div>
         <Link href="/nuevo-caso" className="flex items-center gap-2 px-4 py-2 bg-verde-oscuro text-white text-sm font-medium rounded-xl hover:bg-verde-oscuro/90 transition-colors">
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -77,162 +93,113 @@ export default function AdminPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-4 gap-4 mb-6">
-        {[
-          { label: 'Total', value: casos.length, color: 'bg-gray-50 border-gray-200' },
-          { label: 'Pendiente', value: casos.filter(c => c.estado_admin === 'Pendiente').length, color: 'bg-orange-50 border-orange-200' },
-          { label: 'En proceso', value: casos.filter(c => c.estado_admin === 'En proceso').length, color: 'bg-blue-50 border-blue-200' },
-          { label: 'Resuelto', value: casos.filter(c => c.estado_admin === 'Resuelto').length, color: 'bg-green-50 border-green-200' },
-        ].map(stat => (
-          <div key={stat.label} className={`rounded-xl border p-4 ${stat.color}`}>
-            <p className="text-2xl font-bold text-gray-800">{stat.value}</p>
-            <p className="text-xs text-gray-500 mt-0.5">{stat.label}</p>
-          </div>
+      <div className="grid grid-cols-3 gap-3 mb-6">
+        {Object.entries(counts).map(([est, n]) => (
+          <button key={est} onClick={() => setFiltroEstado(f => f === est ? '' : est)}
+            className={`rounded-xl border p-4 text-left transition-all ${filtroEstado === est ? 'border-blue-400 bg-blue-50' : 'bg-white border-gray-100 hover:border-gray-200'}`}>
+            <p className="text-2xl font-bold text-gray-800">{n}</p>
+            <p className="text-xs text-gray-500 mt-0.5">{est}</p>
+          </button>
         ))}
       </div>
 
-      {/* Filters */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 mb-6 grid grid-cols-4 gap-3">
-        <input type="text" value={filters.search} onChange={e => setFilters(p => ({ ...p, search: e.target.value }))} placeholder="Buscar..." className="col-span-2" />
-        <select value={filters.pais} onChange={e => setFilters(p => ({ ...p, pais: e.target.value }))}>
+      {/* Filtros */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 mb-6 flex gap-3">
+        <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar..." className="flex-1" />
+        <select value={filtroPais} onChange={e => setFiltroPais(e.target.value)}>
           <option value="">Todos los países</option>
           {PAISES.map(p => <option key={p} value={p}>{p}</option>)}
         </select>
-        <select value={filters.estado_admin} onChange={e => setFilters(p => ({ ...p, estado_admin: e.target.value }))}>
-          <option value="">Estado Admin</option>
-          {ESTADOS_ADMIN.map(e => <option key={e} value={e}>{e}</option>)}
-        </select>
+        {(filtroEstado || filtroPais || search) && (
+          <button onClick={() => { setFiltroEstado(''); setFiltroPais(''); setSearch('') }} className="text-xs text-gray-400 hover:text-gray-600 underline px-2">Limpiar</button>
+        )}
       </div>
 
-      {/* Table */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        {loading ? (
-          <div className="p-12 text-center text-gray-400">Cargando...</div>
-        ) : casos.length === 0 ? (
-          <div className="p-12 text-center text-gray-400">No hay casos Admin</div>
-        ) : (
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-gray-50 border-b border-gray-100">
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Nro</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Fecha</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">País</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Paciente</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Psicólogo</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Tipo</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Estado Admin</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">General</th>
-                <th className="px-4 py-3"></th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50">
-              {casos.map(caso => (
-                <tr
-                  key={caso.id}
-                  className="hover:bg-crema/50 cursor-pointer transition-colors"
-                  onClick={() => setExpandedId(expandedId === caso.id ? null : caso.id || null)}
-                >
-                  <td className="px-4 py-3">
-                    <span className="font-mono text-xs text-gray-500">{caso.nro_caso}</span>
-                    {caso.area === 'Admin+Talent' && (
-                      <div className="mt-1">
+      {/* Casos */}
+      {loading ? (
+        <div className="text-center py-16 text-gray-400">Cargando...</div>
+      ) : casos.length === 0 ? (
+        <div className="text-center py-16 text-gray-400 bg-white rounded-2xl border border-gray-100">Sin casos Admin</div>
+      ) : (
+        <div className="space-y-3">
+          {casos.map(caso => {
+            const isClosed = caso.estado_general === 'Cerrado'
+            const isNuevo = caso.estado_general === 'Nuevo'
+            const isEnCurso = caso.estado_general === 'En curso'
+            const isResuelto = caso.estado_general === 'Resuelto'
+            return (
+              <div key={caso.id} className={`bg-white rounded-2xl border shadow-sm overflow-hidden ${isClosed ? 'opacity-60 border-gray-100' : 'border-gray-100 hover:border-gray-200'}`}>
+                <div className="px-5 py-4 flex items-start gap-4">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap mb-1.5">
+                      <span className="font-mono text-xs text-gray-400">{caso.nro_caso}</span>
+                      <StatusBadge status={caso.estado_general} />
+                      {caso.area === 'Admin+Talent' && (
                         <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-purple-50 text-purple-600 text-xs rounded-full border border-purple-200">
                           <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                           </svg>
                           También involucra a Talent
                         </span>
+                      )}
+                      <span className="text-xs text-gray-400">{caso.pais} · {caso.fecha}</span>
+                    </div>
+                    <p className="font-semibold text-gray-800 text-sm">{caso.tipo_caso}</p>
+                    {caso.descripcion && (
+                      <p className="text-xs text-gray-500 mt-1 line-clamp-2">{caso.descripcion}</p>
+                    )}
+                    <div className="mt-2 flex flex-wrap gap-3 text-xs text-gray-500">
+                      <span><span className="text-gray-400">Pac:</span> <span className="font-medium text-gray-700">{caso.pac_nombre}</span>
+                        {caso.pac_mail && <span className="text-gray-400 ml-1">· {caso.pac_mail}</span>}
+                      </span>
+                      {caso.psi_nombre && <span><span className="text-gray-400">Psi:</span> {caso.psi_nombre}</span>}
+                    </div>
+                  </div>
+                  <p className="text-xs text-gray-400 flex-shrink-0">{caso.cargado_por}</p>
+                </div>
+
+                {!isClosed && (
+                  <div className="px-5 pb-4 border-t border-gray-50 pt-3">
+                    {(isEnCurso || isResuelto) && (
+                      <div className="mb-3">
+                        <label className="text-xs font-medium text-gray-500 mb-1.5 block">Acción Admin</label>
+                        <textarea
+                          value={actions[caso.id!] ?? ''}
+                          onChange={e => setActions(a => ({ ...a, [caso.id!]: e.target.value }))}
+                          disabled={isResuelto || saving === caso.id}
+                          rows={2}
+                          placeholder="Describí la acción tomada desde Admin..."
+                          className="resize-none text-sm w-full disabled:bg-gray-50 disabled:text-gray-500"
+                        />
                       </div>
                     )}
-                  </td>
-                  <td className="px-4 py-3 text-gray-600">{caso.fecha}</td>
-                  <td className="px-4 py-3 text-gray-600">{caso.pais}</td>
-                  <td className="px-4 py-3">
-                    <div className="font-medium text-gray-800">{caso.pac_nombre}</div>
-                    <div className="text-xs text-gray-400">{caso.pac_mail}</div>
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="font-medium text-gray-800">{caso.psi_nombre || '—'}</div>
-                    <div className="text-xs text-gray-400">{caso.psi_mail}</div>
-                  </td>
-                  <td className="px-4 py-3 text-gray-600 max-w-[160px]">
-                    <span className="truncate block" title={caso.tipo_caso}>{caso.tipo_caso}</span>
-                  </td>
-                  <td className="px-4 py-3" onClick={e => e.stopPropagation()}>
-                    <select
-                      value={caso.estado_admin || 'Pendiente'}
-                      onChange={e => updateEstadoAdmin(caso.id!, e.target.value)}
-                      disabled={updating === caso.id}
-                      className="text-xs py-1 px-2"
-                    >
-                      {ESTADOS_ADMIN.map(e => <option key={e} value={e}>{e}</option>)}
-                    </select>
-                  </td>
-                  <td className="px-4 py-3" onClick={e => e.stopPropagation()}>
-                    <select
-                      value={caso.estado_general}
-                      onChange={e => updateEstadoGeneral(caso.id!, e.target.value)}
-                      disabled={updating === caso.id}
-                      className="text-xs py-1 px-2"
-                    >
-                      {ESTADOS_GENERAL.map(e => <option key={e} value={e}>{e}</option>)}
-                    </select>
-                  </td>
-                  <td className="px-4 py-3">
-                    <svg className={`w-4 h-4 text-gray-400 transition-transform ${expandedId === caso.id ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
-
-      {/* Expanded detail */}
-      {expandedId && (() => {
-        const caso = casos.find(c => c.id === expandedId)
-        if (!caso) return null
-        return (
-          <div className="mt-3 bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-gray-700">Detalle — {caso.nro_caso}</h3>
-              <button onClick={() => setExpandedId(null)} className="text-gray-400 hover:text-gray-600">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-            <div className="grid grid-cols-3 gap-4 text-sm">
-              <div>
-                <p className="text-xs font-semibold text-gray-400 uppercase mb-1">Descripción</p>
-                <p className="text-gray-700">{caso.descripcion || '—'}</p>
+                    <div className="flex items-center gap-2">
+                      {isNuevo && (
+                        <button onClick={() => tomarCaso(caso.id!)} disabled={saving === caso.id}
+                          className="px-4 py-1.5 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors">
+                          {saving === caso.id ? 'Guardando...' : 'Tomar caso'}
+                        </button>
+                      )}
+                      {isEnCurso && (
+                        <button onClick={() => resolverCaso(caso.id!)} disabled={saving === caso.id}
+                          className="px-4 py-1.5 bg-verde-medio text-verde-oscuro text-xs font-semibold rounded-lg hover:bg-verde-medio/90 disabled:opacity-50 transition-colors">
+                          {saving === caso.id ? 'Guardando...' : 'Resolver'}
+                        </button>
+                      )}
+                      {isResuelto && (
+                        <button onClick={() => cerrarCaso(caso.id!)} disabled={saving === caso.id}
+                          className="px-4 py-1.5 bg-gray-200 text-gray-600 text-xs font-medium rounded-lg hover:bg-gray-300 disabled:opacity-50 transition-colors">
+                          Cerrar caso
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
-              <div>
-                <p className="text-xs font-semibold text-gray-400 uppercase mb-1">Acción Admin</p>
-                <p className="text-gray-700">{caso.accion_admin || '—'}</p>
-              </div>
-              {caso.requiere_descuento && (
-                <div>
-                  <p className="text-xs font-semibold text-gray-400 uppercase mb-1">Descuento</p>
-                  <p className="text-orange-600 font-semibold">{caso.monto_descuento ? `$${caso.monto_descuento}` : 'Sin monto cargado'}</p>
-                </div>
-              )}
-              {caso.observaciones && (
-                <div>
-                  <p className="text-xs font-semibold text-gray-400 uppercase mb-1">Observaciones</p>
-                  <p className="text-gray-700">{caso.observaciones}</p>
-                </div>
-              )}
-              <div>
-                <p className="text-xs font-semibold text-gray-400 uppercase mb-1">Cargado por</p>
-                <p className="text-gray-700">{caso.cargado_por}</p>
-              </div>
-            </div>
-          </div>
-        )
-      })()}
+            )
+          })}
+        </div>
+      )}
     </div>
   )
 }
