@@ -33,11 +33,19 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
   )
 }
 
+const AREA_BADGE: Record<string, string> = {
+  Admin: 'bg-blue-50 text-blue-700 border-blue-200',
+  Talent: 'bg-purple-50 text-purple-700 border-purple-200',
+  'Admin+Talent': 'bg-orange-50 text-orange-700 border-orange-200',
+  CX: 'bg-verde-medio/20 text-verde-oscuro border-verde-medio/30',
+}
+
 export default function NuevoCasoPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState('')
+  const [sinPsicologo, setSinPsicologo] = useState(false)
 
   const today = new Date().toISOString().split('T')[0]
 
@@ -87,6 +95,15 @@ export default function NuevoCasoPage() {
     }))
   }
 
+  function handleTogglePsicologo() {
+    setSinPsicologo(prev => {
+      if (!prev) {
+        setForm(f => ({ ...f, psi_nombre: '', psi_mail: '' }))
+      }
+      return !prev
+    })
+  }
+
   async function generateNroCaso(): Promise<string> {
     const { count } = await supabase
       .from('casos')
@@ -113,8 +130,8 @@ export default function NuevoCasoPage() {
         pais: form.pais,
         pac_nombre: form.pac_nombre,
         pac_mail: form.pac_mail,
-        psi_nombre: form.psi_nombre,
-        psi_mail: form.psi_mail,
+        psi_nombre: sinPsicologo ? null : form.psi_nombre,
+        psi_mail: sinPsicologo ? null : form.psi_mail,
         tipo_caso: form.tipo_caso,
         area: form.area,
         descripcion: form.descripcion,
@@ -147,8 +164,8 @@ export default function NuevoCasoPage() {
           fecha_caso: form.fecha,
           mes: form.mes_liquidacion || mes,
           pais: form.pais,
-          psi_nombre: form.psi_nombre,
-          psi_mail: form.psi_mail,
+          psi_nombre: sinPsicologo ? null : form.psi_nombre,
+          psi_mail: sinPsicologo ? null : form.psi_mail,
           pac_nombre: form.pac_nombre,
           pac_mail: form.pac_mail,
           motivo: form.tipo_caso,
@@ -164,9 +181,7 @@ export default function NuevoCasoPage() {
       }
 
       setSuccess(true)
-      setTimeout(() => {
-        router.push('/casos')
-      }, 1500)
+      setTimeout(() => router.push('/casos'), 1500)
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Error al guardar el caso'
       setError(msg)
@@ -207,14 +222,7 @@ export default function NuevoCasoPage() {
           </Field>
 
           <Field label="Cargado por" required>
-            <input
-              type="text"
-              name="cargado_por"
-              value={form.cargado_por}
-              onChange={handleChange}
-              placeholder="Tu nombre"
-              required
-            />
+            <input type="text" name="cargado_por" value={form.cargado_por} onChange={handleChange} placeholder="Tu nombre" required />
           </Field>
 
           <Field label="País" required>
@@ -228,7 +236,7 @@ export default function NuevoCasoPage() {
             <select name="tipo_caso" value={form.tipo_caso} onChange={handleTipoCasoChange} required>
               <option value="">Seleccionar tipo</option>
               {(['Admin', 'Talent', 'Admin+Talent', 'CX'] as const).map(area => (
-                <optgroup key={area} label={`— ${area} —`}>
+                <optgroup key={area} label={`— ${area === 'Admin+Talent' ? 'Admin + Talent' : area} —`}>
                   {TIPOS_POR_AREA[area].map(t => (
                     <option key={t.nombre} value={t.nombre}>{t.nombre}</option>
                   ))}
@@ -240,11 +248,13 @@ export default function NuevoCasoPage() {
           {form.area && (
             <div className="col-span-2">
               <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100">
-                <span className="text-sm text-gray-500">Área detectada:</span>
-                <span className="font-semibold text-verde-oscuro text-sm">{form.area}</span>
+                <span className="text-xs text-gray-400 uppercase tracking-wide font-medium">Área asignada automáticamente:</span>
+                <span className={`px-2.5 py-1 rounded-full text-xs font-semibold border ${AREA_BADGE[form.area] || 'bg-gray-100 text-gray-600 border-gray-200'}`}>
+                  {form.area === 'Admin+Talent' ? 'Admin + Talent' : form.area}
+                </span>
                 {form.requiere_descuento && (
-                  <span className="ml-2 px-2 py-0.5 bg-orange-100 text-orange-700 text-xs rounded-full border border-orange-200 font-medium">
-                    Requiere descuento al psicólogo
+                  <span className="px-2 py-0.5 bg-orange-100 text-orange-700 text-xs rounded-full border border-orange-200 font-medium">
+                    ⚠ Requiere descuento al psicólogo
                   </span>
                 )}
               </div>
@@ -261,15 +271,53 @@ export default function NuevoCasoPage() {
             <input type="email" name="pac_mail" value={form.pac_mail} onChange={handleChange} placeholder="paciente@email.com" required />
           </Field>
 
-          <SectionTitle>Psicólogo</SectionTitle>
+          {/* Sección Psicólogo con toggle */}
+          <div className="col-span-2 mt-2">
+            <div className="flex items-center justify-between border-b border-verde-medio/30 pb-1">
+              <h3 className="text-sm font-semibold text-verde-oscuro uppercase tracking-wide">
+                Psicólogo
+              </h3>
+              <button
+                type="button"
+                onClick={handleTogglePsicologo}
+                className={`flex items-center gap-2 px-3 py-1 rounded-lg text-xs font-medium border transition-colors ${
+                  sinPsicologo
+                    ? 'bg-gray-200 text-gray-600 border-gray-300 hover:bg-gray-100'
+                    : 'bg-gray-50 text-gray-500 border-gray-200 hover:bg-gray-100'
+                }`}
+              >
+                <span className={`w-3.5 h-3.5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
+                  sinPsicologo ? 'bg-verde-oscuro border-verde-oscuro' : 'border-gray-400 bg-white'
+                }`}>
+                  {sinPsicologo && (
+                    <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                    </svg>
+                  )}
+                </span>
+                No necesita datos del psicólogo
+              </button>
+            </div>
+          </div>
 
-          <Field label="Nombre del psicólogo" required>
-            <input type="text" name="psi_nombre" value={form.psi_nombre} onChange={handleChange} placeholder="Nombre completo" required />
-          </Field>
+          {!sinPsicologo && (
+            <>
+              <Field label="Nombre del psicólogo" required>
+                <input type="text" name="psi_nombre" value={form.psi_nombre} onChange={handleChange} placeholder="Nombre completo" required />
+              </Field>
+              <Field label="Email del psicólogo" required>
+                <input type="email" name="psi_mail" value={form.psi_mail} onChange={handleChange} placeholder="psicologo@email.com" required />
+              </Field>
+            </>
+          )}
 
-          <Field label="Email del psicólogo" required>
-            <input type="email" name="psi_mail" value={form.psi_mail} onChange={handleChange} placeholder="psicologo@email.com" required />
-          </Field>
+          {sinPsicologo && (
+            <div className="col-span-2">
+              <p className="text-sm text-gray-400 italic bg-gray-50 rounded-lg px-4 py-3 border border-gray-100">
+                Este caso no tiene psicólogo asociado.
+              </p>
+            </div>
+          )}
 
           <SectionTitle>Descripción</SectionTitle>
 
@@ -348,12 +396,7 @@ export default function NuevoCasoPage() {
                 />
               </Field>
               <Field label="Mes de liquidación">
-                <input
-                  type="month"
-                  name="mes_liquidacion"
-                  value={form.mes_liquidacion}
-                  onChange={handleChange}
-                />
+                <input type="month" name="mes_liquidacion" value={form.mes_liquidacion} onChange={handleChange} />
               </Field>
             </>
           )}
@@ -368,12 +411,7 @@ export default function NuevoCasoPage() {
 
           {!showDescuento && (
             <Field label="Mes de liquidación">
-              <input
-                type="month"
-                name="mes_liquidacion"
-                value={form.mes_liquidacion}
-                onChange={handleChange}
-              />
+              <input type="month" name="mes_liquidacion" value={form.mes_liquidacion} onChange={handleChange} />
             </Field>
           )}
 
