@@ -103,7 +103,7 @@ export default function Sidebar() {
           alt="Tu Terapia"
           width={180}
           height={100}
-          style={{ objectFit: 'contain', mixBlendMode: 'lighten' }}
+          style={{ objectFit: 'contain', mixBlendMode: 'screen' }}
           priority
         />
       </div>
