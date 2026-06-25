@@ -1,9 +1,10 @@
 import type { Metadata } from 'next'
 import './globals.css'
-import Sidebar from '@/components/Sidebar'
+import { AuthProvider } from '@/lib/auth-context'
+import AppShell from '@/components/AppShell'
 
 export const metadata: Metadata = {
-  title: 'TuTerapia CX & Talent',
+  title: 'TuTerapia · Casos Internos',
   description: 'Gestión de casos internos - Tu Terapia',
 }
 
@@ -15,12 +16,11 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body className="antialiased bg-crema min-h-screen">
-        <div className="flex min-h-screen">
-          <Sidebar />
-          <main className="flex-1 overflow-auto">
+        <AuthProvider>
+          <AppShell>
             {children}
-          </main>
-        </div>
+          </AppShell>
+        </AuthProvider>
       </body>
     </html>
   )

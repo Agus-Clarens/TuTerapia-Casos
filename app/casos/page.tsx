@@ -7,13 +7,13 @@ import { Caso } from '@/types'
 import StatusBadge from '@/components/StatusBadge'
 import { PAISES, AREA_BADGE } from '@/lib/tipos-caso'
 
-function cardClasses(estado: string) {
-  if (estado === 'Nuevo') return 'bg-[#EEF2FF] border-[#213E6E]/40'
-  if (estado === 'En curso') return 'bg-[#FFFBEB] border-[#FCD07F]'
-  if (estado === 'Requiere atención') return 'bg-[#FFF0EE] border-[#F29683]'
-  if (estado === 'Resuelto') return 'bg-[#EDFFF4] border-[#75B781]'
-  if (estado === 'Cerrado') return 'bg-[#F5F4F2] border-[#938f80]/50 opacity-60'
-  return 'bg-white border-gray-100'
+function getCardStyle(estado: string) {
+  if (estado === 'Nuevo') return { backgroundColor: '#EEF4FF', borderLeft: '3px solid #213E6E' }
+  if (estado === 'En curso') return { backgroundColor: '#FFFBEB', borderLeft: '3px solid #FCD07F' }
+  if (estado === 'Requiere atención') return { backgroundColor: '#FFF0EE', borderLeft: '3px solid #F29683' }
+  if (estado === 'Resuelto') return { backgroundColor: '#EDFFF4', borderLeft: '3px solid #75B781' }
+  if (estado === 'Cerrado') return { backgroundColor: '#F5F4F2', borderLeft: '3px solid #938f80' }
+  return { backgroundColor: '#ffffff', borderLeft: '3px solid #e5e7eb' }
 }
 
 export default function CasosPage() {
@@ -134,7 +134,7 @@ export default function CasosPage() {
           {casos.map(caso => {
             const updCount = updateCounts[caso.id!] || 0
             return (
-              <div key={caso.id} className={`rounded-2xl border shadow-sm p-5 flex flex-col gap-3 transition-all ${cardClasses(caso.estado_general)}`}>
+              <div key={caso.id} className={`rounded-2xl shadow-sm p-5 flex flex-col gap-3 transition-all ${caso.estado_general === 'Cerrado' ? 'opacity-60' : ''}`} style={getCardStyle(caso.estado_general)}>
                 <div className="flex items-start justify-between gap-2">
                   <span className="font-mono text-xs text-gray-400 font-medium">{caso.nro_caso}</span>
                   <StatusBadge status={caso.estado_general} />

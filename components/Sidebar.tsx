@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import Image from 'next/image'
+import { usePathname, useRouter } from 'next/navigation'
+import { useAuth } from '@/lib/auth-context'
 
 const navItems = [
   {
@@ -71,27 +72,48 @@ const navItems = [
   },
 ]
 
+const USER_MAP: Record<string, { name: string; sector: string }> = {
+  'aclarens@tuterapia.com.ar': { name: 'Agus', sector: 'Admin' },
+  'info@tuterapia.com.ar': { name: 'Sol', sector: 'CX' },
+  'cbarros@tuterapia.com.uy': { name: 'Caro', sector: 'Talent' },
+  'admin@tuterapia.com.ar': { name: 'Sofi', sector: 'Admin' },
+  'people@tuterapia.com.uy': { name: 'Belu', sector: 'Talent' },
+  'talent@tuterapia.com.ar': { name: 'Orne', sector: 'Talent' },
+}
+
 export default function Sidebar() {
   const pathname = usePathname()
-  const [logoError, setLogoError] = useState(false)
+  const router = useRouter()
+  const { user, signOut } = useAuth()
+
+  const email = user?.email || ''
+  const userInfo = USER_MAP[email] || { name: email.split('@')[0], sector: '' }
+
+  async function handleSignOut() {
+    await signOut()
+    router.push('/login')
+  }
 
   return (
     <aside className="w-60 min-h-screen bg-verde-oscuro flex flex-col shadow-xl flex-shrink-0">
-      <div className="px-5 py-4 border-b border-white/10 flex items-center justify-center">
-        {logoError ? (
-          <span style={{ color: '#75B781', fontWeight: 'bold', fontSize: '20px', letterSpacing: '-0.02em' }}>tu terapia</span>
-        ) : (
-          <img
-            src="/logo.png"
-            alt="Tu Terapia"
-            style={{ height: '40px', objectFit: 'contain', maxWidth: '160px' }}
-            onError={() => setLogoError(true)}
-          />
-        )}
+      {/* Logo */}
+      <div className="px-4 pt-5 pb-3 flex items-center justify-center">
+        <Image
+          src="/logo.png"
+          alt="Tu Terapia"
+          width={180}
+          height={100}
+          style={{ objectFit: 'contain', mixBlendMode: 'lighten' }}
+          priority
+        />
       </div>
-      <p className="text-white/40 text-xs text-center py-1.5 border-b border-white/10">CX & Talent</p>
 
-      <nav className="flex-1 p-3 space-y-0.5">
+      {/* Subtítulo */}
+      <p className="text-center pb-3 border-b border-white/10" style={{ color: '#75B781', fontSize: '11px', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+        Gestión de Casos Internos
+      </p>
+
+      <nav className="flex-1 p-3 space-y-0.5 mt-1">
         {navItems.map((item) => {
           const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href))
           return (
@@ -111,8 +133,28 @@ export default function Sidebar() {
         })}
       </nav>
 
+      {/* User info + logout */}
       <div className="p-4 border-t border-white/10">
-        <p className="text-white/25 text-xs text-center">v2.0</p>
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-bold" style={{ backgroundColor: '#75B781', color: '#264534' }}>
+              {userInfo.name.charAt(0)}
+            </div>
+            <div className="min-w-0">
+              <p className="text-white/80 text-xs font-medium truncate leading-tight">{userInfo.name}</p>
+              {userInfo.sector && <p className="text-white/40 text-xs truncate leading-tight">{userInfo.sector}</p>}
+            </div>
+          </div>
+          <button
+            onClick={handleSignOut}
+            className="flex-shrink-0 p-1.5 rounded-lg text-white/30 hover:text-white/70 hover:bg-white/10 transition-colors"
+            title="Cerrar sesión"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+          </button>
+        </div>
       </div>
     </aside>
   )

@@ -8,13 +8,13 @@ import StatusBadge from '@/components/StatusBadge'
 import HiloCaso from '@/components/HiloCaso'
 import { PAISES } from '@/lib/tipos-caso'
 
-function cardClasses(estado: string) {
-  if (estado === 'Nuevo') return 'bg-[#EEF2FF] border-[#213E6E]/40'
-  if (estado === 'En curso') return 'bg-[#FFFBEB] border-[#FCD07F]'
-  if (estado === 'Requiere atención') return 'bg-[#FFF0EE] border-[#F29683]'
-  if (estado === 'Resuelto') return 'bg-[#EDFFF4] border-[#75B781]'
-  if (estado === 'Cerrado') return 'bg-[#F5F4F2] border-[#938f80]/50 opacity-60'
-  return 'bg-white border-gray-100'
+function getCardStyle(estado: string) {
+  if (estado === 'Nuevo') return { backgroundColor: '#EEF4FF', borderLeft: '3px solid #213E6E' }
+  if (estado === 'En curso') return { backgroundColor: '#FFFBEB', borderLeft: '3px solid #FCD07F' }
+  if (estado === 'Requiere atención') return { backgroundColor: '#FFF0EE', borderLeft: '3px solid #F29683' }
+  if (estado === 'Resuelto') return { backgroundColor: '#EDFFF4', borderLeft: '3px solid #75B781' }
+  if (estado === 'Cerrado') return { backgroundColor: '#F5F4F2', borderLeft: '3px solid #938f80' }
+  return { backgroundColor: '#ffffff', borderLeft: '3px solid #e5e7eb' }
 }
 
 export default function AdminTalentPage() {
@@ -150,7 +150,7 @@ export default function AdminTalentPage() {
             const isExpanded = expanded.has(caso.id!)
             const isNew = hasNewUpdate(caso.id!)
             return (
-              <div key={caso.id} className={`rounded-2xl border shadow-sm overflow-hidden transition-all ${cardClasses(caso.estado_general)}`}>
+              <div key={caso.id} className={`rounded-2xl shadow-sm overflow-hidden transition-all ${caso.estado_general === 'Cerrado' ? 'opacity-60' : ''}`} style={getCardStyle(caso.estado_general)}>
                 <div className="px-5 py-4 flex items-start gap-4">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap mb-1.5">
