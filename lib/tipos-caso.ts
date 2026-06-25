@@ -71,20 +71,20 @@ export const ESTADOS_AREA = ['Nuevo', 'En curso', 'Requiere atención', 'Resuelt
 export const ESTADOS_DESCUENTO = ['Pendiente', 'Aplicado', 'Rechazado'] as const
 
 export const AREA_BADGE: Record<string, string> = {
-  Admin: 'bg-blue-50 text-blue-700 border border-blue-200',
+  Admin: 'bg-[#EEF2FF] text-[#213E6E] border border-[#213E6E]/30',
   Talent: 'bg-purple-50 text-purple-700 border border-purple-200',
-  'Admin+Talent': 'bg-orange-50 text-orange-700 border border-orange-200',
+  'Admin+Talent': 'bg-[#FFF0EE] text-[#c0503a] border border-[#F29683]/50',
   CX: 'bg-verde-medio/20 text-verde-oscuro border border-verde-medio/40',
   General: 'bg-gray-50 text-gray-600 border border-gray-200',
 }
 
 export const ESTADO_BADGE: Record<string, string> = {
-  Nuevo: 'bg-yellow-50 text-yellow-700 border border-yellow-200',
-  'En curso': 'bg-blue-50 text-blue-700 border border-blue-200',
-  'Requiere atención': 'bg-red-50 text-red-700 border border-red-200',
-  Resuelto: 'bg-green-50 text-green-700 border border-green-200',
-  Cerrado: 'bg-gray-100 text-gray-500 border border-gray-200',
-  Pendiente: 'bg-orange-50 text-orange-700 border border-orange-200',
+  Nuevo: 'bg-[#EEF2FF] text-[#213E6E] border border-[#213E6E]/40',
+  'En curso': 'bg-[#FFFBEB] text-[#92670f] border border-[#FCD07F]',
+  'Requiere atención': 'bg-[#FFF0EE] text-[#c0503a] border border-[#F29683]',
+  Resuelto: 'bg-[#EDFFF4] text-[#264534] border border-[#75B781]',
+  Cerrado: 'bg-[#F5F4F2] text-[#938f80] border border-[#938f80]/50',
+  Pendiente: 'bg-[#FFF0EE] text-[#c0503a] border border-[#F29683]/50',
   Aplicado: 'bg-teal/10 text-teal border border-teal/30',
   Rechazado: 'bg-red-50 text-red-600 border border-red-200',
 }

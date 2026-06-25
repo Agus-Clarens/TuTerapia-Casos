@@ -8,6 +8,15 @@ import StatusBadge from '@/components/StatusBadge'
 import HiloCaso from '@/components/HiloCaso'
 import { PAISES, CREADORES_POR_AREA } from '@/lib/tipos-caso'
 
+function cardClasses(estado: string) {
+  if (estado === 'Nuevo') return 'bg-[#EEF2FF] border-[#213E6E]/40'
+  if (estado === 'En curso') return 'bg-[#FFFBEB] border-[#FCD07F]'
+  if (estado === 'Requiere atención') return 'bg-[#FFF0EE] border-[#F29683]'
+  if (estado === 'Resuelto') return 'bg-[#EDFFF4] border-[#75B781]'
+  if (estado === 'Cerrado') return 'bg-[#F5F4F2] border-[#938f80]/50 opacity-60'
+  return 'bg-white border-gray-100'
+}
+
 function mergeDedup(a: Caso[], b: Caso[]): Caso[] {
   const seen = new Set<string>()
   return [...a, ...b].filter(c => {
@@ -111,7 +120,7 @@ export default function AdminPage() {
           </div>
           <p className="text-gray-400 text-sm">{casos.length} casos · Admin · Admin+Talent · creados por Agus y Sofi</p>
         </div>
-        <Link href="/nuevo-caso" className="flex items-center gap-2 px-4 py-2 bg-verde-oscuro text-white text-sm font-medium rounded-xl hover:bg-verde-oscuro/90 transition-colors">
+        <Link href="/nuevo-caso" className="flex items-center gap-2 px-4 py-2 bg-teal text-white text-sm font-medium rounded-xl hover:bg-teal/90 transition-colors">
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
           Nuevo caso
         </Link>
@@ -148,7 +157,7 @@ export default function AdminPage() {
             const isExpanded = expanded.has(caso.id!)
             const isNew = hasNewUpdate(caso.id!)
             return (
-              <div key={caso.id} className={`bg-white rounded-2xl border shadow-sm overflow-hidden ${caso.estado_general === 'Cerrado' ? 'opacity-60 border-gray-100' : isNew ? 'border-orange-200' : 'border-gray-100 hover:border-gray-200'}`}>
+              <div key={caso.id} className={`rounded-2xl border shadow-sm overflow-hidden transition-all ${cardClasses(caso.estado_general)}`}>
                 <div className="px-5 py-4 flex items-start gap-4">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap mb-1.5">
@@ -173,8 +182,8 @@ export default function AdminPage() {
                 <div className="px-5 py-2.5 border-t border-gray-50 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors" onClick={() => toggleExpanded(caso.id!)}>
                   <div className="flex items-center gap-2">
                     {isNew && !isExpanded ? (
-                      <span className="flex items-center gap-1.5 px-2.5 py-1 bg-orange-100 text-orange-700 text-xs font-bold rounded-full border border-orange-300">
-                        <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
+                      <span className="flex items-center gap-1.5 px-2.5 py-1 bg-[#FFF0EE] text-[#c0503a] text-xs font-bold rounded-full border border-[#F29683]">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#F29683] animate-pulse" />
                         Nueva actualización
                       </span>
                     ) : (

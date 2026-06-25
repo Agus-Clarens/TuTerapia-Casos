@@ -140,6 +140,8 @@ export default function NuevoCasoPage() {
 
   return (
     <div className="p-8 max-w-2xl mx-auto">
+      {/* preload logo */}
+      <img src="/logo.svg" alt="" aria-hidden="true" className="hidden" />
       <div className="mb-7">
         <h1 className="text-2xl font-bold text-verde-oscuro">Nuevo Caso</h1>
         <p className="text-gray-400 text-sm mt-1">El número se genera automáticamente · Estado inicial: Nuevo</p>
@@ -279,7 +281,7 @@ export default function NuevoCasoPage() {
           <button
             type="submit"
             disabled={loading || success}
-            className="px-6 py-2.5 bg-verde-oscuro text-white text-sm font-semibold rounded-xl hover:bg-verde-oscuro/90 disabled:opacity-50 transition-colors"
+            className="px-6 py-2.5 bg-teal text-white text-sm font-semibold rounded-xl hover:bg-teal/90 disabled:opacity-50 transition-colors"
           >
             {loading ? 'Creando...' : 'Crear caso'}
           </button>

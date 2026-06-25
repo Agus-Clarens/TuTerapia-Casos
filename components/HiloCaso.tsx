@@ -158,7 +158,7 @@ export default function HiloCaso({ caso, onRefresh }: Props) {
             <button
               onClick={submit}
               disabled={saving || !autor || !mensaje.trim()}
-              className="px-4 py-1.5 bg-verde-oscuro text-white text-xs font-semibold rounded-lg hover:bg-verde-oscuro/90 disabled:opacity-40 transition-colors"
+              className="px-4 py-1.5 bg-teal text-white text-xs font-semibold rounded-lg hover:bg-teal/90 disabled:opacity-40 transition-colors"
             >
               {saving ? 'Guardando...' : 'Agregar actualización'}
             </button>

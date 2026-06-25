@@ -7,6 +7,15 @@ import { Caso } from '@/types'
 import StatusBadge from '@/components/StatusBadge'
 import { PAISES, AREA_BADGE } from '@/lib/tipos-caso'
 
+function cardClasses(estado: string) {
+  if (estado === 'Nuevo') return 'bg-[#EEF2FF] border-[#213E6E]/40'
+  if (estado === 'En curso') return 'bg-[#FFFBEB] border-[#FCD07F]'
+  if (estado === 'Requiere atención') return 'bg-[#FFF0EE] border-[#F29683]'
+  if (estado === 'Resuelto') return 'bg-[#EDFFF4] border-[#75B781]'
+  if (estado === 'Cerrado') return 'bg-[#F5F4F2] border-[#938f80]/50 opacity-60'
+  return 'bg-white border-gray-100'
+}
+
 export default function CasosPage() {
   const [casos, setCasos] = useState<Caso[]>([])
   const [loading, setLoading] = useState(true)
@@ -63,7 +72,7 @@ export default function CasosPage() {
           <h1 className="text-2xl font-bold text-verde-oscuro">Todos los Casos</h1>
           <p className="text-gray-400 text-sm mt-0.5">{casos.length} casos</p>
         </div>
-        <Link href="/nuevo-caso" className="flex items-center gap-2 px-4 py-2 bg-verde-oscuro text-white text-sm font-medium rounded-xl hover:bg-verde-oscuro/90 transition-colors shadow-sm">
+        <Link href="/nuevo-caso" className="flex items-center gap-2 px-4 py-2 bg-teal text-white text-sm font-medium rounded-xl hover:bg-teal/90 transition-colors shadow-sm">
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
@@ -125,7 +134,7 @@ export default function CasosPage() {
           {casos.map(caso => {
             const updCount = updateCounts[caso.id!] || 0
             return (
-              <div key={caso.id} className={`bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-3 hover:border-gray-200 transition-colors ${caso.estado_general === 'Cerrado' ? 'opacity-60' : ''}`}>
+              <div key={caso.id} className={`rounded-2xl border shadow-sm p-5 flex flex-col gap-3 transition-all ${cardClasses(caso.estado_general)}`}>
                 <div className="flex items-start justify-between gap-2">
                   <span className="font-mono text-xs text-gray-400 font-medium">{caso.nro_caso}</span>
                   <StatusBadge status={caso.estado_general} />

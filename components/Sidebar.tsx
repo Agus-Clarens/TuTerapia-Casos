@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
@@ -72,20 +73,23 @@ const navItems = [
 
 export default function Sidebar() {
   const pathname = usePathname()
+  const [logoError, setLogoError] = useState(false)
 
   return (
     <aside className="w-60 min-h-screen bg-verde-oscuro flex flex-col shadow-xl flex-shrink-0">
-      <div className="p-5 border-b border-white/10">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-verde-medio flex items-center justify-center flex-shrink-0">
-            <span className="text-verde-oscuro font-bold text-sm">TT</span>
-          </div>
-          <div>
-            <p className="text-white font-semibold text-sm leading-tight">Tu Terapia</p>
-            <p className="text-white/50 text-xs">CX & Talent</p>
-          </div>
-        </div>
+      <div className="px-5 py-4 border-b border-white/10 flex items-center justify-center">
+        {logoError ? (
+          <span style={{ color: '#75B781', fontWeight: 'bold', fontSize: '20px', letterSpacing: '-0.02em' }}>tu terapia</span>
+        ) : (
+          <img
+            src="/logo.svg"
+            alt="Tu Terapia"
+            style={{ height: '36px', opacity: 1 }}
+            onError={() => setLogoError(true)}
+          />
+        )}
       </div>
+      <p className="text-white/40 text-xs text-center py-1.5 border-b border-white/10">CX & Talent</p>
 
       <nav className="flex-1 p-3 space-y-0.5">
         {navItems.map((item) => {
@@ -96,11 +100,11 @@ export default function Sidebar() {
               href={item.href}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 ${
                 isActive
-                  ? 'bg-verde-medio text-verde-oscuro shadow-sm'
-                  : 'text-white/70 hover:bg-white/10 hover:text-white'
+                  ? 'bg-sidebar-hover text-crema shadow-sm'
+                  : 'text-white/60 hover:bg-sidebar-hover/50 hover:text-crema'
               }`}
             >
-              <span className={`flex-shrink-0 ${isActive ? 'text-verde-oscuro' : 'text-white/50'}`}>{item.icon}</span>
+              <span className={`flex-shrink-0 ${isActive ? 'text-crema' : 'text-white/40'}`}>{item.icon}</span>
               {item.label}
             </Link>
           )
@@ -108,7 +112,7 @@ export default function Sidebar() {
       </nav>
 
       <div className="p-4 border-t border-white/10">
-        <p className="text-white/30 text-xs text-center">v2.0</p>
+        <p className="text-white/25 text-xs text-center">v2.0</p>
       </div>
     </aside>
   )
