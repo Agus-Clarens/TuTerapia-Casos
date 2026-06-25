@@ -24,6 +24,15 @@ export interface Caso {
   mes_liquidacion?: string
 }
 
+export interface CasoActualizacion {
+  id?: string
+  created_at?: string
+  caso_id: string
+  autor: string
+  area: string
+  mensaje: string
+}
+
 export interface DescuentoPsicologo {
   id?: string
   created_at?: string

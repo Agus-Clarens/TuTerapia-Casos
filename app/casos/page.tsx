@@ -11,6 +11,7 @@ export default function CasosPage() {
   const [casos, setCasos] = useState<Caso[]>([])
   const [loading, setLoading] = useState(true)
   const [filters, setFilters] = useState({ area: '', estado: '', pais: '', search: '' })
+  const [updateCounts, setUpdateCounts] = useState<Record<string, number>>({})
 
   const fetchCasos = useCallback(async () => {
     setLoading(true)
@@ -32,6 +33,15 @@ export default function CasosPage() {
         )
       }
       setCasos(result)
+      const ids = result.map(c => c.id!).filter(Boolean)
+      if (ids.length > 0) {
+        const { data: upd } = await supabase.from('caso_actualizaciones').select('caso_id').in('caso_id', ids)
+        if (upd) {
+          const counts: Record<string, number> = {}
+          upd.forEach((u: { caso_id: string }) => { counts[u.caso_id] = (counts[u.caso_id] || 0) + 1 })
+          setUpdateCounts(counts)
+        }
+      }
     }
     setLoading(false)
   }, [filters])
@@ -41,6 +51,7 @@ export default function CasosPage() {
   const counts = {
     Nuevo: casos.filter(c => c.estado_general === 'Nuevo').length,
     'En curso': casos.filter(c => c.estado_general === 'En curso').length,
+    'Requiere atención': casos.filter(c => c.estado_general === 'Requiere atención').length,
     Resuelto: casos.filter(c => c.estado_general === 'Resuelto').length,
     Cerrado: casos.filter(c => c.estado_general === 'Cerrado').length,
   }
@@ -60,20 +71,18 @@ export default function CasosPage() {
         </Link>
       </div>
 
-      {/* Stats rápidas */}
-      <div className="grid grid-cols-4 gap-3 mb-6">
+      {/* Stats */}
+      <div className="grid grid-cols-5 gap-3 mb-6">
         {Object.entries(counts).map(([estado, count]) => (
           <button
             key={estado}
             onClick={() => setFilters(f => ({ ...f, estado: f.estado === estado ? '' : estado }))}
             className={`rounded-xl border p-3 text-left transition-all ${
-              filters.estado === estado
-                ? 'border-verde-oscuro bg-verde-oscuro/5'
-                : 'border-gray-100 bg-white hover:border-gray-200'
+              filters.estado === estado ? 'border-verde-oscuro bg-verde-oscuro/5' : 'border-gray-100 bg-white hover:border-gray-200'
             }`}
           >
             <p className="text-2xl font-bold text-gray-800">{count}</p>
-            <p className="text-xs text-gray-500 mt-0.5">{estado}</p>
+            <p className="text-xs text-gray-500 mt-0.5 leading-tight">{estado}</p>
           </button>
         ))}
       </div>
@@ -105,7 +114,6 @@ export default function CasosPage() {
         )}
       </div>
 
-      {/* Cards */}
       {loading ? (
         <div className="text-center py-16 text-gray-400">Cargando...</div>
       ) : casos.length === 0 ? (
@@ -114,55 +122,65 @@ export default function CasosPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {casos.map(caso => (
-            <div key={caso.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-3 hover:border-gray-200 transition-colors">
-              <div className="flex items-start justify-between gap-2">
-                <span className="font-mono text-xs text-gray-400 font-medium">{caso.nro_caso}</span>
-                <StatusBadge status={caso.estado_general} />
-              </div>
-
-              <div>
-                <p className="font-semibold text-gray-800 text-sm leading-snug">{caso.tipo_caso}</p>
-                {caso.descripcion && (
-                  <p className="text-xs text-gray-400 mt-1 line-clamp-2">{caso.descripcion}</p>
-                )}
-              </div>
-
-              <div className="space-y-1">
-                <div className="flex items-center gap-2 text-xs text-gray-600">
-                  <svg className="w-3.5 h-3.5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                  </svg>
-                  <span className="font-medium text-gray-700">{caso.pac_nombre}</span>
-                  <span className="text-gray-300">·</span>
-                  <span className="text-gray-400">{caso.pac_mail}</span>
+          {casos.map(caso => {
+            const updCount = updateCounts[caso.id!] || 0
+            return (
+              <div key={caso.id} className={`bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-3 hover:border-gray-200 transition-colors ${caso.estado_general === 'Cerrado' ? 'opacity-60' : ''}`}>
+                <div className="flex items-start justify-between gap-2">
+                  <span className="font-mono text-xs text-gray-400 font-medium">{caso.nro_caso}</span>
+                  <StatusBadge status={caso.estado_general} />
                 </div>
-                {caso.psi_nombre && (
-                  <div className="flex items-center gap-2 text-xs text-gray-500">
-                    <svg className="w-3.5 h-3.5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+
+                <div>
+                  <p className="font-semibold text-gray-800 text-sm leading-snug">{caso.tipo_caso}</p>
+                  {caso.descripcion && (
+                    <p className="text-xs text-gray-400 mt-1 line-clamp-2">{caso.descripcion}</p>
+                  )}
+                </div>
+
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2 text-xs text-gray-600">
+                    <svg className="w-3.5 h-3.5 text-gray-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
-                    <span>{caso.psi_nombre}</span>
+                    <span className="font-medium text-gray-700">{caso.pac_nombre}</span>
+                    {caso.pac_mail && <><span className="text-gray-300">·</span><span className="text-gray-400 truncate">{caso.pac_mail}</span></>}
                   </div>
+                  {caso.psi_nombre && (
+                    <div className="flex items-center gap-2 text-xs text-gray-500">
+                      <svg className="w-3.5 h-3.5 text-gray-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                      </svg>
+                      <span>{caso.psi_nombre}</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex items-center justify-between pt-1 border-t border-gray-50">
+                  <div className="flex items-center gap-2">
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${AREA_BADGE[caso.area] || 'bg-gray-100 text-gray-500'}`}>
+                      {caso.area === 'Admin+Talent' ? 'Admin + Talent' : caso.area}
+                    </span>
+                    {updCount > 0 && (
+                      <span className="flex items-center gap-1 text-xs text-gray-400">
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                        </svg>
+                        <span className="font-semibold text-verde-oscuro">{updCount}</span>
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-xs text-gray-400">
+                    {caso.pais} · {caso.fecha}
+                  </div>
+                </div>
+
+                {caso.cargado_por && (
+                  <p className="text-xs text-gray-400">Creado por {caso.cargado_por}</p>
                 )}
               </div>
-
-              <div className="flex items-center justify-between pt-1 border-t border-gray-50">
-                <div className="flex items-center gap-2">
-                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${AREA_BADGE[caso.area] || 'bg-gray-100 text-gray-500'}`}>
-                    {caso.area === 'Admin+Talent' ? 'Admin + Talent' : caso.area}
-                  </span>
-                </div>
-                <div className="text-xs text-gray-400">
-                  {caso.pais} · {caso.fecha}
-                </div>
-              </div>
-
-              {caso.cargado_por && (
-                <p className="text-xs text-gray-400">Creado por {caso.cargado_por}</p>
-              )}
-            </div>
-          ))}
+            )
+          })}
         </div>
       )}
     </div>

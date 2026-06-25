@@ -66,8 +66,8 @@ export const CREADO_POR = [
   'Otro',
 ] as const
 
-export const ESTADOS = ['Nuevo', 'En curso', 'Resuelto', 'Cerrado'] as const
-export const ESTADOS_AREA = ['Nuevo', 'En curso', 'Resuelto'] as const
+export const ESTADOS = ['Nuevo', 'En curso', 'Requiere atención', 'Resuelto', 'Cerrado'] as const
+export const ESTADOS_AREA = ['Nuevo', 'En curso', 'Requiere atención', 'Resuelto'] as const
 export const ESTADOS_DESCUENTO = ['Pendiente', 'Aplicado', 'Rechazado'] as const
 
 export const AREA_BADGE: Record<string, string> = {
@@ -75,14 +75,23 @@ export const AREA_BADGE: Record<string, string> = {
   Talent: 'bg-purple-50 text-purple-700 border border-purple-200',
   'Admin+Talent': 'bg-orange-50 text-orange-700 border border-orange-200',
   CX: 'bg-verde-medio/20 text-verde-oscuro border border-verde-medio/40',
+  General: 'bg-gray-50 text-gray-600 border border-gray-200',
 }
 
 export const ESTADO_BADGE: Record<string, string> = {
   Nuevo: 'bg-yellow-50 text-yellow-700 border border-yellow-200',
   'En curso': 'bg-blue-50 text-blue-700 border border-blue-200',
+  'Requiere atención': 'bg-red-50 text-red-700 border border-red-200',
   Resuelto: 'bg-green-50 text-green-700 border border-green-200',
   Cerrado: 'bg-gray-100 text-gray-500 border border-gray-200',
   Pendiente: 'bg-orange-50 text-orange-700 border border-orange-200',
   Aplicado: 'bg-teal/10 text-teal border border-teal/30',
   Rechazado: 'bg-red-50 text-red-600 border border-red-200',
+}
+
+export function getAreaFromAutor(autor: string): string {
+  if (autor.includes('(CX)')) return 'CX'
+  if (autor.includes('(Admin)')) return 'Admin'
+  if (autor.includes('(Talent)')) return 'Talent'
+  return 'General'
 }

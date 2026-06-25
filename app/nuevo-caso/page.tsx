@@ -128,7 +128,11 @@ export default function NuevoCasoPage() {
       setSuccess(true)
       setTimeout(() => router.push('/casos'), 1200)
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Error al guardar')
+      const e = err as { message?: string; details?: string; hint?: string; code?: string }
+      const msg = e?.message || 'Error al guardar el caso'
+      const detail = e?.details ? ` — ${e.details}` : ''
+      const hint = e?.hint ? ` (${e.hint})` : ''
+      setError(`${msg}${detail}${hint}`)
     } finally {
       setLoading(false)
     }
