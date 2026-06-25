@@ -89,6 +89,12 @@ export const ESTADO_BADGE: Record<string, string> = {
   Rechazado: 'bg-red-50 text-red-600 border border-red-200',
 }
 
+export const CREADORES_POR_AREA: Record<string, string[]> = {
+  CX: ['Sol (CX)'],
+  Admin: ['Agus (Admin)', 'Sofi (Admin)'],
+  Talent: ['Orne (Talent)', 'Caro (Talent)'],
+}
+
 export function getAreaFromAutor(autor: string): string {
   if (autor.includes('(CX)')) return 'CX'
   if (autor.includes('(Admin)')) return 'Admin'

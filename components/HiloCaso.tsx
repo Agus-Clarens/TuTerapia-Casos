@@ -67,9 +67,11 @@ export default function HiloCaso({ caso, onRefresh }: Props) {
       mensaje: mensaje.trim(),
     }])
 
+    const caseUpdate: Record<string, string> = { updated_at: new Date().toISOString() }
     if (cambiarEstado && nuevoEstado !== caso.estado_general) {
-      await supabase.from('casos').update({ estado_general: nuevoEstado }).eq('id', caso.id!)
+      caseUpdate.estado_general = nuevoEstado
     }
+    await supabase.from('casos').update(caseUpdate).eq('id', caso.id!)
 
     setMensaje('')
     setCambiarEstado(false)

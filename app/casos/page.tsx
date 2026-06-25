@@ -15,7 +15,7 @@ export default function CasosPage() {
 
   const fetchCasos = useCallback(async () => {
     setLoading(true)
-    let query = supabase.from('casos').select('*').order('created_at', { ascending: false })
+    let query = supabase.from('casos').select('*').order('updated_at', { ascending: false })
     if (filters.area) query = query.eq('area', filters.area)
     if (filters.estado) query = query.eq('estado_general', filters.estado)
     if (filters.pais) query = query.eq('pais', filters.pais)
