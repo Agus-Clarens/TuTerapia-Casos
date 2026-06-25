@@ -55,13 +55,14 @@ export function getTipoCaso(nombre: string): TipoCaso | undefined {
   return TIPOS_CASO.find(t => t.nombre === nombre)
 }
 
-export const PAISES = ['Argentina', 'Uruguay', 'Chile'] as const
+export const PAISES = ['Argentina', 'Uruguay', 'Exterior'] as const
 
 export const CREADO_POR = [
   'Sol (CX)',
   'Agus (Admin)',
   'Sofi (Admin)',
   'Orne (Talent)',
+  'Belu (Talent)',
   'Caro (Talent)',
   'Otro',
 ] as const
@@ -92,7 +93,7 @@ export const ESTADO_BADGE: Record<string, string> = {
 export const CREADORES_POR_AREA: Record<string, string[]> = {
   CX: ['Sol (CX)'],
   Admin: ['Agus (Admin)', 'Sofi (Admin)'],
-  Talent: ['Orne (Talent)', 'Caro (Talent)'],
+  Talent: ['Orne (Talent)', 'Belu (Talent)', 'Caro (Talent)'],
 }
 
 export function getAreaFromAutor(autor: string): string {

@@ -82,9 +82,9 @@ export default function Sidebar() {
           <span style={{ color: '#75B781', fontWeight: 'bold', fontSize: '20px', letterSpacing: '-0.02em' }}>tu terapia</span>
         ) : (
           <img
-            src="/logo.svg"
+            src="/logo.png"
             alt="Tu Terapia"
-            style={{ height: '36px', opacity: 1 }}
+            style={{ height: '40px', objectFit: 'contain', maxWidth: '160px' }}
             onError={() => setLogoError(true)}
           />
         )}
