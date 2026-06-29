@@ -146,7 +146,9 @@ export default function NuevoCaso() {
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">Mes descuento *</label>
-            <input value={mes_descuento} onChange={e=>setMes(e.target.value)} className="w-full border rounded p-2"/>
+            <select value={mes_descuento} onChange={e=>setMes(e.target.value)} className="w-full border rounded p-2">
+              {['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'].map(m=><option key={m}>{m}</option>)}
+            </select>
           </div>
         </div>
       )}

@@ -14,14 +14,8 @@ function formatMes(mes: string) {
   return `${NOMBRES_MES[idx]} ${year}`
 }
 
-function buildMensaje(d: DescuentoPsicologo): string {
-  const psi = d.psi_nombre || 'psicólogo/a'
-  const pac = d.pac_nombre || 'el paciente'
-  const mes = formatMes(d.mes || '')
-  const monto = d.monto ?? '(a confirmar)'
-  const tipo_sesion = d.tipo_sesion || 'Presencial'
-  return `Hola ${psi}, te informamos que se aplicó un descuento de $${monto} en tu liquidación del mes de ${mes} correspondiente al caso ${d.nro_caso} — 1 sesión ${tipo_sesion} del paciente ${pac}. Cualquier consulta estamos a disposición. ¡Saludos, Sofía! 🌿 Equipo Tu Terapia`
-}
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const buildMensaje = (d: any) => `Hola ${d.psi_nombre}! 👋\n\nTe escribimos para avisarte que en tu próxima liquidación se descontará una sesión ${d.tipo_sesion || 'Presencial'} correspondiente al paciente ${d.pac_nombre}.\n\n🗓️ Mes: ${d.mes}\n💰 Monto a descontar: $${d.monto}\n\nAnte cualquier consulta no dudes en escribirnos.\n\n¡Saludos, Sofía! 🌿\nEquipo Tu Terapia`
 
 export default function DescuentosPage() {
   const [descuentos, setDescuentos] = useState<DescuentoPsicologo[]>([])
