@@ -31,6 +31,7 @@ export default function NuevoCaso() {
   const [descripcion, setDescripcion] = useState('')
   const [monto_descuento, setMonto] = useState('')
   const [mes_descuento, setMes] = useState('')
+  const [tipo_sesion, setTipoSesion] = useState('Presencial')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -55,7 +56,8 @@ export default function NuevoCaso() {
         estado: 'Nuevo',
         requiere_descuento,
         monto_descuento: requiere_descuento ? Number(monto_descuento) : null,
-        mes_descuento: requiere_descuento ? mes_descuento : null
+        mes_descuento: requiere_descuento ? mes_descuento : null,
+        tipo_sesion: requiere_descuento ? tipo_sesion : null
       })
 
       if (err) { setError('Error: ' + err.message); setLoading(false); return }
@@ -69,6 +71,7 @@ export default function NuevoCaso() {
             motivo: tipo_caso,
             monto: Number(monto_descuento),
             mes: mes_descuento,
+            tipo_sesion,
             estado: 'Pendiente'
           })
         }
@@ -151,6 +154,14 @@ export default function NuevoCaso() {
         <label className="block text-sm font-medium mb-1">Descripción *</label>
         <textarea value={descripcion} onChange={e=>setDescripcion(e.target.value)} rows={4} className="w-full border rounded p-2"/>
       </div>
+      {requiere_descuento && (
+        <div className="mt-4">
+          <label className="block text-sm font-medium mb-1">Tipo de sesión</label>
+          <select value={tipo_sesion} onChange={e=>setTipoSesion(e.target.value)} className="w-full border rounded p-2">
+            <option>Presencial</option><option>Online</option>
+          </select>
+        </div>
+      )}
       {error && <p className="mt-4 text-red-600">{error}</p>}
       <button onClick={handleSubmit} disabled={loading} className="mt-6 w-full text-white py-3 rounded font-medium" style={{backgroundColor:'#007271'}}>
         {loading ? 'Creando...' : 'Crear caso'}

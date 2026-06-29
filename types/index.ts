@@ -47,5 +47,6 @@ export interface DescuentoPsicologo {
   pac_mail?: string
   motivo?: string
   monto?: number | null
+  tipo_sesion?: string | null
   estado: string
 }

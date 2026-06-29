@@ -18,8 +18,9 @@ function buildMensaje(d: DescuentoPsicologo): string {
   const psi = d.psi_nombre || 'psicólogo/a'
   const pac = d.pac_nombre || 'el paciente'
   const mes = formatMes(d.mes || '')
-  const monto = d.monto ? `$${d.monto}` : '(a confirmar)'
-  return `Hola ${psi}! 👋\n\nTe escribimos para avisarte que en tu próxima liquidación se descontará una sesión correspondiente al paciente ${pac}.\n\n📅 Mes: ${mes}\n💰 Monto a descontar: ${monto}\n\nAnte cualquier consulta no dudes en escribirnos.\n\n¡Saludos, Sofía! 🌿\nEquipo Tu Terapia`
+  const monto = d.monto ?? '(a confirmar)'
+  const tipo_sesion = d.tipo_sesion || 'Presencial'
+  return `Hola ${psi}, te informamos que se aplicó un descuento de $${monto} en tu liquidación del mes de ${mes} correspondiente al caso ${d.nro_caso} — 1 sesión ${tipo_sesion} del paciente ${pac}. Cualquier consulta estamos a disposición. ¡Saludos, Sofía! 🌿 Equipo Tu Terapia`
 }
 
 export default function DescuentosPage() {
