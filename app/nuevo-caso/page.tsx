@@ -38,8 +38,6 @@ export default function NuevoCasoPage() {
     descripcion: '',
   })
 
-  const tipoCasoInfo = getTipoCaso(form.tipo_caso)
-
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) {
     setForm(prev => ({ ...prev, [e.target.name]: e.target.value }))
   }
