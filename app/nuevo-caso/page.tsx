@@ -16,28 +16,12 @@ function Field({ label, required, children }: { label: string; required?: boolea
   )
 }
 
-async function generateNroCaso(): Promise<string> {
-  const { data } = await supabase
-    .from('casos')
-    .select('nro_caso')
-    .like('nro_caso', 'TKT-%')
-    .order('nro_caso', { ascending: false })
-    .limit(1)
-  if (data && data.length > 0 && data[0].nro_caso) {
-    const num = parseInt((data[0].nro_caso as string).replace('TKT-', ''), 10)
-    return `TKT-${String(num + 1).padStart(3, '0')}`
-  }
-  return 'TKT-001'
-}
-
 export default function NuevoCasoPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
-  const [error, setError] = useState('')
+  const [errorMsg, setErrorMsg] = useState('')
   const [sinPsicologo, setSinPsicologo] = useState(false)
-
-  const today = new Date().toISOString().split('T')[0]
 
   const [form, setForm] = useState({
     cargado_por: '',
@@ -50,6 +34,7 @@ export default function NuevoCasoPage() {
     area: '',
     requiere_descuento: false,
     monto_descuento: '',
+    mes_descuento: '',
     descripcion: '',
   })
 
@@ -69,70 +54,90 @@ export default function NuevoCasoPage() {
       area: info?.area || '',
       requiere_descuento: info?.requiere_descuento || false,
       monto_descuento: '',
+      mes_descuento: '',
     }))
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
-    setError('')
+    setErrorMsg('')
+
     try {
-      const nro_caso = await generateNroCaso()
+      // 1. Generar nro_caso
+      const { data: lastCaso } = await supabase
+        .from('casos')
+        .select('nro_caso')
+        .order('created_at', { ascending: false })
+        .limit(1)
+      const lastNum = lastCaso?.[0]?.nro_caso
+        ? parseInt(lastCaso[0].nro_caso.replace('TKT-', ''))
+        : 0
+      const nro_caso = `TKT-${String(lastNum + 1).padStart(3, '0')}`
 
-      const casoData = {
+      const { cargado_por, pais, pac_nombre, pac_mail, psi_nombre, psi_mail,
+              tipo_caso, area, descripcion, requiere_descuento, monto_descuento, mes_descuento } = form
+
+      // 2. Insertar sin .select()
+      const { error } = await supabase.from('casos').insert({
         nro_caso,
-        fecha: today,
-        cargado_por: form.cargado_por,
-        pais: form.pais,
-        pac_nombre: form.pac_nombre,
-        pac_mail: form.pac_mail,
-        psi_nombre: sinPsicologo ? null : (form.psi_nombre || null),
-        psi_mail: sinPsicologo ? null : (form.psi_mail || null),
-        tipo_caso: form.tipo_caso,
-        area: form.area,
-        descripcion: form.descripcion,
-        accion_admin: null,
-        estado_admin: showAdmin ? 'Nuevo' : null,
-        accion_talent: null,
-        estado_talent: showTalent ? 'Nuevo' : null,
-        requiere_descuento: form.requiere_descuento,
-        monto_descuento: form.requiere_descuento && form.monto_descuento ? Number(form.monto_descuento) : null,
-        estado_general: 'Nuevo',
-        observaciones: null,
-        mes_liquidacion: null,
+        fecha: new Date().toISOString().split('T')[0],
+        cargado_por,
+        pais,
+        pac_nombre,
+        pac_mail,
+        psi_nombre: sinPsicologo ? null : psi_nombre,
+        psi_mail: sinPsicologo ? null : psi_mail,
+        tipo_caso,
+        area,
+        descripcion,
+        estado: 'Nuevo',
+        requiere_descuento,
+        monto_descuento: requiere_descuento ? Number(monto_descuento) : null,
+        mes_descuento: requiere_descuento ? mes_descuento : null,
+      })
+
+      if (error) {
+        setErrorMsg('Error al crear el caso.')
+        setLoading(false)
+        return
       }
 
-      const { data: caso, error: casoError } = await supabase
-        .from('casos').insert([casoData]).select().single()
-      if (casoError) throw casoError
+      // 3. Si requiere_descuento, buscar id del caso e insertar en descuentos_psicologo
+      if (requiere_descuento) {
+        const { data: casoCreado } = await supabase
+          .from('casos')
+          .select('id')
+          .eq('nro_caso', nro_caso)
+          .single()
 
-      if (form.requiere_descuento && caso) {
-        const d = new Date(today)
-        const mes = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
-        await supabase.from('descuentos_psicologo').insert([{
-          caso_id: caso.id,
-          nro_caso: caso.nro_caso,
-          fecha_caso: today,
-          mes,
-          pais: form.pais,
-          psi_nombre: sinPsicologo ? null : (form.psi_nombre || null),
-          psi_mail: sinPsicologo ? null : (form.psi_mail || null),
-          pac_nombre: form.pac_nombre,
-          pac_mail: form.pac_mail,
-          motivo: form.tipo_caso,
-          monto: form.monto_descuento ? Number(form.monto_descuento) : null,
-          estado: 'Pendiente',
-        }])
+        if (casoCreado?.id) {
+          const today = new Date().toISOString().split('T')[0]
+          const d = new Date(today)
+          const mes = mes_descuento || `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+
+          await supabase.from('descuentos_psicologo').insert({
+            caso_id: casoCreado.id,
+            nro_caso,
+            fecha_caso: today,
+            mes,
+            pais,
+            psi_nombre: sinPsicologo ? null : (psi_nombre || null),
+            psi_mail: sinPsicologo ? null : (psi_mail || null),
+            pac_nombre,
+            pac_mail,
+            motivo: tipo_caso,
+            monto: monto_descuento ? Number(monto_descuento) : null,
+            estado: 'Pendiente',
+          })
+        }
       }
 
+      // 4. Redirigir
       setSuccess(true)
       setTimeout(() => router.push('/casos'), 1200)
-    } catch (err: unknown) {
-      const e = err as { message?: string; details?: string; hint?: string; code?: string }
-      const msg = e?.message || 'Error al guardar el caso'
-      const detail = e?.details ? ` — ${e.details}` : ''
-      const hint = e?.hint ? ` (${e.hint})` : ''
-      setError(`${msg}${detail}${hint}`)
+    } catch {
+      setErrorMsg('Error al crear el caso.')
     } finally {
       setLoading(false)
     }
@@ -140,7 +145,6 @@ export default function NuevoCasoPage() {
 
   return (
     <div className="p-8 max-w-2xl mx-auto">
-      {/* preload logo */}
       <img src="/logo.svg" alt="" aria-hidden="true" className="hidden" />
       <div className="mb-7">
         <h1 className="text-2xl font-bold text-verde-oscuro">Nuevo Caso</h1>
@@ -155,8 +159,8 @@ export default function NuevoCasoPage() {
           Caso creado correctamente. Redirigiendo...
         </div>
       )}
-      {error && (
-        <div className="mb-5 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">{error}</div>
+      {errorMsg && (
+        <div className="mb-5 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">{errorMsg}</div>
       )}
 
       <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-7 space-y-5">
@@ -249,19 +253,29 @@ export default function NuevoCasoPage() {
           )}
         </div>
 
-        {/* Monto descuento */}
+        {/* Descuento */}
         {form.requiere_descuento && (
-          <Field label="Monto del descuento">
-            <input
-              type="number"
-              name="monto_descuento"
-              value={form.monto_descuento}
-              onChange={handleChange}
-              placeholder="0.00"
-              min="0"
-              step="0.01"
-            />
-          </Field>
+          <div className="grid grid-cols-2 gap-4">
+            <Field label="Monto del descuento">
+              <input
+                type="number"
+                name="monto_descuento"
+                value={form.monto_descuento}
+                onChange={handleChange}
+                placeholder="0.00"
+                min="0"
+                step="0.01"
+              />
+            </Field>
+            <Field label="Mes del descuento">
+              <input
+                type="month"
+                name="mes_descuento"
+                value={form.mes_descuento}
+                onChange={handleChange}
+              />
+            </Field>
+          </div>
         )}
 
         {/* Descripción */}
