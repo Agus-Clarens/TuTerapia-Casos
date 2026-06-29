@@ -39,8 +39,6 @@ export default function NuevoCasoPage() {
   })
 
   const tipoCasoInfo = getTipoCaso(form.tipo_caso)
-  const showAdmin = tipoCasoInfo && (tipoCasoInfo.area === 'Admin' || tipoCasoInfo.area === 'Admin+Talent')
-  const showTalent = tipoCasoInfo && (tipoCasoInfo.area === 'Talent' || tipoCasoInfo.area === 'Admin+Talent')
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) {
     setForm(prev => ({ ...prev, [e.target.name]: e.target.value }))
