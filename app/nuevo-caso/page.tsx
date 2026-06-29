@@ -74,8 +74,8 @@ export default function NuevoCaso() {
         }
       }
       router.push('/casos')
-    } catch(e: any) {
-      setError('Error: ' + e.message)
+    } catch(e) {
+      setError('Error: ' + (e as Error).message)
     }
     setLoading(false)
   }
