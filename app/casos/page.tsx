@@ -7,11 +7,12 @@ import { Caso } from '@/types'
 import StatusBadge from '@/components/StatusBadge'
 import { PAISES, AREA_BADGE } from '@/lib/tipos-caso'
 
+const ordenEstado = (e: string) => ({ 'Nuevo': 0, 'En curso': 1, 'Requiere atención': 2, 'Cerrado': 3 }[e] ?? 4)
+
 function getCardStyle(estado: string) {
-  if (estado === 'Nuevo') return { backgroundColor: '#EEF4FF', borderLeft: '3px solid #213E6E' }
-  if (estado === 'En curso') return { backgroundColor: '#FFFBEB', borderLeft: '3px solid #FCD07F' }
-  if (estado === 'Requiere atención') return { backgroundColor: '#FFF0EE', borderLeft: '3px solid #F29683' }
-  if (estado === 'Resuelto') return { backgroundColor: '#EDFFF4', borderLeft: '3px solid #75B781' }
+  if (estado === 'Nuevo') return { backgroundColor: '#EDFFF4', borderLeft: '3px solid #75B781' }
+  if (estado === 'En curso') return { backgroundColor: '#FFF0EE', borderLeft: '3px solid #F29683' }
+  if (estado === 'Requiere atención') return { backgroundColor: '#FFFBEB', borderLeft: '3px solid #FCD07F' }
   if (estado === 'Cerrado') return { backgroundColor: '#F5F4F2', borderLeft: '3px solid #938f80' }
   return { backgroundColor: '#ffffff', borderLeft: '3px solid #e5e7eb' }
 }
@@ -24,9 +25,10 @@ export default function CasosPage() {
 
   const fetchCasos = useCallback(async () => {
     setLoading(true)
-    let query = supabase.from('casos').select('*').order('updated_at', { ascending: false })
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let query: any = supabase.from('casos').select('*')
     if (filters.area) query = query.eq('area', filters.area)
-    if (filters.estado) query = query.eq('estado_general', filters.estado)
+    if (filters.estado) query = query.eq('estado', filters.estado)
     if (filters.pais) query = query.eq('pais', filters.pais)
     const { data, error } = await query
     if (!error && data) {
@@ -41,6 +43,7 @@ export default function CasosPage() {
           c.pac_mail?.toLowerCase().includes(s)
         )
       }
+      result.sort((a, b) => ordenEstado(a.estado || '') - ordenEstado(b.estado || ''))
       setCasos(result)
       const ids = result.map(c => c.id!).filter(Boolean)
       if (ids.length > 0) {
@@ -58,11 +61,10 @@ export default function CasosPage() {
   useEffect(() => { fetchCasos() }, [fetchCasos])
 
   const counts = {
-    Nuevo: casos.filter(c => c.estado_general === 'Nuevo').length,
-    'En curso': casos.filter(c => c.estado_general === 'En curso').length,
-    'Requiere atención': casos.filter(c => c.estado_general === 'Requiere atención').length,
-    Resuelto: casos.filter(c => c.estado_general === 'Resuelto').length,
-    Cerrado: casos.filter(c => c.estado_general === 'Cerrado').length,
+    Nuevo: casos.filter(c => c.estado === 'Nuevo').length,
+    'En curso': casos.filter(c => c.estado === 'En curso').length,
+    'Requiere atención': casos.filter(c => c.estado === 'Requiere atención').length,
+    Cerrado: casos.filter(c => c.estado === 'Cerrado').length,
   }
 
   return (
@@ -81,7 +83,7 @@ export default function CasosPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-5 gap-3 mb-6">
+      <div className="grid grid-cols-4 gap-3 mb-6">
         {Object.entries(counts).map(([estado, count]) => (
           <button
             key={estado}
@@ -134,10 +136,10 @@ export default function CasosPage() {
           {casos.map(caso => {
             const updCount = updateCounts[caso.id!] || 0
             return (
-              <div key={caso.id} className={`rounded-2xl shadow-sm p-5 flex flex-col gap-3 transition-all ${caso.estado_general === 'Cerrado' ? 'opacity-60' : ''}`} style={getCardStyle(caso.estado_general)}>
+              <div key={caso.id} className={`rounded-2xl shadow-sm p-5 flex flex-col gap-3 transition-all ${caso.estado === 'Cerrado' ? 'opacity-60' : ''}`} style={getCardStyle(caso.estado)}>
                 <div className="flex items-start justify-between gap-2">
                   <span className="font-mono text-xs text-gray-400 font-medium">{caso.nro_caso}</span>
-                  <StatusBadge status={caso.estado_general} />
+                  <StatusBadge status={caso.estado} />
                 </div>
 
                 <div>

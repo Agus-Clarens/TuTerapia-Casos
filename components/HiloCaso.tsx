@@ -37,7 +37,7 @@ export default function HiloCaso({ caso, onRefresh }: Props) {
   const [autor, setAutor] = useState('')
   const [mensaje, setMensaje] = useState('')
   const [cambiarEstado, setCambiarEstado] = useState(false)
-  const [nuevoEstado, setNuevoEstado] = useState(caso.estado_general)
+  const [nuevoEstado, setNuevoEstado] = useState(caso.estado)
   const [saving, setSaving] = useState(false)
 
   const fetchUpdates = useCallback(async () => {
@@ -51,9 +51,9 @@ export default function HiloCaso({ caso, onRefresh }: Props) {
   }, [caso.id])
 
   useEffect(() => {
-    setNuevoEstado(caso.estado_general)
+    setNuevoEstado(caso.estado)
     fetchUpdates()
-  }, [caso.id, caso.estado_general, fetchUpdates])
+  }, [caso.id, caso.estado, fetchUpdates])
 
   async function submit() {
     if (!autor || !mensaje.trim()) return
@@ -68,8 +68,8 @@ export default function HiloCaso({ caso, onRefresh }: Props) {
     }])
 
     const caseUpdate: Record<string, string> = { updated_at: new Date().toISOString() }
-    if (cambiarEstado && nuevoEstado !== caso.estado_general) {
-      caseUpdate.estado_general = nuevoEstado
+    if (cambiarEstado && nuevoEstado !== caso.estado) {
+      caseUpdate.estado = nuevoEstado
     }
     await supabase.from('casos').update(caseUpdate).eq('id', caso.id!)
 
@@ -80,7 +80,7 @@ export default function HiloCaso({ caso, onRefresh }: Props) {
     setSaving(false)
   }
 
-  const isClosed = caso.estado_general === 'Cerrado'
+  const isClosed = caso.estado === 'Cerrado'
 
   return (
     <div className="border-t border-gray-100 px-5 pt-4 pb-5">

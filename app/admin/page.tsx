@@ -8,11 +8,12 @@ import StatusBadge from '@/components/StatusBadge'
 import HiloCaso from '@/components/HiloCaso'
 import { PAISES, CREADORES_POR_AREA } from '@/lib/tipos-caso'
 
+const ordenEstado = (e: string) => ({ 'Nuevo': 0, 'En curso': 1, 'Requiere atención': 2, 'Cerrado': 3 }[e] ?? 4)
+
 function getCardStyle(estado: string) {
-  if (estado === 'Nuevo') return { backgroundColor: '#EEF4FF', borderLeft: '3px solid #213E6E' }
-  if (estado === 'En curso') return { backgroundColor: '#FFFBEB', borderLeft: '3px solid #FCD07F' }
-  if (estado === 'Requiere atención') return { backgroundColor: '#FFF0EE', borderLeft: '3px solid #F29683' }
-  if (estado === 'Resuelto') return { backgroundColor: '#EDFFF4', borderLeft: '3px solid #75B781' }
+  if (estado === 'Nuevo') return { backgroundColor: '#EDFFF4', borderLeft: '3px solid #75B781' }
+  if (estado === 'En curso') return { backgroundColor: '#FFF0EE', borderLeft: '3px solid #F29683' }
+  if (estado === 'Requiere atención') return { backgroundColor: '#FFFBEB', borderLeft: '3px solid #FCD07F' }
   if (estado === 'Cerrado') return { backgroundColor: '#F5F4F2', borderLeft: '3px solid #938f80' }
   return { backgroundColor: '#ffffff', borderLeft: '3px solid #e5e7eb' }
 }
@@ -34,6 +35,7 @@ export default function AdminPage() {
   const [latestUpdates, setLatestUpdates] = useState<Record<string, string>>({})
   const [seenMap, setSeenMap] = useState<Record<string, string>>({})
   const [expanded, setExpanded] = useState<Set<string>>(new Set())
+  const [closing, setClosing] = useState<string | null>(null)
 
   useEffect(() => {
     const map: Record<string, string> = {}
@@ -48,7 +50,7 @@ export default function AdminPage() {
     setLoading(true)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const applyFilters = (q: any) => {
-      if (filtroEstado) q = q.eq('estado_general', filtroEstado)
+      if (filtroEstado) q = q.eq('estado', filtroEstado)
       if (filtroPais) q = q.eq('pais', filtroPais)
       return q
     }
@@ -66,7 +68,7 @@ export default function AdminPage() {
         c.tipo_caso?.toLowerCase().includes(s)
       )
     }
-    result.sort((a, b) => (b.updated_at || b.created_at || '').localeCompare(a.updated_at || a.created_at || ''))
+    result.sort((a, b) => ordenEstado(a.estado || '') - ordenEstado(b.estado || ''))
     setCasos(result)
     const ids = result.map(c => c.id!).filter(Boolean)
     if (ids.length > 0) {
@@ -103,11 +105,22 @@ export default function AdminPage() {
     return !seenMap[id] || lat > seenMap[id]
   }
 
+  async function cerrarAdmin(caso: Caso) {
+    setClosing(caso.id!)
+    const updates: Record<string, unknown> = { cerrado_admin: true }
+    if (caso.area === 'Admin' || (caso.area === 'Admin+Talent' && caso.cerrado_talent)) {
+      updates.estado = 'Cerrado'
+    }
+    await supabase.from('casos').update(updates).eq('id', caso.id!)
+    await fetchCasos()
+    setClosing(null)
+  }
+
   const counts = {
-    Nuevo: casos.filter(c => c.estado_general === 'Nuevo').length,
-    'En curso': casos.filter(c => c.estado_general === 'En curso').length,
-    'Requiere atención': casos.filter(c => c.estado_general === 'Requiere atención').length,
-    Resuelto: casos.filter(c => c.estado_general === 'Resuelto').length,
+    Nuevo: casos.filter(c => c.estado === 'Nuevo').length,
+    'En curso': casos.filter(c => c.estado === 'En curso').length,
+    'Requiere atención': casos.filter(c => c.estado === 'Requiere atención').length,
+    Cerrado: casos.filter(c => c.estado === 'Cerrado').length,
   }
 
   return (
@@ -157,12 +170,12 @@ export default function AdminPage() {
             const isExpanded = expanded.has(caso.id!)
             const isNew = hasNewUpdate(caso.id!)
             return (
-              <div key={caso.id} className={`rounded-2xl shadow-sm overflow-hidden transition-all ${caso.estado_general === 'Cerrado' ? 'opacity-60' : ''}`} style={getCardStyle(caso.estado_general)}>
+              <div key={caso.id} className={`rounded-2xl shadow-sm overflow-hidden transition-all ${caso.estado === 'Cerrado' ? 'opacity-60' : ''}`} style={getCardStyle(caso.estado)}>
                 <div className="px-5 py-4 flex items-start gap-4">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap mb-1.5">
                       <span className="font-mono text-xs text-gray-400">{caso.nro_caso}</span>
-                      <StatusBadge status={caso.estado_general} />
+                      <StatusBadge status={caso.estado} />
                       {caso.area !== 'Admin' && (
                         <span className={`px-2 py-0.5 text-xs rounded-full border font-medium ${caso.area === 'Admin+Talent' ? 'bg-orange-50 text-orange-700 border-orange-200' : 'bg-verde-medio/10 text-verde-oscuro border-verde-medio/30'}`}>
                           {caso.area === 'Admin+Talent' ? 'Admin + Talent' : caso.area}
@@ -177,7 +190,21 @@ export default function AdminPage() {
                       {caso.psi_nombre && <span><span className="text-gray-400">Psi:</span> {caso.psi_nombre}</span>}
                     </div>
                   </div>
-                  <span className="text-xs text-gray-400 flex-shrink-0">{caso.cargado_por}</span>
+                  <div className="flex flex-col items-end gap-2 flex-shrink-0">
+                    <span className="text-xs text-gray-400">{caso.cargado_por}</span>
+                    {caso.estado !== 'Cerrado' && !caso.cerrado_admin && (
+                      <button
+                        onClick={() => cerrarAdmin(caso)}
+                        disabled={closing === caso.id}
+                        className="px-2.5 py-1 text-xs bg-white text-gray-500 rounded-lg border border-gray-200 hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-colors disabled:opacity-50"
+                      >
+                        {closing === caso.id ? '…' : 'Cerrar Admin'}
+                      </button>
+                    )}
+                    {caso.cerrado_admin && caso.area === 'Admin+Talent' && caso.estado !== 'Cerrado' && (
+                      <span className="px-2 py-0.5 text-xs bg-green-50 text-green-700 rounded-lg border border-green-200">Admin ✓</span>
+                    )}
+                  </div>
                 </div>
                 <div className="px-5 py-2.5 border-t border-gray-50 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors" onClick={() => toggleExpanded(caso.id!)}>
                   <div className="flex items-center gap-2">

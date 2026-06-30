@@ -19,9 +19,12 @@ export interface Caso {
   estado_talent?: string
   requiere_descuento: boolean
   monto_descuento?: number | null
-  estado_general: string
+  estado: string
+  estado_general?: string
   observaciones?: string
   mes_liquidacion?: string
+  cerrado_admin?: boolean
+  cerrado_talent?: boolean
 }
 
 export interface CasoActualizacion {
