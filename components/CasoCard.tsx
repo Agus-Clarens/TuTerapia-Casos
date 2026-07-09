@@ -64,7 +64,7 @@ export function CasoCard({ caso, onUpdate, sector, showDelete }: any) {
 
   async function agregar() {
     if (!texto.trim() && accion === 'Actualización') return
-    const textoFinal = texto.trim() || (accion !== 'Actualización' ? `Cambió el estado a: ${accion}` : '')
+    const textoFinal = texto.trim() || (accion === 'En curso' ? `Marcó en curso` : '')
     if (!textoFinal) return
     await supabase.from('caso_actualizaciones').insert({ caso_id:caso.id, autor, texto:`[${accion}] ${textoFinal}` })
     const u: any = {}
@@ -165,7 +165,7 @@ export function CasoCard({ caso, onUpdate, sector, showDelete }: any) {
                     </select>
                   </div>
                 </div>
-                <textarea value={texto} onChange={e=>setTexto(e.target.value)} placeholder="Describir la acción tomada..." rows={2} style={{ border:'1.5px solid #E5E7EB', borderRadius:6, padding:'7px 10px', fontSize:12, resize:'vertical', fontFamily:'inherit', background:'#fff' }}/>
+                <textarea value={texto} onChange={e=>setTexto(e.target.value)} placeholder={accion.includes("Cerrar") ? "Obligatorio: describí qué resolviste para que Sol pueda informar al paciente..." : "Describir la acción tomada..."} rows={2} style={{ border:'1.5px solid #E5E7EB', borderRadius:6, padding:'7px 10px', fontSize:12, resize:'vertical', fontFamily:'inherit', background:'#fff' }}/>
                 <button onClick={agregar} style={{ background:'#007271', color:'#fff', border:'none', borderRadius:6, padding:'8px 18px', fontSize:12, cursor:'pointer', fontWeight:600, alignSelf:'flex-start' }}>Agregar</button>
               </div>
             )}
