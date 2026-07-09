@@ -19,49 +19,109 @@ export default function LoginPage() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#264534', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
+    <div style={{ minHeight: '100vh', background: '#FEFAF5', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
 
-      {/* Fondo con ilustración */}
-      <svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.07 }}>
-        {/* Persona izq */}
-        <circle cx="120" cy="160" r="35" fill="none" stroke="#75B781" strokeWidth="4"/>
-        <path d="M80 220 Q120 200 160 220 L168 300 H72 Z" fill="none" stroke="#75B781" strokeWidth="4"/>
-        <rect x="60" y="285" width="120" height="75" rx="8" fill="none" stroke="#75B781" strokeWidth="3"/>
-        <rect x="70" y="295" width="100" height="55" rx="4" fill="none" stroke="#75B781" strokeWidth="2"/>
-        <line x1="48" y1="360" x2="192" y2="360" stroke="#75B781" strokeWidth="4" strokeLinecap="round"/>
-        <rect x="165" y="105" width="80" height="48" rx="10" fill="none" stroke="#75B781" strokeWidth="3"/>
-        <path d="M170 153 L165 168 L182 153" fill="none" stroke="#75B781" strokeWidth="3"/>
-        <circle cx="190" cy="129" r="4" fill="#75B781"/>
-        <circle cx="205" cy="129" r="4" fill="#75B781"/>
-        <circle cx="220" cy="129" r="4" fill="#75B781"/>
-        {/* Persona der */}
-        <circle cx="660" cy="180" r="35" fill="none" stroke="#75B781" strokeWidth="4"/>
-        <path d="M620 240 Q660 220 700 240 L708 320 H612 Z" fill="none" stroke="#75B781" strokeWidth="4"/>
-        <rect x="600" y="305" width="120" height="75" rx="8" fill="none" stroke="#75B781" strokeWidth="3"/>
-        <rect x="610" y="315" width="100" height="55" rx="4" fill="none" stroke="#75B781" strokeWidth="2"/>
-        <line x1="588" y1="380" x2="732" y2="380" stroke="#75B781" strokeWidth="4" strokeLinecap="round"/>
-        <rect x="510" y="122" width="80" height="48" rx="10" fill="none" stroke="#75B781" strokeWidth="3"/>
-        <path d="M575 170 L580 185 L563 170" fill="none" stroke="#75B781" strokeWidth="3"/>
-        <circle cx="534" cy="146" r="4" fill="#75B781"/>
-        <circle cx="550" cy="146" r="4" fill="#75B781"/>
-        <circle cx="566" cy="146" r="4" fill="#75B781"/>
-        {/* Persona centro abajo */}
-        <circle cx="400" cy="420" r="28" fill="none" stroke="#75B781" strokeWidth="3"/>
-        <path d="M368 468 Q400 452 432 468 L438 530 H362 Z" fill="none" stroke="#75B781" strokeWidth="3"/>
-        {/* Lineas conectoras */}
-        <path d="M200 320 Q300 260 368 380" fill="none" stroke="#75B781" strokeWidth="2" strokeDasharray="8 5"/>
-        <path d="M600 320 Q500 260 432 380" fill="none" stroke="#75B781" strokeWidth="2" strokeDasharray="8 5"/>
-        {/* Hojas */}
-        <path d="M350 520 Q370 495 395 505 Q378 528 350 520Z" fill="#75B781" opacity="0.5"/>
-        <path d="M410 525 Q432 500 452 513 Q436 535 410 525Z" fill="#75B781" opacity="0.4"/>
-        <path d="M300 510 Q315 485 340 495 Q325 518 300 510Z" fill="#75B781" opacity="0.3"/>
+      {/* Ilustración de fondo: paciente en diván con terapeuta */}
+      <svg viewBox="0 0 1200 700" xmlns="http://www.w3.org/2000/svg"
+        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.13 }}>
+
+        {/* === ESCENA PRINCIPAL: paciente en diván con terapeuta === */}
+
+        {/* Diván / sillón */}
+        <path d="M200 420 Q200 380 240 380 L640 380 Q680 380 680 420 L680 460 Q680 480 660 480 L220 480 Q200 480 200 460 Z" fill="#264534"/>
+        {/* respaldo del diván */}
+        <path d="M600 280 Q600 260 620 260 L680 260 Q700 260 700 280 L700 460 Q700 480 680 480 L660 480 Q640 480 640 460 L640 300 Q640 280 620 280 Z" fill="#264534"/>
+        {/* patas del diván */}
+        <rect x="220" y="478" width="20" height="40" rx="5" fill="#264534"/>
+        <rect x="620" y="478" width="20" height="40" rx="5" fill="#264534"/>
+
+        {/* Paciente acostado en el diván */}
+        {/* cuerpo */}
+        <path d="M250 360 Q260 340 290 340 L560 350 Q580 352 580 370 L580 390 Q580 400 560 398 L280 392 Q255 390 250 375 Z" fill="#264534"/>
+        {/* cabeza paciente */}
+        <circle cx="590" cy="345" r="32" fill="#264534"/>
+        {/* brazo */}
+        <path d="M400 355 Q410 330 430 325 Q450 320 460 340" fill="none" stroke="#264534" strokeWidth="12" strokeLinecap="round"/>
+        {/* piernas */}
+        <path d="M250 388 Q240 400 235 430 Q232 450 245 455" fill="none" stroke="#264534" strokeWidth="14" strokeLinecap="round"/>
+        <path d="M270 390 Q265 408 260 435 Q258 455 272 458" fill="none" stroke="#264534" strokeWidth="14" strokeLinecap="round"/>
+
+        {/* Terapeuta sentada en silla */}
+        {/* silla terapeuta */}
+        <rect x="720" y="370" width="100" height="15" rx="6" fill="#264534"/>
+        <rect x="720" y="280" width="15" height="105" rx="6" fill="#264534"/>
+        <rect x="805" y="370" width="15" height="60" rx="6" fill="#264534"/>
+        <rect x="730" y="370" width="15" height="60" rx="6" fill="#264534"/>
+        {/* cuerpo terapeuta */}
+        <path d="M740 280 Q740 260 760 255 L800 255 Q820 255 820 275 L825 370 L735 370 Z" fill="#264534"/>
+        {/* cabeza terapeuta */}
+        <circle cx="780" cy="225" r="30" fill="#264534"/>
+        {/* cabello */}
+        <path d="M755 218 Q758 195 780 193 Q802 195 805 218" fill="#264534" stroke="#264534" strokeWidth="2"/>
+        {/* brazo con libreta */}
+        <path d="M820 300 Q840 310 850 330 Q855 345 840 350" fill="none" stroke="#264534" strokeWidth="12" strokeLinecap="round"/>
+        {/* libreta */}
+        <rect x="830" y="330" width="45" height="55" rx="4" fill="#264534"/>
+        <line x1="838" y1="348" x2="867" y2="348" stroke="#FEFAF5" strokeWidth="2.5"/>
+        <line x1="838" y1="358" x2="867" y2="358" stroke="#FEFAF5" strokeWidth="2.5"/>
+        <line x1="838" y1="368" x2="855" y2="368" stroke="#FEFAF5" strokeWidth="2.5"/>
+        {/* otro brazo */}
+        <path d="M740 295 Q720 310 715 330" fill="none" stroke="#264534" strokeWidth="12" strokeLinecap="round"/>
+
+        {/* Burbuja de diálogo terapeuta */}
+        <ellipse cx="860" cy="165" rx="70" ry="40" fill="none" stroke="#264534" strokeWidth="3"/>
+        <path d="M820 195 L810 220 L840 198" fill="none" stroke="#264534" strokeWidth="3"/>
+        <circle cx="840" cy="165" r="4" fill="#264534"/>
+        <circle cx="860" cy="165" r="4" fill="#264534"/>
+        <circle cx="880" cy="165" r="4" fill="#264534"/>
+
+        {/* Plantas decorativas */}
+        {/* planta izq */}
+        <rect x="90" y="420" width="18" height="80" rx="4" fill="#264534"/>
+        <ellipse cx="99" cy="415" rx="35" ry="50" fill="none" stroke="#264534" strokeWidth="3"/>
+        <path d="M99 390 Q80 360 60 355 Q85 370 99 390Z" fill="#264534"/>
+        <path d="M99 400 Q120 365 145 362 Q120 378 99 400Z" fill="#264534"/>
+        <path d="M99 380 Q99 345 99 320" stroke="#264534" strokeWidth="3" fill="none"/>
+
+        {/* planta der */}
+        <rect x="1050" y="430" width="18" height="70" rx="4" fill="#264534"/>
+        <path d="M1058 425 Q1035 395 1015 392 Q1040 405 1058 425Z" fill="#264534"/>
+        <path d="M1058 415 Q1082 385 1102 382 Q1078 398 1058 415Z" fill="#264534"/>
+        <path d="M1058 435 Q1040 408 1028 398 Q1048 412 1058 435Z" fill="#264534"/>
+
+        {/* Ventana fondo izq */}
+        <rect x="50" y="150" width="120" height="160" rx="8" fill="none" stroke="#264534" strokeWidth="3"/>
+        <line x1="110" y1="150" x2="110" y2="310" stroke="#264534" strokeWidth="2"/>
+        <line x1="50" y1="230" x2="170" y2="230" stroke="#264534" strokeWidth="2"/>
+        {/* sol por la ventana */}
+        <circle cx="90" cy="195" r="18" fill="none" stroke="#264534" strokeWidth="2.5"/>
+        {[0,45,90,135,180,225,270,315].map((a,i) => {
+          const rad = a * Math.PI / 180
+          const x1 = 90 + 22 * Math.cos(rad)
+          const y1 = 195 + 22 * Math.sin(rad)
+          const x2 = 90 + 30 * Math.cos(rad)
+          const y2 = 195 + 30 * Math.sin(rad)
+          return `<line key="${i}" x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="#264534" strokeWidth="2.5" strokeLinecap="round"/>`
+        })}
+
+        {/* Cuadro en la pared */}
+        <rect x="950" y="140" width="140" height="100" rx="6" fill="none" stroke="#264534" strokeWidth="3"/>
+        <path d="M965 210 Q990 170 1020 180 Q1050 190 1075 165" fill="none" stroke="#264534" strokeWidth="2.5"/>
+        <circle cx="1000" cy="175" r="8" fill="none" stroke="#264534" strokeWidth="2"/>
+
+        {/* Alfombra */}
+        <ellipse cx="480" cy="520" rx="320" ry="30" fill="none" stroke="#264534" strokeWidth="3"/>
+        <ellipse cx="480" cy="520" rx="280" ry="22" fill="none" stroke="#264534" strokeWidth="1.5"/>
+
+        {/* Texto frase */}
+        <text x="600" y="620" textAnchor="middle" fontFamily="Georgia, serif" fontSize="22" fill="#264534" fontStyle="italic" opacity="0.6">un espacio para sanar</text>
       </svg>
 
-      {/* Card */}
-      <div style={{ position: 'relative', zIndex: 10, background: '#FEFAF5', borderRadius: 20, padding: '40px 48px', width: '100%', maxWidth: 420, boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}>
+      {/* Card centrada */}
+      <div style={{ position: 'relative', zIndex: 10, background: '#fff', borderRadius: 20, padding: '40px 48px', width: '100%', maxWidth: 420, boxShadow: '0 8px 40px rgba(38,69,52,0.12)', border: '1px solid rgba(38,69,52,0.08)' }}>
         <div style={{ textAlign: 'center', marginBottom: 28 }}>
-          <Image src="/logo.png" alt="Tu Terapia" width={180} height={72} style={{ objectFit: 'contain', marginBottom: 8 }} />
-          <p style={{ color: '#6B7280', fontSize: 13, margin: 0 }}>Sistema de Gestión de Casos Internos</p>
+          <Image src="/logo.png" alt="Tu Terapia" width={160} height={64} style={{ objectFit: 'contain', marginBottom: 8 }} />
+          <p style={{ color: '#6B7280', fontSize: 13, margin: 0 }}>Sistema de Gestión de Casos</p>
           <p style={{ color: '#9CA3AF', fontSize: 11, margin: '4px 0 0', fontStyle: 'italic' }}>CX · Admin · Talent — juntas llegamos más lejos 🌿</p>
         </div>
 
