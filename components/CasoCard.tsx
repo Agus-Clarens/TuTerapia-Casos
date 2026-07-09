@@ -45,6 +45,16 @@ function getAcciones(sector: string, area: string) {
   return ['Actualización']
 }
 
+
+function autorColor(autor: string) {
+  if (autor.includes('Agus')) return '#F29683'      // rosa
+  if (autor.includes('Sol')) return '#C084FC'        // lila
+  if (autor.includes('Belu') || autor.includes('Orne') || autor.includes('Caro')) return '#FCD07F' // amarillo
+  if (autor.includes('Sofi')) return '#86EFAC'       // verde claro
+  if (autor.includes('Nico') || autor.includes('Nacho')) return '#93C5FD' // azul claro
+  return '#E5E7EB'
+}
+
 export function CasoCard({ caso, onUpdate, sector, showDelete }: any) {
   const [open, setOpen] = useState(false)
   const [acts, setActs] = useState<any[]>([])
@@ -140,7 +150,7 @@ export function CasoCard({ caso, onUpdate, sector, showDelete }: any) {
                 return (
                   <div key={a.id} style={{ marginBottom:8, padding:'8px 12px', background:'#fff', borderRadius:8, fontSize:12, borderLeft:`3px solid ${tagColor(tag)}` }}>
                     <div style={{ display:'flex', alignItems:'center', gap:6, flexWrap:'wrap', marginBottom:4 }}>
-                      <span style={{ fontWeight:700, color:'#264534' }}>{a.autor}</span>
+                      <span style={{ background:autorColor(a.autor), color:'#374151', borderRadius:6, padding:'2px 8px', fontSize:11, fontWeight:700 }}>{a.autor}</span>
                       <span style={{ background:tagColor(tag), color:'#fff', borderRadius:4, padding:'1px 7px', fontSize:10, fontWeight:600 }}>{tag}</span>
                       <span style={{ color:'#9CA3AF', fontSize:11 }}>{timeAgo(a.created_at)}</span>
                     </div>
