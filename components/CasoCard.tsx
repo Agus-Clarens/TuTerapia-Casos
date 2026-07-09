@@ -26,7 +26,7 @@ function Badge({ label, estado }: any) {
 
 function tagColor(tag: string) {
   if (tag.includes('Cerrar')) return '#75B781'
-  if (tag==='En curso') return '#F97316'
+  if (tag==='En curso') return '#F29683'
   return '#3B82F6'
 }
 
@@ -58,7 +58,7 @@ function autorColor(autor: string) {
 
 function estadoCard(estado: string) {
   if (estado === 'Nuevo') return { bg: '#EFF6FF', border: '#3B82F6' }
-  if (estado === 'En curso') return { bg: '#FFF7ED', border: '#F97316' }
+  if (estado === 'En curso') return { bg: '#FFF0EE', border: '#F29683' }
   if (estado === 'Cerrado') return { bg: '#F0FDF4', border: '#75B781' }
   return { bg: '#F9FAFB', border: '#9CA3AF' }
 }
