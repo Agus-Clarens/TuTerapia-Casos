@@ -46,20 +46,29 @@ function getAcciones(sector: string, area: string) {
 }
 
 
-
-function estadoBg(estado: string) {
-  if (estado === 'Nuevo') return { bg: '#EFF6FF', border: '#3B82F6' }      // azul pastel
-  if (estado === 'En curso') return { bg: '#FFF7ED', border: '#F97316' }   // naranja pastel
-  if (estado === 'Cerrado') return { bg: '#F0FDF4', border: '#75B781' }    // verde pastel
-  return { bg: '#F9FAFB', border: '#9CA3AF' }
-}
-
 function autorColor(autor: string) {
   if (autor.includes('Agus')) return '#F29683'      // rosa
   if (autor.includes('Sol')) return '#C084FC'        // lila
   if (autor.includes('Belu') || autor.includes('Orne') || autor.includes('Caro')) return '#FCD07F' // amarillo
   if (autor.includes('Sofi')) return '#86EFAC'       // verde claro
   if (autor.includes('Nico') || autor.includes('Nacho')) return '#93C5FD' // azul claro
+  return '#E5E7EB'
+}
+
+
+function estadoCard(estado: string) {
+  if (estado === 'Nuevo') return { bg: '#EFF6FF', border: '#3B82F6' }
+  if (estado === 'En curso') return { bg: '#FFF7ED', border: '#F97316' }
+  if (estado === 'Cerrado') return { bg: '#F0FDF4', border: '#75B781' }
+  return { bg: '#F9FAFB', border: '#9CA3AF' }
+}
+
+function autorColor(autor: string) {
+  if (autor.includes('Agus')) return '#F29683'
+  if (autor.includes('Sol')) return '#C084FC'
+  if (autor.includes('Belu') || autor.includes('Orne') || autor.includes('Caro')) return '#FCD07F'
+  if (autor.includes('Sofi')) return '#86EFAC'
+  if (autor.includes('Nico') || autor.includes('Nacho')) return '#93C5FD'
   return '#E5E7EB'
 }
 
@@ -72,8 +81,7 @@ export function CasoCard({ caso, onUpdate, sector, showDelete }: any) {
   const [del, setDel] = useState(false)
 
   const cerrado = caso.estado==='Cerrado'
-  const { bg, bg: borderColor } = { bg: STATUS_COLORS[caso.estado]||'#3B82F6', bg: STATUS_COLORS[caso.estado]||'#3B82F6' }
-  const { bg: bgColor, border: borderCol } = estadoBg(caso.estado)
+  const { bg: bgCard, border: bdCard } = estadoCard(caso.estado)
   const acciones = getAcciones(sector, caso.area)
 
   async function loadActs() {
@@ -119,7 +127,7 @@ export function CasoCard({ caso, onUpdate, sector, showDelete }: any) {
   useEffect(()=>{ if(open) loadActs() },[open])
 
   return (
-    <div style={{ background:bgColor, borderRadius:12, marginBottom:12, boxShadow:'0 1px 4px rgba(0,0,0,0.06)', opacity:cerrado?0.6:1, borderLeft:`5px solid ${borderCol}`, overflow:'hidden' }}>
+    <div style={{ background:bgCard, borderRadius:12, marginBottom:12, boxShadow:'0 1px 4px rgba(0,0,0,0.06)', opacity:cerrado?0.6:1, borderLeft:`5px solid ${bdCard}`, overflow:'hidden' }}>
       <div style={{ padding:'14px 16px' }}>
         <div style={{ display:'flex', justifyContent:'space-between', flexWrap:'wrap', gap:8 }}>
           <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap' }}>
@@ -150,7 +158,7 @@ export function CasoCard({ caso, onUpdate, sector, showDelete }: any) {
         </button>
       </div>
       {open && (
-        <div style={{ padding:'0 16px 16px', background:'rgba(255,255,255,0.7)', borderTop:'1px solid rgba(0,0,0,0.06)' }}>
+        <div style={{ padding:'0 16px 16px', background:'rgba(255,255,255,0.6)', borderTop:'1px solid rgba(0,0,0,0.06)' }}>
           <div style={{ paddingTop:12 }}>
             {acts.length===0?<p style={{ fontSize:12, color:'#9CA3AF', margin:'0 0 12px' }}>Sin actualizaciones aún.</p>
               :<div style={{ marginBottom:12 }}>{acts.map((a:any)=>{
