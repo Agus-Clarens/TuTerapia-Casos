@@ -1,117 +1,105 @@
 'use client'
-
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
-import { supabase } from '@/lib/supabase'
-import { useAuth } from '@/lib/auth-context'
+import { supabase } from '../../lib/supabase'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
   const router = useRouter()
-  const { user } = useAuth()
 
-  useEffect(() => {
-    if (user) router.replace('/')
-  }, [user, router])
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    setLoading(true)
-    setError('')
-    const { error: authError } = await supabase.auth.signInWithPassword({ email, password })
-    if (authError) {
-      setError('Email o contraseña incorrectos')
-      setLoading(false)
-    } else {
-      router.replace('/')
-    }
+  async function handleLogin() {
+    setLoading(true); setError('')
+    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    if (error) { setError('Email o contraseña incorrectos'); setLoading(false); return }
+    router.push('/casos')
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative overflow-hidden" style={{ backgroundColor: '#FEFAF5' }}>
-      {/* Organic background shapes */}
-      <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-        <circle cx="180" cy="160" r="300" fill="#75B781" opacity="0.09" />
-        <circle cx="1320" cy="720" r="340" fill="#007271" opacity="0.07" />
-        <circle cx="1100" cy="80" r="220" fill="#75B781" opacity="0.06" />
-        <circle cx="120" cy="820" r="260" fill="#007271" opacity="0.06" />
-        <ellipse cx="720" cy="-20" rx="320" ry="110" fill="#264534" opacity="0.04" />
-        <ellipse cx="750" cy="920" rx="380" ry="130" fill="#264534" opacity="0.04" />
-        <circle cx="600" cy="450" r="180" fill="#75B781" opacity="0.03" />
+    <div style={{ minHeight: '100vh', background: '#264534', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
+
+      {/* Ilustración de fondo */}
+      <svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.07 }}>
+        {/* Persona 1 - izquierda */}
+        <circle cx="120" cy="180" r="35" fill="none" stroke="#75B781" strokeWidth="4"/>
+        <path d="M80 240 Q120 210 160 240 L170 320 H70 Z" fill="none" stroke="#75B781" strokeWidth="4"/>
+        <rect x="60" y="305" width="120" height="75" rx="8" fill="none" stroke="#75B781" strokeWidth="3"/>
+        <rect x="70" y="315" width="100" height="55" rx="4" fill="none" stroke="#75B781" strokeWidth="2"/>
+        <line x1="50" y1="380" x2="190" y2="380" stroke="#75B781" strokeWidth="4" strokeLinecap="round"/>
+        {/* Burbuja 1 */}
+        <rect x="170" y="120" width="80" height="50" rx="10" fill="none" stroke="#75B781" strokeWidth="3"/>
+        <path d="M185 170 L180 185 L200 170" fill="none" stroke="#75B781" strokeWidth="3"/>
+        <circle cx="196" cy="145" r="4" fill="#75B781"/>
+        <circle cx="210" cy="145" r="4" fill="#75B781"/>
+        <circle cx="224" cy="145" r="4" fill="#75B781"/>
+
+        {/* Persona 2 - derecha */}
+        <circle cx="660" cy="200" r="35" fill="none" stroke="#75B781" strokeWidth="4"/>
+        <path d="M620 260 Q660 230 700 260 L710 340 H610 Z" fill="none" stroke="#75B781" strokeWidth="4"/>
+        <rect x="600" y="325" width="120" height="75" rx="8" fill="none" stroke="#75B781" strokeWidth="3"/>
+        <rect x="610" y="335" width="100" height="55" rx="4" fill="none" stroke="#75B781" strokeWidth="2"/>
+        <line x1="590" y1="400" x2="730" y2="400" stroke="#75B781" strokeWidth="4" strokeLinecap="round"/>
+        {/* Burbuja 2 */}
+        <rect x="510" y="140" width="80" height="50" rx="10" fill="none" stroke="#75B781" strokeWidth="3"/>
+        <path d="M575 190 L580 205 L560 190" fill="none" stroke="#75B781" strokeWidth="3"/>
+        <circle cx="536" cy="165" r="4" fill="#75B781"/>
+        <circle cx="550" cy="165" r="4" fill="#75B781"/>
+        <circle cx="564" cy="165" r="4" fill="#75B781"/>
+
+        {/* Línea conectora entre las dos personas */}
+        <path d="M190 350 Q400 280 610 350" fill="none" stroke="#75B781" strokeWidth="2" strokeDasharray="8 6"/>
+
+        {/* Hojas decorativas */}
+        <path d="M350 480 Q370 450 400 460 Q380 490 350 480Z" fill="#75B781" opacity="0.5"/>
+        <path d="M420 490 Q440 460 460 475 Q445 500 420 490Z" fill="#75B781" opacity="0.4"/>
+        <path d="M300 500 Q310 470 340 478 Q325 505 300 500Z" fill="#75B781" opacity="0.3"/>
+        <path d="M460 500 Q480 475 500 488 Q482 510 460 500Z" fill="#75B781" opacity="0.35"/>
+
+        {/* Persona 3 - abajo centro */}
+        <circle cx="400" cy="430" r="25" fill="none" stroke="#75B781" strokeWidth="3"/>
+        <path d="M370 470 Q400 455 430 470 L438 530 H362 Z" fill="none" stroke="#75B781" strokeWidth="3"/>
       </svg>
 
-      <div className="relative z-10 w-full max-w-sm mx-4">
-        <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
-          {/* Header verde */}
-          <div className="px-8 pt-8 pb-6 flex flex-col items-center" style={{ backgroundColor: '#264534' }}>
-            <Image
-              src="/logo.png"
-              alt="Tu Terapia"
-              width={180}
-              height={80}
-              style={{ objectFit: 'contain', mixBlendMode: 'lighten' }}
-              priority
-            />
-          </div>
-
-          <div className="px-8 py-7">
-            <h1 className="text-center text-base font-semibold mb-0.5" style={{ color: '#264534' }}>
-              Gestión de Casos Internos
-            </h1>
-            <p className="text-center text-xs text-gray-400 mb-6" style={{ letterSpacing: '0.04em' }}>
-              Ingresá con tu cuenta de Tu Terapia
-            </p>
-
-            {error && (
-              <div className="mb-4 px-4 py-2.5 rounded-xl text-sm text-center" style={{ backgroundColor: '#FFF0EE', color: '#c0503a', border: '1px solid #F29683' }}>
-                {error}
-              </div>
-            )}
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wide">Email</label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  placeholder="tu@tuterapia.com.ar"
-                  required
-                  autoComplete="email"
-                  className="w-full"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wide">Contraseña</label>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  required
-                  autoComplete="current-password"
-                  className="w-full"
-                />
-              </div>
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full py-2.5 rounded-xl text-white font-semibold text-sm transition-all disabled:opacity-50 mt-2"
-                style={{ backgroundColor: '#007271' }}
-              >
-                {loading ? 'Ingresando...' : 'Ingresar'}
-              </button>
-            </form>
-          </div>
+      {/* Card de login */}
+      <div style={{ position: 'relative', zIndex: 10, background: '#FEFAF5', borderRadius: 20, padding: '40px 48px', width: '100%', maxWidth: 420, boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}>
+        <div style={{ textAlign: 'center', marginBottom: 32 }}>
+          <Image src="/logo.png" alt="Tu Terapia" width={180} height={72} style={{ objectFit: 'contain', marginBottom: 8 }} />
+          <p style={{ color: '#6B7280', fontSize: 14, margin: 0 }}>Sistema de Gestión de Casos</p>
         </div>
 
-        <p className="text-center text-xs text-gray-400 mt-5">
-          Tu Terapia · Uso interno
-        </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div>
+            <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 4 }}>Email</label>
+            <input
+              type="email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleLogin()}
+              style={{ width: '100%', padding: '10px 14px', borderRadius: 8, border: '1.5px solid #E5E7EB', fontSize: 14, boxSizing: 'border-box', outline: 'none', fontFamily: 'inherit' }}
+            />
+          </div>
+          <div>
+            <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 4 }}>Contraseña</label>
+            <input
+              type="password"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleLogin()}
+              style={{ width: '100%', padding: '10px 14px', borderRadius: 8, border: '1.5px solid #E5E7EB', fontSize: 14, boxSizing: 'border-box', outline: 'none', fontFamily: 'inherit' }}
+            />
+          </div>
+          {error && <p style={{ color: '#EF4444', fontSize: 13, margin: 0 }}>{error}</p>}
+          <button
+            onClick={handleLogin}
+            disabled={loading}
+            style={{ background: '#264534', color: '#fff', border: 'none', borderRadius: 8, padding: '12px', fontSize: 15, fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1, marginTop: 4 }}
+          >
+            {loading ? 'Ingresando...' : 'Ingresar'}
+          </button>
+        </div>
       </div>
     </div>
   )
