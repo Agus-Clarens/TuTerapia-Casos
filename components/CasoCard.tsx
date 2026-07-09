@@ -63,8 +63,10 @@ export function CasoCard({ caso, onUpdate, sector, showDelete }: any) {
   }
 
   async function agregar() {
-    if (!texto.trim()) return
-    await supabase.from('caso_actualizaciones').insert({ caso_id:caso.id, autor, texto:`[${accion}] ${texto}` })
+    if (!texto.trim() && accion === 'Actualización') return
+    const textoFinal = texto.trim() || (accion !== 'Actualización' ? `Cambió el estado a: ${accion}` : '')
+    if (!textoFinal) return
+    await supabase.from('caso_actualizaciones').insert({ caso_id:caso.id, autor, texto:`[${accion}] ${textoFinal}` })
     const u: any = {}
     if (accion==='En curso') {
       if (sector==='admin'||accion.includes('Admin')) u.estado_admin='En curso'
