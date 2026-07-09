@@ -69,13 +69,14 @@ export function CasoCard({ caso, onUpdate, sector, showDelete }: any) {
     await supabase.from('caso_actualizaciones').insert({ caso_id:caso.id, autor, texto:`[${accion}] ${textoFinal}` })
     const u: any = {}
     if (accion==='En curso') {
-      if (sector==='admin'||accion.includes('Admin')) u.estado_admin='En curso'
-      if (sector==='talent'||accion.includes('Talent')) u.estado_talent='En curso'
-      if (sector==='cx'||accion.includes('CX')) u.estado_cx='En curso'
+      if (sector==='admin') u.estado_admin='En curso'
+      if (sector==='talent') u.estado_talent='En curso'
+      if (sector==='cx') u.estado_cx='En curso'
+      // sector todos: solo marcar en curso si no está cerrado
       if (sector==='todos') {
-        if (caso.area.includes('Admin')) u.estado_admin='En curso'
-        if (caso.area.includes('Talent')) u.estado_talent='En curso'
-        if (caso.area==='CX') u.estado_cx='En curso'
+        if (caso.area.includes('Admin') && caso.estado_admin !== 'Cerrado') u.estado_admin='En curso'
+        if (caso.area.includes('Talent') && caso.estado_talent !== 'Cerrado') u.estado_talent='En curso'
+        if (caso.area==='CX' && caso.estado_cx !== 'Cerrado') u.estado_cx='En curso'
       }
     }
     if (accion==='Cerrar para Admin') u.estado_admin='Cerrado'
