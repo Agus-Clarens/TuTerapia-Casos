@@ -1,161 +1,112 @@
 'use client'
-
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
-import { useAuth } from '@/lib/auth-context'
+import { supabase } from '../lib/supabase'
 
-const navItems = [
-  {
-    href: '/nuevo-caso',
-    label: 'Nuevo Caso',
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-      </svg>
-    ),
-  },
-  {
-    href: '/casos',
-    label: 'Todos los Casos',
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
-      </svg>
-    ),
-  },
-  {
-    href: '/cx',
-    label: 'CX',
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-      </svg>
-    ),
-  },
-  {
-    href: '/admin',
-    label: 'Admin',
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-      </svg>
-    ),
-  },
-  {
-    href: '/talent',
-    label: 'Talent',
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-      </svg>
-    ),
-  },
-  {
-    href: '/admin-talent',
-    label: 'Admin + Talent',
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-      </svg>
-    ),
-  },
-  {
-    href: '/descuentos',
-    label: 'Descuentos',
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
-    ),
-  },
+const NAV = [
+  { href: '/casos', label: 'Todos los Casos' },
+  { href: '/cx', label: 'CX' },
+  { href: '/admin', label: 'Admin' },
+  { href: '/talent', label: 'Talent' },
+  { href: '/admin-talent', label: 'Admin + Talent' },
+  { href: '/descuentos', label: 'Descuentos' },
 ]
 
-const USER_MAP: Record<string, { name: string; sector: string }> = {
-  'aclarens@tuterapia.com.ar': { name: 'Agus', sector: 'Admin' },
-  'info@tuterapia.com.ar': { name: 'Sol', sector: 'CX' },
-  'cbarros@tuterapia.com.uy': { name: 'Caro', sector: 'Talent' },
-  'admin@tuterapia.com.ar': { name: 'Sofi', sector: 'Admin' },
-  'people@tuterapia.com.uy': { name: 'Belu', sector: 'Talent' },
-  'talent@tuterapia.com.ar': { name: 'Orne', sector: 'Talent' },
+function Ilustracion() {
+  return (
+    <svg viewBox="0 0 160 180" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', opacity: 0.22 }}>
+      {/* Persona 1 izq */}
+      <circle cx="45" cy="30" r="12" fill="none" stroke="#75B781" strokeWidth="2.5"/>
+      <path d="M28 52 Q45 42 62 52 L66 85 H24 Z" fill="none" stroke="#75B781" strokeWidth="2.5"/>
+      <rect x="18" y="72" width="54" height="34" rx="5" fill="none" stroke="#75B781" strokeWidth="2"/>
+      <line x1="12" y1="106" x2="78" y2="106" stroke="#75B781" strokeWidth="2.5" strokeLinecap="round"/>
+      {/* Burbuja 1 */}
+      <rect x="62" y="14" width="36" height="24" rx="6" fill="none" stroke="#75B781" strokeWidth="2"/>
+      <path d="M67 38 L64 45 L74 38" fill="none" stroke="#75B781" strokeWidth="2"/>
+      <circle cx="74" cy="26" r="2.5" fill="#75B781"/>
+      <circle cx="82" cy="26" r="2.5" fill="#75B781"/>
+      <circle cx="90" cy="26" r="2.5" fill="#75B781"/>
+
+      {/* Persona 2 der */}
+      <circle cx="118" cy="38" r="12" fill="none" stroke="#75B781" strokeWidth="2.5"/>
+      <path d="M101 60 Q118 50 135 60 L139 93 H97 Z" fill="none" stroke="#75B781" strokeWidth="2.5"/>
+      <rect x="91" y="80" width="54" height="34" rx="5" fill="none" stroke="#75B781" strokeWidth="2"/>
+      <line x1="85" y1="114" x2="151" y2="114" stroke="#75B781" strokeWidth="2.5" strokeLinecap="round"/>
+
+      {/* Línea conectora */}
+      <path d="M72 88 Q90 75 100 88" fill="none" stroke="#75B781" strokeWidth="1.5" strokeDasharray="4 3"/>
+
+      {/* Frase */}
+      <text x="80" y="138" textAnchor="middle" fontFamily="Georgia, serif" fontSize="8" fill="#75B781" fontStyle="italic">CX · Admin · Talent</text>
+      <text x="80" y="152" textAnchor="middle" fontFamily="Georgia, serif" fontSize="7.5" fill="#75B781" fontStyle="italic">juntas llegamos más lejos</text>
+    </svg>
+  )
 }
 
 export default function Sidebar() {
   const pathname = usePathname()
   const router = useRouter()
-  const { user, signOut } = useAuth()
 
-  const email = user?.email || ''
-  const userInfo = USER_MAP[email] || { name: email.split('@')[0], sector: '' }
-
-  async function handleSignOut() {
-    await signOut()
-    router.push('/login')
+  async function handleLogout() {
+    await supabase.auth.signOut()
+    router.replace('/login')
   }
 
   return (
-    <aside className="w-60 min-h-screen bg-verde-oscuro flex flex-col shadow-xl flex-shrink-0">
-      {/* Logo */}
-      <div className="px-4 pt-5 pb-3 flex items-center justify-center">
-        <Image
-          src="/logo.png"
-          alt="Tu Terapia"
-          width={180}
-          height={100}
-          style={{ objectFit: 'contain', mixBlendMode: 'screen' }}
-          priority
-        />
+    <div style={{
+      position: 'fixed', top: 0, left: 0, width: 240, height: '100vh',
+      background: '#264534', display: 'flex', flexDirection: 'column',
+      padding: '20px 0', zIndex: 40,
+    }}>
+      <div style={{ padding: '0 20px 20px', borderBottom: '1px solid rgba(255,255,255,0.1)', marginBottom: 8 }}>
+        <Image src="/logo.png" alt="Tu Terapia" width={160} height={64}
+          style={{ objectFit: 'contain', width: '100%', height: 'auto', mixBlendMode: 'screen' }} />
+        <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', marginTop: 2 }}>
+          Gestión de Casos Internos
+        </div>
       </div>
 
-      {/* Subtítulo */}
-      <p className="text-center pb-3 border-b border-white/10" style={{ color: '#75B781', fontSize: '11px', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-        Gestión de Casos Internos
-      </p>
-
-      <nav className="flex-1 p-3 space-y-0.5 mt-1">
-        {navItems.map((item) => {
-          const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href))
+      <nav style={{ flex: 1, padding: '8px 12px', display: 'flex', flexDirection: 'column', gap: 2 }}>
+        {NAV.map(({ href, label }) => {
+          const active = pathname === href || pathname.startsWith(href + '/')
           return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 ${
-                isActive
-                  ? 'bg-sidebar-hover text-crema shadow-sm'
-                  : 'text-white/60 hover:bg-sidebar-hover/50 hover:text-crema'
-              }`}
-            >
-              <span className={`flex-shrink-0 ${isActive ? 'text-crema' : 'text-white/40'}`}>{item.icon}</span>
-              {item.label}
+            <Link key={href} href={href} style={{
+              display: 'flex', alignItems: 'center',
+              padding: '9px 12px', borderRadius: 8, textDecoration: 'none',
+              fontSize: 13, fontWeight: active ? 600 : 400,
+              color: active ? '#fff' : 'rgba(255,255,255,0.6)',
+              background: active ? 'rgba(255,255,255,0.12)' : 'transparent',
+            }}>
+              {label}
             </Link>
           )
         })}
       </nav>
 
-      {/* User info + logout */}
-      <div className="p-4 border-t border-white/10">
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-bold" style={{ backgroundColor: '#75B781', color: '#264534' }}>
-              {userInfo.name.charAt(0)}
-            </div>
-            <div className="min-w-0">
-              <p className="text-white/80 text-xs font-medium truncate leading-tight">{userInfo.name}</p>
-              {userInfo.sector && <p className="text-white/40 text-xs truncate leading-tight">{userInfo.sector}</p>}
-            </div>
-          </div>
-          <button
-            onClick={handleSignOut}
-            className="flex-shrink-0 p-1.5 rounded-lg text-white/30 hover:text-white/70 hover:bg-white/10 transition-colors"
-            title="Cerrar sesión"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-            </svg>
-          </button>
-        </div>
+      <div style={{ padding: '0 20px 8px' }}>
+        <Ilustracion />
       </div>
-    </aside>
+
+      <div style={{ padding: '0 12px 12px' }}>
+        <Link href="/nuevo-caso" style={{
+          display: 'block', textAlign: 'center',
+          padding: '11px 12px', borderRadius: 8, textDecoration: 'none',
+          fontSize: 14, fontWeight: 600, color: '#fff', background: '#007271',
+        }}>
+          + Nuevo caso
+        </Link>
+      </div>
+
+      <div style={{ padding: '0 12px' }}>
+        <button onClick={handleLogout} style={{
+          width: '100%', padding: '8px 12px', borderRadius: 8,
+          border: '1px solid rgba(255,255,255,0.15)', background: 'transparent',
+          color: 'rgba(255,255,255,0.45)', fontSize: 13, cursor: 'pointer',
+        }}>
+          Cerrar sesión
+        </button>
+      </div>
+    </div>
   )
 }
