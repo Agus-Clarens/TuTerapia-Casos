@@ -47,7 +47,7 @@ function getAcciones(sector: string, area: string) {
 
 
 function autorColor(autor: string) {
-  if (autor.includes('Agus')) return '#F29683'      // rosa
+  if (autor.includes('Agus')) return '#F472B6'      // rosa (distinto del naranja de estado)
   if (autor.includes('Sol')) return '#C084FC'        // lila
   if (autor.includes('Belu') || autor.includes('Orne') || autor.includes('Caro')) return '#FCD07F' // amarillo
   if (autor.includes('Sofi')) return '#86EFAC'       // verde claro
