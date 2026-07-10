@@ -118,7 +118,7 @@ export default function LoginPage() {
       {/* Card centrada */}
       <div style={{ position: 'relative', zIndex: 10, background: '#fff', borderRadius: 20, padding: '40px 48px', width: '100%', maxWidth: 420, boxShadow: '0 8px 40px rgba(38,69,52,0.12)', border: '1px solid rgba(38,69,52,0.08)' }}>
         <div style={{ textAlign: 'center', marginBottom: 28 }}>
-          <Image src="/logo.png" alt="Tu Terapia" width={160} height={64} style={{ objectFit: 'contain', marginBottom: 8 }} />
+          <Image src="/logo.png" alt="Tu Terapia" width={170} height={96} style={{ objectFit: 'contain', marginBottom: 8 }} />
           <p style={{ color: '#6B7280', fontSize: 13, margin: 0 }}>Sistema de Gestión de Casos</p>
           <p style={{ color: '#9CA3AF', fontSize: 11, margin: '4px 0 0' }}>CX · Admin · Talent</p>
         </div>
