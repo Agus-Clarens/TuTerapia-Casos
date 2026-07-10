@@ -11,6 +11,7 @@ const NAV = [
   { href: '/talent', label: 'Talent' },
   { href: '/admin-talent', label: 'Admin + Talent' },
   { href: '/descuentos', label: 'Descuentos' },
+  { href: '/facturas', label: 'Facturas' },
 ]
 
 function Ilustracion() {
