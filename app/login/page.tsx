@@ -19,11 +19,12 @@ export default function LoginPage() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#FEFAF5', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
+    <div style={{ minHeight: '100vh', background: '#FEFAF5', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 40, position: 'relative', overflow: 'hidden', padding: '40px 24px 90px' }}>
 
-      {/* Ilustración de fondo: paciente en diván con terapeuta */}
+      {/* Ilustración al costado: paciente en diván con terapeuta */}
       <svg viewBox="0 0 1200 700" xmlns="http://www.w3.org/2000/svg"
-        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.13 }}>
+        className="login-illustration"
+        style={{ width: '46%', maxWidth: 560, height: 'auto', opacity: 0.35, flexShrink: 0 }}>
 
         {/* === ESCENA PRINCIPAL: paciente en diván con terapeuta === */}
 
@@ -112,9 +113,6 @@ export default function LoginPage() {
         {/* Alfombra */}
         <ellipse cx="480" cy="520" rx="320" ry="30" fill="none" stroke="#264534" strokeWidth="3"/>
         <ellipse cx="480" cy="520" rx="280" ry="22" fill="none" stroke="#264534" strokeWidth="1.5"/>
-
-        {/* Texto frase */}
-        <text x="600" y="620" textAnchor="middle" fontFamily="Georgia, serif" fontSize="22" fill="#264534" fontStyle="italic" opacity="0.6">un espacio para sanar</text>
       </svg>
 
       {/* Card centrada */}
@@ -143,6 +141,17 @@ export default function LoginPage() {
           </button>
         </div>
       </div>
+
+      {/* Frase fija abajo, siempre visible */}
+      <p style={{ position: 'absolute', bottom: 28, left: 0, width: '100%', textAlign: 'center', fontFamily: 'Georgia, serif', fontSize: 18, fontStyle: 'italic', color: '#264534', opacity: 0.55, margin: 0, zIndex: 5 }}>
+        un espacio para sanar
+      </p>
+
+      <style>{`
+        @media (max-width: 900px) {
+          .login-illustration { display: none; }
+        }
+      `}</style>
     </div>
   )
 }

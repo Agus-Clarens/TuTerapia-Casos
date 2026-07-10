@@ -1,4 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
   <rect width="32" height="32" rx="8" fill="#264534"/>
-  <text x="16" y="22" font-family="Arial, sans-serif" font-size="13" font-weight="bold" fill="#75B781" text-anchor="middle">TT</text>
+  <!-- burbuja trasera -->
+  <path d="M9 10 h11 a2 2 0 0 1 2 2 v6 a2 2 0 0 1 -2 2 h-8.5 l-3 3 v-3 h-1.5 a2 2 0 0 1 -2 -2 v-6 a2 2 0 0 1 2 -2 Z" fill="#75B781" opacity="0.55"/>
+  <!-- burbuja delantera -->
+  <path d="M13 7 h11 a2 2 0 0 1 2 2 v6 a2 2 0 0 1 -2 2 h-1.5 v3 l-3 -3 h-6.5 a2 2 0 0 1 -2 -2 v-6 a2 2 0 0 1 2 -2 Z" fill="#B7E2C0"/>
+  <circle cx="17.3" cy="12" r="1" fill="#264534"/>
+  <circle cx="21.3" cy="12" r="1" fill="#264534"/>
 </svg>

@@ -67,7 +67,7 @@ export function getTipoCasoInfo(tipo: string): { area: string; requiere_descuent
 
 export const STATUS_COLORS: Record<string, string> = {
   'Nuevo': '#3B82F6',
-  'En curso': '#F97316',
+  'En curso': '#F29683',
   'Requiere atención': '#F97316',
   'Cerrado': '#75B781',
 }

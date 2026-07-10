@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabase'
 
 const CARGADO_POR = ['Sol CX','Agus Admin','Sofi Admin','Orne Talent','Caro Talent','Belu Talent','Nico Director','Nacho Director']
 
-const STATUS_COLORS: any = { 'Nuevo': '#3B82F6', 'En curso': '#F97316', 'Cerrado': '#75B781' }
+const STATUS_COLORS: any = { 'Nuevo': '#3B82F6', 'En curso': '#F29683', 'Cerrado': '#75B781' }
 
 function calcularEstadoGlobal(area: string, ea: string, et: string, ec: string) {
   const a = ea||'Pendiente', t = et||'Pendiente', c = ec||'Pendiente'
@@ -20,7 +20,7 @@ function calcularEstadoGlobal(area: string, ea: string, et: string, ec: string) 
 }
 
 function Badge({ label, estado }: any) {
-  const color = estado==='Cerrado'?'#75B781':estado==='En curso'?'#F97316':'#3B82F6'
+  const color = estado==='Cerrado'?'#75B781':estado==='En curso'?'#F29683':'#3B82F6'
   return <span style={{ background:color, color:'#fff', borderRadius:6, padding:'2px 8px', fontSize:11, fontWeight:600, marginRight:4 }}>{label}: {estado||'Pendiente'}</span>
 }
 
