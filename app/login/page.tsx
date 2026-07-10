@@ -22,65 +22,67 @@ export default function LoginPage() {
     <div style={{ minHeight: '100vh', background: '#FEFAF5', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', padding: '40px 24px 90px' }}>
 
       {/* Ilustración al costado izquierdo: paciente en diván con terapeuta (dibujo a color) */}
-      <svg viewBox="0 0 820 560" xmlns="http://www.w3.org/2000/svg"
+      <svg viewBox="0 0 800 480" xmlns="http://www.w3.org/2000/svg"
         className="login-illustration"
-        style={{ position: 'absolute', left: '1%', top: '50%', transform: 'translateY(-50%)', width: '48%', maxWidth: 640, height: 'auto', opacity: 0.96 }}>
+        style={{ position: 'absolute', left: '0.5%', top: '50%', transform: 'translateY(-50%)', width: '50%', maxWidth: 660, height: 'auto', opacity: 0.98 }}>
 
         {/* Alfombra */}
-        <ellipse cx="360" cy="478" rx="300" ry="28" fill="#EDE3D3"/>
+        <ellipse cx="330" cy="410" rx="270" ry="24" fill="#EDE3D3"/>
 
-        {/* Diván */}
-        <rect x="90" y="330" width="420" height="100" rx="28" fill="#75B781" stroke="#264534" strokeWidth="5"/>
-        <rect x="470" y="200" width="70" height="230" rx="22" fill="#5FA070" stroke="#264534" strokeWidth="5"/>
-        <rect x="60" y="300" width="55" height="130" rx="20" fill="#5FA070" stroke="#264534" strokeWidth="5"/>
-        <rect x="110" y="428" width="14" height="30" rx="4" fill="#264534"/>
-        <rect x="470" y="428" width="14" height="30" rx="4" fill="#264534"/>
+        {/* Diván (chaise longue) */}
+        <rect x="70" y="308" width="380" height="82" rx="38" fill="#75B781" stroke="#264534" strokeWidth="5"/>
+        <path d="M420 308 Q420 218 488 214 Q542 212 542 258 Q542 298 494 304 Q452 308 420 308 Z" fill="#5FA070" stroke="#264534" strokeWidth="5"/>
+        <rect x="100" y="386" width="14" height="26" rx="4" fill="#264534"/>
+        <rect x="420" y="386" width="14" height="26" rx="4" fill="#264534"/>
 
-        {/* Paciente: piernas */}
-        <path d="M118 358 Q95 345 88 312 Q84 294 100 290 Q115 288 120 305 Q126 332 148 350 Z" fill="#FCD07F" stroke="#264534" strokeWidth="4"/>
-        {/* Paciente: torso */}
-        <rect x="140" y="328" width="220" height="70" rx="35" fill="#007271" stroke="#264534" strokeWidth="5"/>
-        {/* Paciente: brazo */}
-        <path d="M230 338 Q252 318 278 320" fill="none" stroke="#F4C89A" strokeWidth="16" strokeLinecap="round"/>
+        {/* Paciente: cuerpo/vestido reclinado */}
+        <path d="M108 336 Q92 330 90 310 Q88 292 106 288 Q122 285 127 304 Q131 320 150 328 L338 344 Q364 347 364 367 Q364 384 338 382 L128 371 Q110 367 108 350 Z" fill="#9CAF88" stroke="#264534" strokeWidth="4"/>
+        {/* Paciente: brazo (apoyado sobre el torso, con mano) */}
+        <path d="M195 348 Q225 332 255 336 Q268 338 270 345" fill="none" stroke="#F4C89A" strokeWidth="15" strokeLinecap="round"/>
+        <circle cx="271" cy="346" r="9" fill="#F4C89A" stroke="#264534" strokeWidth="3"/>
+        {/* Paciente: pelo (detrás de la cabeza, fluyendo al hombro) */}
+        <path d="M353 302 Q347 268 393 258 Q439 268 433 302 Q433 322 418 334 L418 378 Q400 384 384 378 L384 336 Q363 324 353 302Z" fill="#5B4433" stroke="#264534" strokeWidth="3"/>
         {/* Paciente: cabeza */}
-        <circle cx="420" cy="328" r="42" fill="#F4C89A" stroke="#264534" strokeWidth="5"/>
-        {/* Paciente: pelo */}
-        <path d="M382 318 Q380 278 420 273 Q462 278 460 318 Q450 296 420 294 Q392 296 382 318Z" fill="#264534"/>
+        <circle cx="393" cy="342" r="38" fill="#F4C89A" stroke="#264534" strokeWidth="4"/>
 
         {/* Globo de diálogo de la paciente */}
-        <path d="M290 130 h280 a20 20 0 0 1 20 20 v85 a20 20 0 0 1 -20 20 h-150 l-28 34 l4 -34 h-106 a20 20 0 0 1 -20 -20 v-85 a20 20 0 0 1 20 -20 Z" fill="#FEFAF5" stroke="#264534" strokeWidth="5"/>
-        <text x="430" y="172" textAnchor="middle" fontFamily="Georgia, serif" fontSize="21" fontWeight="700" fill="#264534">¡Qué bueno que</text>
-        <text x="430" y="202" textAnchor="middle" fontFamily="Georgia, serif" fontSize="21" fontWeight="700" fill="#264534">encontré a Tu Terapia! 🌿</text>
+        <path d="M155 128 h300 a22 22 0 0 1 22 22 v78 a22 22 0 0 1 -22 22 h-160 l-15 40 l-15 -40 h-110 a22 22 0 0 1 -22 -22 v-78 a22 22 0 0 1 22 -22 Z" fill="#FEFAF5" stroke="#264534" strokeWidth="5"/>
+        <text x="305" y="168" textAnchor="middle" fontFamily="Georgia, serif" fontSize="20" fontWeight="700" fill="#264534">¡Qué bueno que</text>
+        <text x="305" y="196" textAnchor="middle" fontFamily="Georgia, serif" fontSize="20" fontWeight="700" fill="#264534">encontré a Tu Terapia! 🌿</text>
 
-        {/* Terapeuta: silla */}
-        <rect x="560" y="260" width="130" height="18" rx="8" fill="#264534"/>
-        <rect x="565" y="180" width="18" height="105" rx="8" fill="#264534"/>
-        <rect x="665" y="260" width="18" height="80" rx="8" fill="#264534"/>
-        <rect x="575" y="260" width="18" height="80" rx="8" fill="#264534"/>
+        {/* Terapeuta: sillón */}
+        <path d="M578 300 Q578 195 645 190 Q705 190 705 258 L710 348 Q710 364 694 364 L588 364 Q574 364 574 348 Z" fill="#8B6B4A" stroke="#264534" strokeWidth="5"/>
+        <rect x="590" y="360" width="14" height="26" rx="4" fill="#264534"/>
+        <rect x="685" y="360" width="14" height="26" rx="4" fill="#264534"/>
 
-        {/* Terapeuta: cuerpo */}
-        <path d="M585 190 Q585 165 610 160 L655 160 Q680 160 680 185 L685 268 L580 268 Z" fill="#75B781" stroke="#264534" strokeWidth="5"/>
-        {/* Terapeuta: cabeza */}
-        <circle cx="632" cy="140" r="35" fill="#F4C89A" stroke="#264534" strokeWidth="5"/>
-        {/* Terapeuta: pelo */}
-        <path d="M600 130 Q602 103 632 100 Q662 103 664 130" fill="#264534"/>
+        {/* Terapeuta: cuerpo (traje) */}
+        <path d="M600 250 Q600 222 625 217 L665 217 Q690 222 690 250 L695 340 L595 340 Z" fill="#A9875F" stroke="#264534" strokeWidth="4"/>
+        {/* Terapeuta: cuello camisa */}
+        <path d="M632 225 L645 240 L658 225" fill="#FEFAF5" stroke="#264534" strokeWidth="2"/>
+
+        {/* Terapeuta: cabeza (pelado) */}
+        <circle cx="645" cy="192" r="34" fill="#F4C89A" stroke="#264534" strokeWidth="4"/>
+        {/* Terapeuta: pelo lateral canoso */}
+        <path d="M613 195 Q610 210 618 222" fill="none" stroke="#264534" strokeWidth="4" strokeLinecap="round"/>
+        <path d="M677 195 Q680 210 672 222" fill="none" stroke="#264534" strokeWidth="4" strokeLinecap="round"/>
         {/* Terapeuta: anteojos */}
-        <circle cx="620" cy="140" r="9" fill="none" stroke="#264534" strokeWidth="3"/>
-        <circle cx="645" cy="140" r="9" fill="none" stroke="#264534" strokeWidth="3"/>
-        <line x1="629" y1="140" x2="636" y2="140" stroke="#264534" strokeWidth="3"/>
+        <circle cx="632" cy="195" r="9" fill="none" stroke="#264534" strokeWidth="3"/>
+        <circle cx="658" cy="195" r="9" fill="none" stroke="#264534" strokeWidth="3"/>
+        <line x1="641" y1="195" x2="649" y2="195" stroke="#264534" strokeWidth="3"/>
+        {/* Terapeuta: bigote */}
+        <path d="M636 210 Q645 216 654 210" fill="none" stroke="#264534" strokeWidth="4" strokeLinecap="round"/>
 
-        {/* Terapeuta: libreta y brazo */}
-        <path d="M685 218 Q660 213 650 198" fill="none" stroke="#F4C89A" strokeWidth="14" strokeLinecap="round"/>
-        <rect x="670" y="205" width="55" height="70" rx="6" fill="#FEFAF5" stroke="#264534" strokeWidth="4"/>
-        <line x1="680" y1="222" x2="715" y2="222" stroke="#264534" strokeWidth="3"/>
-        <line x1="680" y1="235" x2="715" y2="235" stroke="#264534" strokeWidth="3"/>
-        <line x1="680" y1="248" x2="700" y2="248" stroke="#264534" strokeWidth="3"/>
+        {/* Terapeuta: libreta + brazo */}
+        <path d="M600 275 Q588 280 582 296" fill="none" stroke="#F4C89A" strokeWidth="14" strokeLinecap="round"/>
+        <rect x="565" y="288" width="50" height="64" rx="6" fill="#FEFAF5" stroke="#264534" strokeWidth="4"/>
+        <line x1="574" y1="304" x2="605" y2="304" stroke="#264534" strokeWidth="3"/>
+        <line x1="574" y1="317" x2="605" y2="317" stroke="#264534" strokeWidth="3"/>
+        <line x1="574" y1="330" x2="594" y2="330" stroke="#264534" strokeWidth="3"/>
 
-        {/* Planta decorativa */}
-        <rect x="30" y="440" width="16" height="60" rx="4" fill="#264534"/>
-        <path d="M38 435 Q20 405 5 400 Q28 415 38 435Z" fill="#75B781"/>
-        <path d="M38 425 Q60 398 80 396 Q58 410 38 425Z" fill="#75B781"/>
-        <path d="M38 445 Q22 420 10 412 Q28 425 38 445Z" fill="#5FA070"/>
+        {/* Nube de pensamiento del terapeuta */}
+        <circle cx="700" cy="120" r="10" fill="none" stroke="#264534" strokeWidth="3"/>
+        <circle cx="716" cy="105" r="7" fill="none" stroke="#264534" strokeWidth="3"/>
+        <path d="M660 70 Q650 40 685 32 Q700 15 725 28 Q755 25 758 55 Q778 62 768 85 Q772 105 745 105 Q735 118 715 108 Q685 112 680 90 Q655 90 660 70Z" fill="none" stroke="#264534" strokeWidth="3.5"/>
       </svg>
 
       <style>{`
