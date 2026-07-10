@@ -19,12 +19,12 @@ export default function LoginPage() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#FEFAF5', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 40, position: 'relative', overflow: 'hidden', padding: '40px 24px 90px' }}>
+    <div style={{ minHeight: '100vh', background: '#FEFAF5', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', padding: '40px 24px 90px' }}>
 
-      {/* Ilustración al costado: paciente en diván con terapeuta */}
+      {/* Ilustración al costado izquierdo: paciente en diván con terapeuta */}
       <svg viewBox="0 0 1200 700" xmlns="http://www.w3.org/2000/svg"
         className="login-illustration"
-        style={{ width: '46%', maxWidth: 560, height: 'auto', opacity: 0.35, flexShrink: 0 }}>
+        style={{ position: 'absolute', left: '-4%', top: '50%', transform: 'translateY(-50%)', width: '42%', maxWidth: 520, height: 'auto', opacity: 0.35 }}>
 
         {/* === ESCENA PRINCIPAL: paciente en diván con terapeuta === */}
 
@@ -120,7 +120,7 @@ export default function LoginPage() {
         <div style={{ textAlign: 'center', marginBottom: 28 }}>
           <Image src="/logo.png" alt="Tu Terapia" width={160} height={64} style={{ objectFit: 'contain', marginBottom: 8 }} />
           <p style={{ color: '#6B7280', fontSize: 13, margin: 0 }}>Sistema de Gestión de Casos</p>
-          <p style={{ color: '#9CA3AF', fontSize: 11, margin: '4px 0 0', fontStyle: 'italic' }}>CX · Admin · Talent — juntas llegamos más lejos 🌿</p>
+          <p style={{ color: '#9CA3AF', fontSize: 11, margin: '4px 0 0' }}>CX · Admin · Talent</p>
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
