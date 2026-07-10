@@ -81,11 +81,11 @@ export const AREA_BADGE: Record<string, string> = {
 
 export const ESTADO_BADGE: Record<string, string> = {
   Nuevo: 'bg-[#EDFFF4] text-[#264534] border border-[#75B781]',
-  'En curso': 'bg-[#FFF0EE] text-[#c0503a] border border-[#F29683]',
+  'En curso': 'bg-[#FFF4EC] text-[#b35a10] border border-[#F97316]',
   'Requiere atención': 'bg-[#FFFBEB] text-[#92670f] border border-[#FCD07F]',
   Resuelto: 'bg-[#EDFFF4] text-[#264534] border border-[#75B781]',
   Cerrado: 'bg-[#F5F4F2] text-[#938f80] border border-[#938f80]/50',
-  Pendiente: 'bg-[#FFF0EE] text-[#c0503a] border border-[#F29683]/50',
+  Pendiente: 'bg-[#FFF4EC] text-[#b35a10] border border-[#F97316]/50',
   Aplicado: 'bg-teal/10 text-teal border border-teal/30',
   Rechazado: 'bg-red-50 text-red-600 border border-red-200',
 }

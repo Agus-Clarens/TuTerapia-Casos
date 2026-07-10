@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabase'
 
 const CARGADO_POR = ['Sol CX','Agus Admin','Sofi Admin','Orne Talent','Caro Talent','Belu Talent','Nico Director','Nacho Director']
 
-const STATUS_COLORS: any = { 'Nuevo': '#3B82F6', 'En curso': '#F29683', 'Cerrado': '#75B781' }
+const STATUS_COLORS: any = { 'Nuevo': '#3B82F6', 'En curso': '#F97316', 'Cerrado': '#75B781' }
 
 function calcularEstadoGlobal(area: string, ea: string, et: string, ec: string) {
   const a = ea||'Pendiente', t = et||'Pendiente', c = ec||'Pendiente'
@@ -20,13 +20,13 @@ function calcularEstadoGlobal(area: string, ea: string, et: string, ec: string) 
 }
 
 function Badge({ label, estado }: any) {
-  const color = estado==='Cerrado'?'#75B781':estado==='En curso'?'#F29683':'#3B82F6'
+  const color = estado==='Cerrado'?'#75B781':estado==='En curso'?'#F97316':'#3B82F6'
   return <span style={{ background:color, color:'#fff', borderRadius:6, padding:'2px 8px', fontSize:11, fontWeight:600, marginRight:4 }}>{label}: {estado||'Pendiente'}</span>
 }
 
 function tagColor(tag: string) {
   if (tag.includes('Cerrar')) return '#75B781'
-  if (tag==='En curso') return '#F29683'
+  if (tag==='En curso') return '#F97316'
   return '#3B82F6'
 }
 
@@ -58,7 +58,7 @@ function autorColor(autor: string) {
 
 function estadoCard(estado: string) {
   if (estado === 'Nuevo') return { bg: '#EFF6FF', border: '#3B82F6' }
-  if (estado === 'En curso') return { bg: '#FFF0EE', border: '#F29683' }
+  if (estado === 'En curso') return { bg: '#FFF4EC', border: '#F97316' }
   if (estado === 'Cerrado') return { bg: '#F0FDF4', border: '#75B781' }
   return { bg: '#F9FAFB', border: '#9CA3AF' }
 }
@@ -88,10 +88,10 @@ export function CasoCard({ caso, onUpdate, sector, showDelete }: any) {
     if (!textoFinal) return
     await supabase.from('caso_actualizaciones').insert({ caso_id:caso.id, autor, texto:`[${accion}] ${textoFinal}` })
     const u: any = {}
-    if (accion==='En curso') {
-      if (sector==='admin') u.estado_admin='En curso'
-      if (sector==='talent') u.estado_talent='En curso'
-      if (sector==='cx') u.estado_cx='En curso'
+    if (accion==='En curso' || accion==='Actualización') {
+      if (sector==='admin' && caso.estado_admin !== 'Cerrado') u.estado_admin='En curso'
+      if (sector==='talent' && caso.estado_talent !== 'Cerrado') u.estado_talent='En curso'
+      if (sector==='cx' && caso.estado_cx !== 'Cerrado') u.estado_cx='En curso'
       // sector todos: solo marcar en curso si no está cerrado
       if (sector==='todos') {
         if (caso.area.includes('Admin') && caso.estado_admin !== 'Cerrado') u.estado_admin='En curso'
