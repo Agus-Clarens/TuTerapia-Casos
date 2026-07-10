@@ -142,7 +142,7 @@ export default function LoginPage() {
 
       {/* Foto del equipo, del lado derecho */}
       <div className="login-illustration" style={{ position: 'absolute', right: '2%', top: '50%', transform: 'translateY(-50%)', width: '32%', maxWidth: 420, zIndex: 5 }}>
-        <Image src="/equipo.jpg" alt="Equipo Tu Terapia" width={1046} height={818} style={{ width: '100%', height: 'auto', display: 'block' }} />
+        <Image src="/equipo.png" alt="Equipo Tu Terapia" width={1046} height={818} style={{ width: '100%', height: 'auto', display: 'block' }} />
       </div>
 
       <style>{`
