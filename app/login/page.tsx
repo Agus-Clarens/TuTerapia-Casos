@@ -79,12 +79,9 @@ export default function LoginPage() {
         <path d="M22 435 L48 435 L44 458 L26 458 Z" fill="none" stroke="#264534" strokeWidth="3"/>
       </svg>
 
-      {/* Foto del equipo, chiquita del lado derecho */}
-      <div className="login-illustration" style={{ position: 'absolute', right: '2%', top: '50%', transform: 'translateY(-50%)', width: '22%', maxWidth: 280, zIndex: 5 }}>
-        <Image src="/equipo.png" alt="Equipo Tu Terapia" width={280} height={240} style={{ width: '100%', height: 'auto', display: 'block' }} />
-        <p style={{ textAlign: 'center', fontFamily: 'Georgia, serif', fontStyle: 'italic', fontSize: 13, color: '#264534', opacity: 0.7, marginTop: 8 }}>
-          Todo el equipo, en un solo lugar
-        </p>
+      {/* Foto del equipo, del lado derecho */}
+      <div className="login-illustration" style={{ position: 'absolute', right: '2%', top: '50%', transform: 'translateY(-50%)', width: '32%', maxWidth: 420, zIndex: 5 }}>
+        <Image src="/equipo.png" alt="Equipo Tu Terapia" width={420} height={360} style={{ width: '100%', height: 'auto', display: 'block' }} />
       </div>
 
       <style>{`
