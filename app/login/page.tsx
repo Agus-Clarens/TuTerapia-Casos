@@ -21,7 +21,7 @@ export default function LoginPage() {
   return (
     <div style={{ minHeight: '100vh', background: '#FEFAF5', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', padding: '40px 24px 90px' }}>
 
-      {/* Ilustración al costado izquierdo: escena minimalista de objetos, sin personas */}
+      {/* Ilustración al costado izquierdo: sillón + mesita, sin ventana atrás */}
       <svg viewBox="0 0 700 480" xmlns="http://www.w3.org/2000/svg"
         className="login-illustration"
         style={{ position: 'absolute', left: '1%', top: '50%', transform: 'translateY(-50%)', width: '46%', maxWidth: 600, height: 'auto', opacity: 1 }}>
@@ -51,43 +51,6 @@ export default function LoginPage() {
         {/* Taza sobre la mesita */}
         <path d="M415 305 Q415 320 428 320 Q441 320 441 305 Z" fill="none" stroke="#264534" strokeWidth="3"/>
         <path d="M441 308 Q452 308 450 317 Q448 325 439 323" fill="none" stroke="#264534" strokeWidth="2.5"/>
-
-        {/* Ventana con cortina, fondo */}
-        <rect x="500" y="90" width="150" height="190" rx="6" fill="none" stroke="#264534" strokeWidth="3"/>
-        <line x1="575" y1="90" x2="575" y2="280" stroke="#264534" strokeWidth="2"/>
-        <line x1="500" y1="185" x2="650" y2="185" stroke="#264534" strokeWidth="2"/>
-        <path d="M500 90 Q520 130 512 185" fill="none" stroke="#264534" strokeWidth="2"/>
-
-        {/* Hojitas sueltas decorativas */}
-        <path d="M40 150 Q28 135 42 122 Q56 135 40 150Z" fill="none" stroke="#264534" strokeWidth="2.5"/>
-        <path d="M470 415 Q458 401 472 389 Q486 401 470 415Z" fill="none" stroke="#264534" strokeWidth="2.5"/>
-      </svg>
-
-      {/* Dibujos decorativos del otro lado (derecha), mismo estilo */}
-      <svg viewBox="0 0 300 500" xmlns="http://www.w3.org/2000/svg"
-        className="login-illustration"
-        style={{ position: 'absolute', right: '1%', top: '50%', transform: 'translateY(-50%)', width: '18%', maxWidth: 230, height: 'auto', opacity: 1 }}>
-        {/* Planta alta en maceta */}
-        <path d="M60 430 L60 300" stroke="#264534" strokeWidth="3" fill="none"/>
-        <path d="M60 340 Q30 320 20 285 Q50 300 60 340Z" fill="none" stroke="#264534" strokeWidth="3"/>
-        <path d="M60 320 Q95 300 108 268 Q78 285 60 320Z" fill="none" stroke="#264534" strokeWidth="3"/>
-        <path d="M60 360 Q35 345 26 318 Q52 330 60 360Z" fill="none" stroke="#264534" strokeWidth="3"/>
-        <path d="M38 430 L82 430 L76 470 L44 470 Z" fill="none" stroke="#264534" strokeWidth="3"/>
-
-        {/* Pila de libros */}
-        <rect x="150" y="80" width="90" height="16" rx="3" fill="none" stroke="#264534" strokeWidth="3"/>
-        <rect x="158" y="96" width="78" height="16" rx="3" fill="none" stroke="#264534" strokeWidth="3"/>
-        <rect x="150" y="112" width="86" height="16" rx="3" fill="none" stroke="#264534" strokeWidth="3"/>
-
-        {/* Reloj */}
-        <circle cx="200" cy="230" r="34" fill="none" stroke="#264534" strokeWidth="3"/>
-        <line x1="200" y1="230" x2="200" y2="210" stroke="#264534" strokeWidth="2.5" strokeLinecap="round"/>
-        <line x1="200" y1="230" x2="215" y2="236" stroke="#264534" strokeWidth="2.5" strokeLinecap="round"/>
-
-        {/* Hojitas sueltas */}
-        <path d="M90 220 Q78 205 92 192 Q106 205 90 220Z" fill="none" stroke="#264534" strokeWidth="2.5"/>
-        <path d="M110 410 Q98 396 112 384 Q126 396 110 410Z" fill="none" stroke="#264534" strokeWidth="2.5"/>
-        <path d="M180 380 Q168 366 182 354 Q196 366 180 380Z" fill="none" stroke="#264534" strokeWidth="2.5"/>
       </svg>
 
       <style>{`
@@ -122,8 +85,8 @@ export default function LoginPage() {
       </div>
 
       {/* Frase fija abajo, siempre visible */}
-      <p style={{ position: 'absolute', bottom: 28, left: 0, width: '100%', textAlign: 'center', fontFamily: 'Georgia, serif', fontSize: 18, fontStyle: 'italic', color: '#264534', opacity: 0.55, margin: 0, zIndex: 5 }}>
-        un espacio para sanar
+      <p style={{ position: 'absolute', bottom: 28, left: 0, width: '100%', textAlign: 'center', fontFamily: 'Georgia, serif', fontSize: 16, fontStyle: 'italic', color: '#264534', opacity: 0.6, margin: 0, zIndex: 5 }}>
+        Coordinando CX, Admin y Talent — un solo equipo, una sola conversación
       </p>
     </div>
   )
