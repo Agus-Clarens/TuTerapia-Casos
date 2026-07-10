@@ -24,7 +24,7 @@ export default function LoginPage() {
       {/* Ilustración al costado izquierdo: paciente en diván con terapeuta */}
       <svg viewBox="0 0 1200 700" xmlns="http://www.w3.org/2000/svg"
         className="login-illustration"
-        style={{ position: 'absolute', left: '-4%', top: '50%', transform: 'translateY(-50%)', width: '42%', maxWidth: 520, height: 'auto', opacity: 0.35 }}>
+        style={{ position: 'absolute', left: '1%', top: '50%', transform: 'translateY(-50%)', width: '58%', maxWidth: 760, height: 'auto', opacity: 0.4 }}>
 
         {/* === ESCENA PRINCIPAL: paciente en diván con terapeuta === */}
 
