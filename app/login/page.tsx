@@ -120,7 +120,7 @@ export default function LoginPage() {
 
       {/* Frase fija abajo, siempre visible */}
       <p style={{ position: 'absolute', bottom: 28, left: 0, width: '100%', textAlign: 'center', fontFamily: 'Georgia, serif', fontSize: 16, fontStyle: 'italic', color: '#264534', opacity: 0.6, margin: 0, zIndex: 5 }}>
-        Coordinando CX, Admin y Talent — un solo equipo, una sola conversación
+        Transformamos solicitudes en soluciones
       </p>
     </div>
   )
