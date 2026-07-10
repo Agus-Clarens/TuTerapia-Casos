@@ -24,7 +24,7 @@ export default function LoginPage() {
       {/* Ilustración al costado izquierdo: sillón + mesita + lámpara + cuadros (verde del equipo, tipo dibujo a mano) */}
       <svg viewBox="0 0 700 560" xmlns="http://www.w3.org/2000/svg"
         className="login-illustration"
-        style={{ position: 'absolute', left: '1%', top: '50%', transform: 'translateY(-50%)', width: '44%', maxWidth: 580, height: 'auto', opacity: 1 }}>
+        style={{ position: 'absolute', left: '1%', top: '50%', transform: 'translateY(-50%)', width: '36%', maxWidth: 480, height: 'auto', opacity: 1 }}>
 
         <defs>
           {/* Filtro de textura sutil, como si fuera crayón */}
