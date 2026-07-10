@@ -63,14 +63,7 @@ function estadoCard(estado: string) {
   return { bg: '#F9FAFB', border: '#9CA3AF' }
 }
 
-function autorColor(autor: string) {
-  if (autor.includes('Agus')) return '#F29683'
-  if (autor.includes('Sol')) return '#C084FC'
-  if (autor.includes('Belu') || autor.includes('Orne') || autor.includes('Caro')) return '#FCD07F'
-  if (autor.includes('Sofi')) return '#86EFAC'
-  if (autor.includes('Nico') || autor.includes('Nacho')) return '#93C5FD'
-  return '#E5E7EB'
-}
+
 
 export function CasoCard({ caso, onUpdate, sector, showDelete }: any) {
   const [open, setOpen] = useState(false)
