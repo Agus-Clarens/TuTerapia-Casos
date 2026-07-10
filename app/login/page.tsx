@@ -21,68 +21,59 @@ export default function LoginPage() {
   return (
     <div style={{ minHeight: '100vh', background: '#FEFAF5', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', padding: '40px 24px 90px' }}>
 
-      {/* Ilustración al costado izquierdo: paciente en diván con terapeuta (dibujo a color) */}
-      <svg viewBox="0 0 800 480" xmlns="http://www.w3.org/2000/svg"
+      {/* Ilustración al costado izquierdo: sesión online, estilo del Instagram de la marca (línea simple, un solo color) */}
+      <svg viewBox="0 0 640 480" xmlns="http://www.w3.org/2000/svg"
         className="login-illustration"
-        style={{ position: 'absolute', left: '0.5%', top: '50%', transform: 'translateY(-50%)', width: '50%', maxWidth: 660, height: 'auto', opacity: 0.98 }}>
+        style={{ position: 'absolute', left: '1%', top: '50%', transform: 'translateY(-50%)', width: '44%', maxWidth: 560, height: 'auto', opacity: 1 }}>
 
-        {/* Alfombra */}
-        <ellipse cx="330" cy="410" rx="270" ry="24" fill="#EDE3D3"/>
+        {/* Almohadón */}
+        <ellipse cx="190" cy="412" rx="105" ry="20" fill="#DCEEDD" stroke="#264534" strokeWidth="3"/>
 
-        {/* Diván (chaise longue) */}
-        <rect x="70" y="308" width="380" height="82" rx="38" fill="#75B781" stroke="#264534" strokeWidth="5"/>
-        <path d="M420 308 Q420 218 488 214 Q542 212 542 258 Q542 298 494 304 Q452 308 420 308 Z" fill="#5FA070" stroke="#264534" strokeWidth="5"/>
-        <rect x="100" y="386" width="14" height="26" rx="4" fill="#264534"/>
-        <rect x="420" y="386" width="14" height="26" rx="4" fill="#264534"/>
+        {/* Piernas cruzadas (sentada) */}
+        <path d="M100 402 Q92 366 135 358 Q165 353 190 368 Q215 353 245 358 Q288 366 280 402" fill="none" stroke="#264534" strokeWidth="4" strokeLinecap="round"/>
 
-        {/* Paciente: cuerpo/vestido reclinado */}
-        <path d="M108 336 Q92 330 90 310 Q88 292 106 288 Q122 285 127 304 Q131 320 150 328 L338 344 Q364 347 364 367 Q364 384 338 382 L128 371 Q110 367 108 350 Z" fill="#9CAF88" stroke="#264534" strokeWidth="4"/>
-        {/* Paciente: brazo (apoyado sobre el torso, con mano) */}
-        <path d="M195 348 Q225 332 255 336 Q268 338 270 345" fill="none" stroke="#F4C89A" strokeWidth="15" strokeLinecap="round"/>
-        <circle cx="271" cy="346" r="9" fill="#F4C89A" stroke="#264534" strokeWidth="3"/>
-        {/* Paciente: pelo (detrás de la cabeza, fluyendo al hombro) */}
-        <path d="M353 302 Q347 268 393 258 Q439 268 433 302 Q433 322 418 334 L418 378 Q400 384 384 378 L384 336 Q363 324 353 302Z" fill="#5B4433" stroke="#264534" strokeWidth="3"/>
-        {/* Paciente: cabeza */}
-        <circle cx="393" cy="342" r="38" fill="#F4C89A" stroke="#264534" strokeWidth="4"/>
+        {/* Torso */}
+        <path d="M148 372 Q145 315 190 308 Q235 315 232 372" fill="none" stroke="#264534" strokeWidth="4"/>
 
-        {/* Globo de diálogo de la paciente */}
-        <path d="M155 128 h300 a22 22 0 0 1 22 22 v78 a22 22 0 0 1 -22 22 h-160 l-15 40 l-15 -40 h-110 a22 22 0 0 1 -22 -22 v-78 a22 22 0 0 1 22 -22 Z" fill="#FEFAF5" stroke="#264534" strokeWidth="5"/>
-        <text x="305" y="168" textAnchor="middle" fontFamily="Georgia, serif" fontSize="20" fontWeight="700" fill="#264534">¡Qué bueno que</text>
-        <text x="305" y="196" textAnchor="middle" fontFamily="Georgia, serif" fontSize="20" fontWeight="700" fill="#264534">encontré a Tu Terapia! 🌿</text>
+        {/* Brazo apoyado (mano cerca del mentón) */}
+        <path d="M150 340 Q126 328 122 300 Q120 288 132 285" fill="none" stroke="#264534" strokeWidth="4" strokeLinecap="round"/>
 
-        {/* Terapeuta: sillón */}
-        <path d="M578 300 Q578 195 645 190 Q705 190 705 258 L710 348 Q710 364 694 364 L588 364 Q574 364 574 348 Z" fill="#8B6B4A" stroke="#264534" strokeWidth="5"/>
-        <rect x="590" y="360" width="14" height="26" rx="4" fill="#264534"/>
-        <rect x="685" y="360" width="14" height="26" rx="4" fill="#264534"/>
+        {/* Cabeza */}
+        <circle cx="188" cy="272" r="34" fill="none" stroke="#264534" strokeWidth="4"/>
+        {/* Pelo */}
+        <path d="M156 262 Q152 232 188 226 Q224 232 222 262 Q222 250 188 246 Q156 250 156 262Z" fill="none" stroke="#264534" strokeWidth="3.5"/>
 
-        {/* Terapeuta: cuerpo (traje) */}
-        <path d="M600 250 Q600 222 625 217 L665 217 Q690 222 690 250 L695 340 L595 340 Z" fill="#A9875F" stroke="#264534" strokeWidth="4"/>
-        {/* Terapeuta: cuello camisa */}
-        <path d="M632 225 L645 240 L658 225" fill="#FEFAF5" stroke="#264534" strokeWidth="2"/>
+        {/* Mesita baja */}
+        <line x1="95" y1="440" x2="95" y2="458" stroke="#264534" strokeWidth="4" strokeLinecap="round"/>
+        <line x1="300" y1="440" x2="300" y2="458" stroke="#264534" strokeWidth="4" strokeLinecap="round"/>
+        <line x1="85" y1="440" x2="310" y2="440" stroke="#264534" strokeWidth="4" strokeLinecap="round"/>
 
-        {/* Terapeuta: cabeza (pelado) */}
-        <circle cx="645" cy="192" r="34" fill="#F4C89A" stroke="#264534" strokeWidth="4"/>
-        {/* Terapeuta: pelo lateral canoso */}
-        <path d="M613 195 Q610 210 618 222" fill="none" stroke="#264534" strokeWidth="4" strokeLinecap="round"/>
-        <path d="M677 195 Q680 210 672 222" fill="none" stroke="#264534" strokeWidth="4" strokeLinecap="round"/>
-        {/* Terapeuta: anteojos */}
-        <circle cx="632" cy="195" r="9" fill="none" stroke="#264534" strokeWidth="3"/>
-        <circle cx="658" cy="195" r="9" fill="none" stroke="#264534" strokeWidth="3"/>
-        <line x1="641" y1="195" x2="649" y2="195" stroke="#264534" strokeWidth="3"/>
-        {/* Terapeuta: bigote */}
-        <path d="M636 210 Q645 216 654 210" fill="none" stroke="#264534" strokeWidth="4" strokeLinecap="round"/>
+        {/* Laptop abierta con videollamada */}
+        <path d="M140 438 L255 438 L266 418 L129 418 Z" fill="none" stroke="#264534" strokeWidth="3.5"/>
+        <path d="M148 418 L247 418 L242 340 L153 340 Z" fill="none" stroke="#264534" strokeWidth="3.5"/>
+        {/* Cara en la pantalla (terapeuta en videollamada) */}
+        <circle cx="197" cy="378" r="20" fill="none" stroke="#264534" strokeWidth="3"/>
+        <path d="M188 384 Q197 390 206 384" fill="none" stroke="#264534" strokeWidth="2.5" strokeLinecap="round"/>
 
-        {/* Terapeuta: libreta + brazo */}
-        <path d="M600 275 Q588 280 582 296" fill="none" stroke="#F4C89A" strokeWidth="14" strokeLinecap="round"/>
-        <rect x="565" y="288" width="50" height="64" rx="6" fill="#FEFAF5" stroke="#264534" strokeWidth="4"/>
-        <line x1="574" y1="304" x2="605" y2="304" stroke="#264534" strokeWidth="3"/>
-        <line x1="574" y1="317" x2="605" y2="317" stroke="#264534" strokeWidth="3"/>
-        <line x1="574" y1="330" x2="594" y2="330" stroke="#264534" strokeWidth="3"/>
+        {/* Cuaderno y lápiz al lado */}
+        <rect x="320" y="415" width="55" height="40" rx="3" fill="none" stroke="#264534" strokeWidth="3"/>
+        <line x1="330" y1="428" x2="365" y2="428" stroke="#264534" strokeWidth="2"/>
+        <line x1="330" y1="438" x2="365" y2="438" stroke="#264534" strokeWidth="2"/>
+        <line x1="330" y1="448" x2="352" y2="448" stroke="#264534" strokeWidth="2"/>
 
-        {/* Nube de pensamiento del terapeuta */}
-        <circle cx="700" cy="120" r="10" fill="none" stroke="#264534" strokeWidth="3"/>
-        <circle cx="716" cy="105" r="7" fill="none" stroke="#264534" strokeWidth="3"/>
-        <path d="M660 70 Q650 40 685 32 Q700 15 725 28 Q755 25 758 55 Q778 62 768 85 Q772 105 745 105 Q735 118 715 108 Q685 112 680 90 Q655 90 660 70Z" fill="none" stroke="#264534" strokeWidth="3.5"/>
+        {/* Taza */}
+        <path d="M40 430 Q40 448 58 448 Q76 448 76 430 Z" fill="none" stroke="#264534" strokeWidth="3"/>
+        <path d="M76 434 Q90 434 88 444 Q86 452 76 450" fill="none" stroke="#264534" strokeWidth="2.5"/>
+
+        {/* Plantita */}
+        <path d="M470 445 Q468 400 470 370" stroke="#264534" strokeWidth="3" fill="none"/>
+        <path d="M470 400 Q440 385 428 360 Q455 372 470 400Z" fill="none" stroke="#264534" strokeWidth="3"/>
+        <path d="M470 385 Q502 368 516 345 Q488 360 470 385Z" fill="none" stroke="#264534" strokeWidth="3"/>
+
+        {/* Globo de diálogo */}
+        <path d="M40 60 h380 a20 20 0 0 1 20 20 v90 a20 20 0 0 1 -20 20 h-210 l-20 42 l-4 -42 h-146 a20 20 0 0 1 -20 -20 v-90 a20 20 0 0 1 20 -20 Z" fill="#FEFAF5" stroke="#264534" strokeWidth="4"/>
+        <text x="230" y="105" textAnchor="middle" fontFamily="Georgia, serif" fontSize="23" fontWeight="700" fill="#264534">¡Qué bueno que</text>
+        <text x="230" y="140" textAnchor="middle" fontFamily="Georgia, serif" fontSize="23" fontWeight="700" fill="#264534">encontré a Tu Terapia! 🌿</text>
       </svg>
 
       <style>{`
