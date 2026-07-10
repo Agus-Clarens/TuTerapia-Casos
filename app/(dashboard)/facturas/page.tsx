@@ -92,10 +92,7 @@ export default function FacturasPage() {
 
   return (
     <div style={{ padding: 24, maxWidth: 1000 }}>
-      <h1 style={{ fontSize: 22, fontWeight: 700, color: '#264534', marginBottom: 6 }}>Facturas</h1>
-      <p style={{ fontSize: 13, color: '#6B7280', marginBottom: 20 }}>
-        Subí el PDF con los datos del paciente y el ticket asociado. Sol lo descarga desde acá y se lo envía al paciente.
-      </p>
+      <h1 style={{ fontSize: 22, fontWeight: 700, color: '#264534', marginBottom: 20 }}>Facturas</h1>
 
       {/* Form de carga */}
       <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: 12, padding: 20, marginBottom: 24 }}>
