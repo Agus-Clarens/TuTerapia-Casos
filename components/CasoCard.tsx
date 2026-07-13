@@ -20,8 +20,10 @@ function calcularEstadoGlobal(area: string, ea: string, et: string, ec: string) 
 }
 
 function Badge({ label, estado }: any) {
-  const color = estado==='Cerrado'?'#75B781':estado==='En curso'?'#F97316':'#3B82F6'
-  return <span style={{ background:color, color:'#fff', borderRadius:6, padding:'2px 8px', fontSize:11, fontWeight:600, marginRight:4 }}>{label}: {estado||'Pendiente'}</span>
+  const sinAbrir = !estado || estado==='Pendiente'
+  const color = estado==='Cerrado'?'#75B781':estado==='En curso'?'#F97316':sinAbrir?'#9CA3AF':'#3B82F6'
+  const texto = sinAbrir ? 'Sin abrir' : estado
+  return <span style={{ background:color, color:'#fff', borderRadius:6, padding:'2px 8px', fontSize:11, fontWeight:600, marginRight:4 }}>{label}: {texto}</span>
 }
 
 function tagColor(tag: string) {
@@ -34,6 +36,14 @@ function timeAgo(d: string) {
   const m = Math.floor((Date.now()-new Date(d).getTime())/60000)
   if (m<1) return 'ahora'; if (m<60) return `hace ${m}m`
   if (m<1440) return `hace ${Math.floor(m/60)}h`; return `hace ${Math.floor(m/1440)}d`
+}
+
+function sectorDeAutor(autor: string) {
+  if (autor.includes('Admin')) return 'admin'
+  if (autor.includes('Talent')) return 'talent'
+  if (autor.includes('CX')) return 'cx'
+  if (autor.includes('Director')) return 'admin' // directores actúan como admin
+  return null
 }
 
 function getAcciones(sector: string, area: string) {
@@ -88,16 +98,13 @@ export function CasoCard({ caso, onUpdate, sector, showDelete }: any) {
     if (!textoFinal) return
     await supabase.from('caso_actualizaciones').insert({ caso_id:caso.id, autor, texto:`[${accion}] ${textoFinal}` })
     const u: any = {}
+    // Cuando estamos en "todos", el sector real que actúa se infiere del autor,
+    // no se marca en curso todos los sectores del área.
+    const sectorEfectivo = sector === 'todos' ? sectorDeAutor(autor) : sector
     if (accion==='En curso' || accion==='Actualización') {
-      if (sector==='admin' && caso.estado_admin !== 'Cerrado') u.estado_admin='En curso'
-      if (sector==='talent' && caso.estado_talent !== 'Cerrado') u.estado_talent='En curso'
-      if (sector==='cx' && caso.estado_cx !== 'Cerrado') u.estado_cx='En curso'
-      // sector todos: solo marcar en curso si no está cerrado
-      if (sector==='todos') {
-        if (caso.area.includes('Admin') && caso.estado_admin !== 'Cerrado') u.estado_admin='En curso'
-        if (caso.area.includes('Talent') && caso.estado_talent !== 'Cerrado') u.estado_talent='En curso'
-        if (caso.area==='CX' && caso.estado_cx !== 'Cerrado') u.estado_cx='En curso'
-      }
+      if (sectorEfectivo==='admin' && caso.area.includes('Admin') && caso.estado_admin !== 'Cerrado') u.estado_admin='En curso'
+      if (sectorEfectivo==='talent' && caso.area.includes('Talent') && caso.estado_talent !== 'Cerrado') u.estado_talent='En curso'
+      if (sectorEfectivo==='cx' && caso.area==='CX' && caso.estado_cx !== 'Cerrado') u.estado_cx='En curso'
     }
     if (accion==='Cerrar para Admin') u.estado_admin='Cerrado'
     if (accion==='Cerrar para Talent') u.estado_talent='Cerrado'
