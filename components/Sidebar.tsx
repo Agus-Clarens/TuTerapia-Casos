@@ -68,7 +68,7 @@ export default function Sidebar() {
         </div>
       </div>
 
-      <nav style={{ flex: 1, padding: '8px 12px', display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <nav style={{ flex: 1, padding: '8px 12px', display: 'flex', flexDirection: 'column', gap: 2, overflowY: 'auto', minHeight: 0 }}>
         {NAV.map(({ href, label }) => {
           const active = pathname === href || pathname.startsWith(href + '/')
           return (
@@ -85,21 +85,15 @@ export default function Sidebar() {
         })}
       </nav>
 
-      <div style={{ padding: '0 20px 8px' }}>
-        <Ilustracion />
-      </div>
-
-      <div style={{ padding: '0 12px 12px' }}>
+      <div style={{ padding: '12px 12px 8px', borderTop: '1px solid rgba(255,255,255,0.1)', marginTop: 8, flexShrink: 0 }}>
         <Link href="/nuevo-caso" style={{
           display: 'block', textAlign: 'center',
           padding: '11px 12px', borderRadius: 8, textDecoration: 'none',
           fontSize: 14, fontWeight: 600, color: '#fff', background: '#007271',
+          marginBottom: 8,
         }}>
           + Nuevo caso
         </Link>
-      </div>
-
-      <div style={{ padding: '0 12px' }}>
         <button onClick={handleLogout} style={{
           width: '100%', padding: '8px 12px', borderRadius: 8,
           border: '1px solid rgba(255,255,255,0.15)', background: 'transparent',
