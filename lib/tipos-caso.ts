@@ -38,6 +38,7 @@ export const TIPOS_CASO: TipoCaso[] = [
   { nombre: 'Psicologo cobra fuera de plataforma', area: 'Admin+Talent', requiere_descuento: false },
   { nombre: 'Horario incorrecto con dano al paciente', area: 'Admin+Talent', requiere_descuento: false },
   // CX
+  { nombre: 'Cargo mal los datos en la factura', area: 'CX', requiere_descuento: false },
   { nombre: 'Contactar paciente para retencion', area: 'CX', requiere_descuento: false },
   { nombre: 'Derivacion a nuevo psicologo', area: 'CX', requiere_descuento: false },
   { nombre: 'Mala experiencia devolucion autonoma', area: 'CX', requiere_descuento: false },
