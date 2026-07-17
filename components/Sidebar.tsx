@@ -8,8 +8,10 @@ const NAV = [
   { href: '/casos', label: 'Todos los Casos' },
   { href: '/cx', label: 'CX' },
   { href: '/admin', label: 'Admin' },
+  { href: '/admin/ajustes-modalidad', label: 'Ajustes de modalidad' },
   { href: '/talent', label: 'Talent' },
   { href: '/admin-talent', label: 'Admin + Talent' },
+  { href: '/business', label: 'Business' },
   { href: '/descuentos', label: 'Descuentos' },
   { href: '/facturas', label: 'Facturas' },
 ]

@@ -3,14 +3,33 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '../../../lib/supabase'
 
-const CARGADO_POR = ['Sol CX','Agus Admin','Sofi Admin','Orne Talent','Caro Talent','Belu Talent','Nico Director','Nacho Director']
+const CARGADO_POR = ['Sol CX','Agus Admin','Sofi Admin','Orne Talent','Caro Talent','Belu Talent','Flor Business','Nico Director','Nacho Director']
 const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
+
+// Tipos "cruzados" CX ↔ Business: si los crea alguien de CX se asignan a Business, y viceversa
+const TIPOS_CRUZADOS_CX_BUSINESS = ['Problemas con el cupon', 'Contacto con la empresa']
+
 const TIPOS_CASO: any = {
   'Admin': { area: 'Admin', desc: false, tipos: ['Link de pago','Devolucion dentro del plazo','Devolucion fuera del plazo sin falla','Envio de factura','Problema con factura','Cupon no aplicado','Pago duplicado','Transferencia sesiones','Contracargo MP','Cambiar modalidad','Cambiar modalidad de sesiones (psicologo ya confirmo)','Ajuste de modalidad de pago'] },
   'Talent': { area: 'Talent', desc: false, tipos: ['Disponibilidad agenda','No confirma sesion','Cancelacion psicologo','Calendario incorrecto','Sesiones pendientes aprobacion','Psicologo fantasmeado','Pocas horas','Sin horas','Mejora perfil','Psicologo lleva pacientes por fuera de plataforma'] },
   'Admin+Talent (con descuento)': { area: 'Admin+Talent', desc: true, tipos: ['Devolucion fuera plazo con falla','Sesion sin consentimiento','Sesion marcada realizada no ocurrio','Descontar sesion'] },
   'Admin+Talent': { area: 'Admin+Talent', desc: false, tipos: ['Desvinculacion con pacientes activos','Cobra fuera plataforma','Horario incorrecto con dano'] },
   'CX': { area: 'CX', desc: false, tipos: ['Cargo mal los datos en la factura','Contactar retencion','Derivacion psicologo','Mala experiencia devolucion autonoma','Cancelacion por paciente'] },
+  'CX ↔ Business': { area: 'CX', desc: false, tipos: TIPOS_CRUZADOS_CX_BUSINESS, crossAssign: true },
+  'Business': { area: 'Business', desc: false, tipos: ['Alianza nueva','Renovacion contrato','Reporte a empresa','Seguimiento de facturacion empresa'] },
+}
+
+// Devuelve el área final según el tipo y quién lo carga (para casos cruzados CX ↔ Business)
+function getAreaFinal(tipo: string, cargadoPor: string): string {
+  if (TIPOS_CRUZADOS_CX_BUSINESS.includes(tipo)) {
+    // Se le asigna al OPUESTO de quien lo carga
+    if (cargadoPor.includes('CX')) return 'Business'
+    if (cargadoPor.includes('Business')) return 'CX'
+    // Cualquier otro (Admin, Talent, Director) → CX por defecto
+    return 'CX'
+  }
+  const info = getTipoInfo(tipo)
+  return info?.area || ''
 }
 
 function getTipoInfo(tipo: string) {
@@ -38,14 +57,15 @@ export default function NuevoCaso() {
     const { data: last } = await supabase.from('casos').select('nro_caso').order('created_at', { ascending: false }).limit(1)
     const lastNum = last?.[0]?.nro_caso ? parseInt(last[0].nro_caso.replace('TKT-', '')) : 0
     const nro_caso = `TKT-${String(lastNum + 1).padStart(3, '0')}`
+    const areaFinal = getAreaFinal(form.tipo_caso, form.cargado_por)
     const { error: err } = await supabase.from('casos').insert({
       nro_caso, fecha: new Date().toISOString().split('T')[0],
       cargado_por: form.cargado_por, pais: form.pais,
       pac_nombre: form.pac_nombre, pac_mail: form.pac_mail,
       psi_nombre: sinPsi ? null : form.psi_nombre, psi_mail: sinPsi ? null : form.psi_mail,
-      tipo_caso: form.tipo_caso, area: info?.area || '',
+      tipo_caso: form.tipo_caso, area: areaFinal,
       descripcion: form.descripcion, estado: 'Nuevo',
-      estado_admin: 'Pendiente', estado_talent: 'Pendiente', estado_cx: 'Pendiente',
+      estado_admin: 'Pendiente', estado_talent: 'Pendiente', estado_cx: 'Pendiente', estado_business: 'Pendiente',
       requiere_descuento: info?.desc || false,
       monto_descuento: info?.desc ? Number(form.monto_descuento) : null,
       mes_descuento: info?.desc ? form.mes_descuento : null,
@@ -56,7 +76,7 @@ export default function NuevoCaso() {
       const { data: caso } = await supabase.from('casos').select('id').eq('nro_caso', nro_caso).single()
       if (caso) await supabase.from('descuentos_psicologo').insert({ caso_id: caso.id, nro_caso, psi_nombre: form.psi_nombre, psi_mail: form.psi_mail, pac_nombre: form.pac_nombre, motivo: form.tipo_caso, monto: Number(form.monto_descuento), mes: form.mes_descuento, estado: 'Pendiente', tipo_sesion: form.tipo_sesion, descripcion: form.descripcion })
     }
-    fetch('/api/notify-slack', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nro_caso, area: info?.area, tipo_caso: form.tipo_caso, pac_nombre: form.pac_nombre, cargado_por: form.cargado_por, pais: form.pais }) })
+    fetch('/api/notify-slack', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nro_caso, area: areaFinal, tipo_caso: form.tipo_caso, pac_nombre: form.pac_nombre, cargado_por: form.cargado_por, pais: form.pais }) })
     router.push('/casos')
   }
 
@@ -86,7 +106,7 @@ export default function NuevoCaso() {
           <option value="">Seleccionar...</option>
           {Object.entries(TIPOS_CASO).map(([g,v]:any)=><optgroup key={g} label={g}>{v.tipos.map((t:string)=><option key={t}>{t}</option>)}</optgroup>)}
         </select>
-        {info && <p style={{ fontSize:12, color:'#007271', fontWeight:600, marginTop:4 }}>Área: {info.area}{info.desc ? ' · Requiere descuento' : ''}</p>}
+        {form.tipo_caso && <p style={{ fontSize:12, color:'#007271', fontWeight:600, marginTop:4 }}>Área: {getAreaFinal(form.tipo_caso, form.cargado_por)}{info?.desc ? ' · Requiere descuento' : ''}</p>}
       </div>
       {info?.desc && (
         <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:16, marginBottom:16 }}>
