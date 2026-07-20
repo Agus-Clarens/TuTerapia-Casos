@@ -67,7 +67,7 @@ export default function Sidebar() {
       <div style={{ padding: '0 20px 20px', borderBottom: '1px solid rgba(255,255,255,0.1)', marginBottom: 8 }}>
         <Image src="/logo.png" alt="Tu Terapia" width={160} height={64}
           style={{ objectFit: 'contain', objectPosition: 'left', width: '100%', height: 'auto', mixBlendMode: 'screen', display: 'block' }} />
-        <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', marginTop: 2, paddingLeft: 2 }}>
+        <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', marginTop: 2, paddingLeft: 44 }}>
           Gestiones Internas
         </div>
       </div>
