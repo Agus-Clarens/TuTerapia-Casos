@@ -126,15 +126,17 @@ export default function Page() {
           </select>
         </div>
 
-        {/* Destinatario */}
-        <div style={{ marginBottom: 12 }}>
-          <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 4 }}>
-            {tipo === 'Pago a proveedor' ? 'Pagar a *' : 'Reembolsar a *'}
-          </label>
-          <input value={destinatario} onChange={e => setDestinatario(e.target.value)}
-            placeholder={tipo === 'Pago a proveedor' ? 'Nombre del proveedor / persona / empresa' : 'Tu nombre'}
-            style={{ width: '100%', padding: '9px 12px', borderRadius: 6, border: '1.5px solid #E5E7EB', fontSize: 13, boxSizing: 'border-box', fontFamily: 'inherit' }} />
-        </div>
+        {/* Destinatario - solo se muestra si es Pago a proveedor */}
+        {tipo === 'Pago a proveedor' && (
+          <div style={{ marginBottom: 12 }}>
+            <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 4 }}>
+              Pagar a *
+            </label>
+            <input value={destinatario} onChange={e => setDestinatario(e.target.value)}
+              placeholder="Nombre del proveedor / persona / empresa"
+              style={{ width: '100%', padding: '9px 12px', borderRadius: 6, border: '1.5px solid #E5E7EB', fontSize: 13, boxSizing: 'border-box', fontFamily: 'inherit' }} />
+          </div>
+        )}
 
         {/* Motivo */}
         <div style={{ marginBottom: 12 }}>
