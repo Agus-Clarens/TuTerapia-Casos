@@ -24,6 +24,14 @@ const NAV_GROUPS = [
       { href: '/facturas', label: 'Facturas' },
     ],
   },
+  {
+    titulo: 'PAGOS',
+    items: [
+      { href: '/pagos/nueva', label: '+ Nueva solicitud' },
+      { href: '/pagos/mis-solicitudes', label: 'Mis solicitudes' },
+      { href: '/pagos/bandeja', label: 'Bandeja de pagos' },
+    ],
+  },
 ]
 
 function Ilustracion() {
