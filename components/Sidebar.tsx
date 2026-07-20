@@ -4,16 +4,26 @@ import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import { supabase } from '../lib/supabase'
 
-const NAV = [
-  { href: '/casos', label: 'Todos los Casos' },
-  { href: '/cx', label: 'CX' },
-  { href: '/admin', label: 'Admin' },
-  { href: '/admin/ajustes-modalidad', label: 'Ajustes de modalidad' },
-  { href: '/talent', label: 'Talent' },
-  { href: '/admin-talent', label: 'Admin + Talent' },
-  { href: '/business', label: 'Business' },
-  { href: '/descuentos', label: 'Descuentos' },
-  { href: '/facturas', label: 'Facturas' },
+const NAV_GROUPS = [
+  {
+    titulo: 'GESTIÓN DE CASOS',
+    items: [
+      { href: '/casos', label: 'Todos los Casos' },
+      { href: '/cx', label: 'CX' },
+      { href: '/admin', label: 'Admin' },
+      { href: '/admin/ajustes-modalidad', label: 'Ajustes de modalidad' },
+      { href: '/talent', label: 'Talent' },
+      { href: '/admin-talent', label: 'Admin + Talent' },
+      { href: '/business', label: 'Business' },
+      { href: '/descuentos', label: 'Descuentos' },
+    ],
+  },
+  {
+    titulo: 'DOCUMENTOS',
+    items: [
+      { href: '/facturas', label: 'Facturas' },
+    ],
+  },
 ]
 
 function Ilustracion() {
@@ -71,20 +81,31 @@ export default function Sidebar() {
       </div>
 
       <nav style={{ flex: 1, padding: '8px 12px', display: 'flex', flexDirection: 'column', gap: 2, overflowY: 'auto', minHeight: 0 }}>
-        {NAV.map(({ href, label }) => {
-          const active = pathname === href || pathname.startsWith(href + '/')
-          return (
-            <Link key={href} href={href} style={{
-              display: 'flex', alignItems: 'center',
-              padding: '9px 12px', borderRadius: 8, textDecoration: 'none',
-              fontSize: 13, fontWeight: active ? 600 : 400,
-              color: active ? '#fff' : 'rgba(255,255,255,0.6)',
-              background: active ? 'rgba(255,255,255,0.12)' : 'transparent',
+        {NAV_GROUPS.map(({ titulo, items }, gi) => (
+          <div key={titulo} style={{ marginTop: gi === 0 ? 0 : 14 }}>
+            <div style={{
+              fontSize: 10, fontWeight: 700, letterSpacing: 0.8,
+              color: 'rgba(255,255,255,0.35)',
+              padding: '4px 12px 6px', textTransform: 'uppercase',
             }}>
-              {label}
-            </Link>
-          )
-        })}
+              {titulo}
+            </div>
+            {items.map(({ href, label }) => {
+              const active = pathname === href || pathname.startsWith(href + '/')
+              return (
+                <Link key={href} href={href} style={{
+                  display: 'flex', alignItems: 'center',
+                  padding: '9px 12px', borderRadius: 8, textDecoration: 'none',
+                  fontSize: 13, fontWeight: active ? 600 : 400,
+                  color: active ? '#fff' : 'rgba(255,255,255,0.6)',
+                  background: active ? 'rgba(255,255,255,0.12)' : 'transparent',
+                }}>
+                  {label}
+                </Link>
+              )
+            })}
+          </div>
+        ))}
       </nav>
 
       <div style={{ padding: '12px 12px 8px', borderTop: '1px solid rgba(255,255,255,0.1)', marginTop: 8, flexShrink: 0 }}>
