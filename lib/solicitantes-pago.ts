@@ -15,5 +15,8 @@ export const SOLICITANTES_PAGO = [
   { nombre: 'Nico Brupbacher',     email: 'nicolasbrupbacher@gmail.com',      sector: 'Director' },
 ]
 
-// Email de la persona que puede marcar solicitudes como pagadas
-export const EMAIL_PAGOS = 'admin@tuterapia.com.ar' // Sofi Harduín
+// Emails de quienes pueden marcar solicitudes como pagadas
+export const EMAILS_PAGOS = [
+  'admin@tuterapia.com.ar',    // Sofi Harduín
+  'aclarens@tuterapia.com.ar', // Agus Clarens
+]

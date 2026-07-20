@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { supabase } from '../lib/supabase'
-import { EMAIL_PAGOS } from '../lib/solicitantes-pago'
+import { EMAILS_PAGOS } from '../lib/solicitantes-pago'
 
 const fmt = (m: number, moneda: string) => new Intl.NumberFormat('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(m) + ' ' + moneda
 
@@ -12,7 +12,7 @@ export function SolicitudCard({ sol, userEmail, onUpdate }: any) {
   const [showAccion, setShowAccion] = useState(false)
   const [error, setError] = useState('')
 
-  const puedeMarcar = userEmail.toLowerCase() === EMAIL_PAGOS.toLowerCase()
+  const puedeMarcar = EMAILS_PAGOS.map(e => e.toLowerCase()).includes(userEmail.toLowerCase())
   const esCreador = userEmail.toLowerCase() === (sol.solicitante_email || '').toLowerCase()
 
   async function descargar(path: string) {
