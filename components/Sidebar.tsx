@@ -68,7 +68,7 @@ export default function Sidebar() {
         <Image src="/logo.png" alt="Tu Terapia" width={160} height={64}
           style={{ objectFit: 'contain', width: '100%', height: 'auto', mixBlendMode: 'screen' }} />
         <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', marginTop: 2 }}>
-          Sistema Interno
+          Gestiones Internas
         </div>
       </div>
 
