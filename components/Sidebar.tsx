@@ -2,72 +2,56 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 
-const NAV_GROUPS = [
+type NavItem = { href: string, label: string, primary?: boolean }
+type NavGroup = { key: string, titulo: string, items: NavItem[] }
+
+const NAV_GROUPS: NavGroup[] = [
   {
-    titulo: 'GESTIÓN DE CASOS',
+    key: 'casos',
+    titulo: 'Gestión de Casos',
     items: [
-      { href: '/casos', label: 'Todos los Casos' },
-      { href: '/cx', label: 'CX' },
-      { href: '/admin', label: 'Admin' },
+      { href: '/nuevo-caso',              label: '+ Nuevo caso', primary: true },
+      { href: '/casos',                   label: 'Todos los Casos' },
+      { href: '/cx',                      label: 'CX' },
+      { href: '/admin',                   label: 'Admin' },
       { href: '/admin/ajustes-modalidad', label: 'Ajustes de modalidad' },
-      { href: '/talent', label: 'Talent' },
-      { href: '/admin-talent', label: 'Admin + Talent' },
-      { href: '/business', label: 'Business' },
-      { href: '/descuentos', label: 'Descuentos' },
+      { href: '/talent',                  label: 'Talent' },
+      { href: '/admin-talent',            label: 'Admin + Talent' },
+      { href: '/business',                label: 'Business' },
+      { href: '/descuentos',              label: 'Descuentos' },
+      { href: '/facturas',                label: 'Facturas' },
     ],
   },
   {
-    titulo: 'DOCUMENTOS',
+    key: 'pagos',
+    titulo: 'Gestión de Pagos',
     items: [
-      { href: '/facturas', label: 'Facturas' },
-    ],
-  },
-  {
-    titulo: 'PAGOS',
-    items: [
-      { href: '/pagos/nueva', label: '+ Nueva solicitud' },
-      { href: '/pagos/mis-solicitudes', label: 'Mis solicitudes' },
-      { href: '/pagos/bandeja', label: 'Bandeja de pagos' },
+      { href: '/pagos/nueva',            label: '+ Nueva solicitud', primary: true },
+      { href: '/pagos/mis-solicitudes',  label: 'Mis solicitudes' },
+      { href: '/pagos/bandeja',          label: 'Bandeja de pagos' },
     ],
   },
 ]
 
-function Ilustracion() {
-  return (
-    <svg viewBox="0 0 160 180" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', opacity: 0.22 }}>
-      {/* Persona 1 izq */}
-      <circle cx="45" cy="30" r="12" fill="none" stroke="#75B781" strokeWidth="2.5"/>
-      <path d="M28 52 Q45 42 62 52 L66 85 H24 Z" fill="none" stroke="#75B781" strokeWidth="2.5"/>
-      <rect x="18" y="72" width="54" height="34" rx="5" fill="none" stroke="#75B781" strokeWidth="2"/>
-      <line x1="12" y1="106" x2="78" y2="106" stroke="#75B781" strokeWidth="2.5" strokeLinecap="round"/>
-      {/* Burbuja 1 */}
-      <rect x="62" y="14" width="36" height="24" rx="6" fill="none" stroke="#75B781" strokeWidth="2"/>
-      <path d="M67 38 L64 45 L74 38" fill="none" stroke="#75B781" strokeWidth="2"/>
-      <circle cx="74" cy="26" r="2.5" fill="#75B781"/>
-      <circle cx="82" cy="26" r="2.5" fill="#75B781"/>
-      <circle cx="90" cy="26" r="2.5" fill="#75B781"/>
-
-      {/* Persona 2 der */}
-      <circle cx="118" cy="38" r="12" fill="none" stroke="#75B781" strokeWidth="2.5"/>
-      <path d="M101 60 Q118 50 135 60 L139 93 H97 Z" fill="none" stroke="#75B781" strokeWidth="2.5"/>
-      <rect x="91" y="80" width="54" height="34" rx="5" fill="none" stroke="#75B781" strokeWidth="2"/>
-      <line x1="85" y1="114" x2="151" y2="114" stroke="#75B781" strokeWidth="2.5" strokeLinecap="round"/>
-
-      {/* Línea conectora */}
-      <path d="M72 88 Q90 75 100 88" fill="none" stroke="#75B781" strokeWidth="1.5" strokeDasharray="4 3"/>
-
-      {/* Frase */}
-      <text x="80" y="138" textAnchor="middle" fontFamily="Georgia, serif" fontSize="8" fill="#75B781" fontStyle="italic">CX · Admin · Talent</text>
-      <text x="80" y="152" textAnchor="middle" fontFamily="Georgia, serif" fontSize="7.5" fill="#75B781" fontStyle="italic">juntas llegamos más lejos</text>
-    </svg>
-  )
+// Devuelve la key del grupo que contiene la ruta actual
+function detectarGrupoActivo(pathname: string): string {
+  for (const g of NAV_GROUPS) {
+    if (g.items.some(it => pathname === it.href || pathname.startsWith(it.href + '/'))) {
+      return g.key
+    }
+  }
+  return NAV_GROUPS[0].key
 }
 
 export default function Sidebar() {
   const pathname = usePathname()
   const router = useRouter()
+  const [abierto, setAbierto] = useState<string>(detectarGrupoActivo(pathname))
+
+  useEffect(() => { setAbierto(detectarGrupoActivo(pathname)) }, [pathname])
 
   async function handleLogout() {
     await supabase.auth.signOut()
@@ -84,47 +68,70 @@ export default function Sidebar() {
         <Image src="/logo.png" alt="Tu Terapia" width={160} height={64}
           style={{ objectFit: 'contain', width: '100%', height: 'auto', mixBlendMode: 'screen' }} />
         <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', marginTop: 2 }}>
-          Gestión de Casos Internos
+          Sistema Interno
         </div>
       </div>
 
-      <nav style={{ flex: 1, padding: '8px 12px', display: 'flex', flexDirection: 'column', gap: 2, overflowY: 'auto', minHeight: 0 }}>
-        {NAV_GROUPS.map(({ titulo, items }, gi) => (
-          <div key={titulo} style={{ marginTop: gi === 0 ? 0 : 14 }}>
-            <div style={{
-              fontSize: 10, fontWeight: 700, letterSpacing: 0.8,
-              color: 'rgba(255,255,255,0.35)',
-              padding: '4px 12px 6px', textTransform: 'uppercase',
-            }}>
-              {titulo}
-            </div>
-            {items.map(({ href, label }) => {
-              const active = pathname === href || pathname.startsWith(href + '/')
-              return (
-                <Link key={href} href={href} style={{
-                  display: 'flex', alignItems: 'center',
-                  padding: '9px 12px', borderRadius: 8, textDecoration: 'none',
-                  fontSize: 13, fontWeight: active ? 600 : 400,
-                  color: active ? '#fff' : 'rgba(255,255,255,0.6)',
-                  background: active ? 'rgba(255,255,255,0.12)' : 'transparent',
+      <nav style={{ flex: 1, padding: '8px 12px', display: 'flex', flexDirection: 'column', gap: 6, overflowY: 'auto', minHeight: 0 }}>
+        {NAV_GROUPS.map(({ key, titulo, items }) => {
+          const isOpen = abierto === key
+          return (
+            <div key={key}>
+              <button
+                onClick={() => setAbierto(isOpen ? '' : key)}
+                style={{
+                  width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  padding: '10px 12px', borderRadius: 8,
+                  background: isOpen ? 'rgba(255,255,255,0.06)' : 'transparent',
+                  border: 'none', cursor: 'pointer',
+                  color: '#fff', fontSize: 13, fontWeight: 700,
+                  letterSpacing: 0.3, textAlign: 'left',
                 }}>
-                  {label}
-                </Link>
-              )
-            })}
-          </div>
-        ))}
+                <span>{titulo}</span>
+                <span style={{
+                  fontSize: 10, color: 'rgba(255,255,255,0.55)',
+                  transform: isOpen ? 'rotate(90deg)' : 'rotate(0deg)',
+                  transition: 'transform 0.15s ease',
+                }}>▶</span>
+              </button>
+
+              {isOpen && (
+                <div style={{ marginTop: 2, marginBottom: 2, paddingLeft: 4 }}>
+                  {items.map(({ href, label, primary }) => {
+                    const active = pathname === href || pathname.startsWith(href + '/')
+                    if (primary) {
+                      return (
+                        <Link key={href} href={href} style={{
+                          display: 'block', textAlign: 'center',
+                          padding: '8px 12px', borderRadius: 8, textDecoration: 'none',
+                          fontSize: 13, fontWeight: 600, color: '#fff',
+                          background: active ? '#005E5D' : '#007271',
+                          margin: '4px 0 6px',
+                        }}>
+                          {label}
+                        </Link>
+                      )
+                    }
+                    return (
+                      <Link key={href} href={href} style={{
+                        display: 'flex', alignItems: 'center',
+                        padding: '8px 12px 8px 20px', borderRadius: 8, textDecoration: 'none',
+                        fontSize: 12.5, fontWeight: active ? 600 : 400,
+                        color: active ? '#fff' : 'rgba(255,255,255,0.6)',
+                        background: active ? 'rgba(255,255,255,0.12)' : 'transparent',
+                      }}>
+                        {label}
+                      </Link>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+          )
+        })}
       </nav>
 
       <div style={{ padding: '12px 12px 8px', borderTop: '1px solid rgba(255,255,255,0.1)', marginTop: 8, flexShrink: 0 }}>
-        <Link href="/nuevo-caso" style={{
-          display: 'block', textAlign: 'center',
-          padding: '11px 12px', borderRadius: 8, textDecoration: 'none',
-          fontSize: 14, fontWeight: 600, color: '#fff', background: '#007271',
-          marginBottom: 8,
-        }}>
-          + Nuevo caso
-        </Link>
         <button onClick={handleLogout} style={{
           width: '100%', padding: '8px 12px', borderRadius: 8,
           border: '1px solid rgba(255,255,255,0.15)', background: 'transparent',
