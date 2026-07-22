@@ -38,6 +38,7 @@ function Badge({ label, estado }: any) {
 
 function tagColor(tag: string) {
   if (tag.includes('Cerrar')) return '#75B781'
+  if (tag==='Reabierto') return '#F59E0B'
   if (tag==='En curso') return '#F97316'
   return '#3B82F6'
 }
@@ -164,6 +165,19 @@ export function CasoCard({ caso, onUpdate, sector, showDelete }: any) {
     loadActs()
   }
 
+  async function reabrir() {
+    const u: any = {}
+    if (caso.area?.includes('Admin') && caso.estado_admin === 'Cerrado') u.estado_admin = 'En curso'
+    if (caso.area?.includes('Talent') && caso.estado_talent === 'Cerrado') u.estado_talent = 'En curso'
+    if (caso.area === 'CX' && caso.estado_cx === 'Cerrado') u.estado_cx = 'En curso'
+    if (caso.area === 'Business' && caso.estado_business === 'Cerrado') u.estado_business = 'En curso'
+    u.estado = calcularEstadoGlobal(caso.area, u.estado_admin??caso.estado_admin, u.estado_talent??caso.estado_talent, u.estado_cx??caso.estado_cx, u.estado_business??caso.estado_business)
+    await supabase.from('caso_actualizaciones').insert({ caso_id: caso.id, autor, texto: `[Reabierto] ${autor} reabrió el caso` })
+    await supabase.from('casos').update(u).eq('id', caso.id)
+    onUpdate()
+    loadActs()
+  }
+
   useEffect(()=>{ if(open) loadActs() },[open])
 
   return (
@@ -217,6 +231,14 @@ export function CasoCard({ caso, onUpdate, sector, showDelete }: any) {
                 )
               })}</div>
             }
+            {cerrado&&(
+              <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap', borderTop:acts.length>0?'1px solid #F3F4F6':'none', paddingTop:acts.length>0?12:0 }}>
+                <select value={autor} onChange={e=>setAutor(e.target.value)} style={{ border:'1.5px solid #E5E7EB', borderRadius:6, padding:'7px 10px', fontSize:12, background:'#fff' }}>
+                  {CARGADO_POR.map(p=><option key={p}>{p}</option>)}
+                </select>
+                <button onClick={reabrir} style={{ background:'#F59E0B', color:'#fff', border:'none', borderRadius:6, padding:'8px 16px', fontSize:12, cursor:'pointer', fontWeight:600 }}>↺ Reabrir caso</button>
+              </div>
+            )}
             {!cerrado&&(
               <div style={{ display:'flex', flexDirection:'column', gap:8, borderTop:acts.length>0?'1px solid #F3F4F6':'none', paddingTop:acts.length>0?12:0 }}>
                 {/* Panel de reasignar sector */}
