@@ -19,7 +19,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#FDFCF9', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', padding: '40px 24px 90px' }}>
+    <div style={{ minHeight: '100vh', backgroundImage: 'url(/fondo-login.png)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', padding: '40px 24px 90px' }}>
 
       {/* Ilustración al costado izquierdo: sillón + mesita + lámpara + cuadros (verde del equipo, tipo dibujo a mano) */}
       <svg viewBox="0 0 700 560" xmlns="http://www.w3.org/2000/svg"
