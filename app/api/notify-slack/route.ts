@@ -18,16 +18,18 @@ export async function POST(req: Request) {
     if (!webhook) return NextResponse.json({ ok: false, error: 'no webhook' })
 
     const mensajes: Record<string, string> = {
-      nuevo: `🎫 *Nuevo caso ${nro_caso}*\n*Área asignada:* ${area}\n*Tipo:* ${tipo_caso}\n*Paciente:* ${pac_nombre}\n*País:* ${pais}\n*Cargado por:* ${cargado_por}\n\n🔗 <https://tuterapia-casos.vercel.app/casos|Ver casos>`,
-      cerrado: `✅ *Caso ${nro_caso} cerrado*\n*Área:* ${area}\n*Tipo:* ${tipo_caso}\n*Paciente:* ${pac_nombre}\n*Cerrado por:* ${cargado_por}\n\n🔗 <https://tuterapia-casos.vercel.app/casos|Ver casos>`,
-      reabierto: `↺ *Caso ${nro_caso} reabierto*\n*Área:* ${area}\n*Tipo:* ${tipo_caso}\n*Paciente:* ${pac_nombre}\n*Reabierto por:* ${cargado_por}\n\n🔗 <https://tuterapia-casos.vercel.app/casos|Ver casos>`,
+      nuevo: `🔵 *Nuevo caso ${nro_caso}*\n*Área asignada:* ${area}\n*Tipo:* ${tipo_caso}\n*Paciente:* ${pac_nombre}\n*País:* ${pais}\n*Cargado por:* ${cargado_por}\n\n🔗 <https://tuterapia-casos.vercel.app/casos|Ver casos>`,
+      cerrado: `🟢 *Caso ${nro_caso} cerrado*\n*Área:* ${area}\n*Tipo:* ${tipo_caso}\n*Paciente:* ${pac_nombre}\n*Cerrado por:* ${cargado_por}\n\n🔗 <https://tuterapia-casos.vercel.app/casos|Ver casos>`,
+      reabierto: `🔴 *Caso ${nro_caso} reabierto*\n*Área:* ${area}\n*Tipo:* ${tipo_caso}\n*Paciente:* ${pac_nombre}\n*Reabierto por:* ${cargado_por}\n\n🔗 <https://tuterapia-casos.vercel.app/casos|Ver casos>`,
     }
     const mensaje = mensajes[evento || 'nuevo']
+    const colores: Record<string, string> = { nuevo: '#3B82F6', cerrado: '#22C55E', reabierto: '#EF4444' }
+    const color = colores[evento || 'nuevo']
 
     await fetch(webhook, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text: mensaje })
+      body: JSON.stringify({ attachments: [{ color, text: mensaje }] })
     })
 
     return NextResponse.json({ ok: true })
