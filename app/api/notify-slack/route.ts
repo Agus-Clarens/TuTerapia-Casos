@@ -5,7 +5,7 @@ const TIPOS_CRUZADOS_CX_BUSINESS = ['Problemas con el cupon', 'Contacto con la e
 
 export async function POST(req: Request) {
   try {
-    const { nro_caso, area, tipo_caso, pac_nombre, cargado_por, pais } = await req.json()
+    const { nro_caso, area, tipo_caso, pac_nombre, cargado_por, pais, evento } = await req.json()
 
     // Elegir el webhook según el caso:
     //  - Business o tipo cruzado CX↔Business → canal cx-business
@@ -17,7 +17,12 @@ export async function POST(req: Request) {
 
     if (!webhook) return NextResponse.json({ ok: false, error: 'no webhook' })
 
-    const mensaje = `🎫 *Nuevo caso ${nro_caso}*\n*Área asignada:* ${area}\n*Tipo:* ${tipo_caso}\n*Paciente:* ${pac_nombre}\n*País:* ${pais}\n*Cargado por:* ${cargado_por}\n\n🔗 <https://tuterapia-casos.vercel.app/casos|Ver casos>`
+    const mensajes: Record<string, string> = {
+      nuevo: `🎫 *Nuevo caso ${nro_caso}*\n*Área asignada:* ${area}\n*Tipo:* ${tipo_caso}\n*Paciente:* ${pac_nombre}\n*País:* ${pais}\n*Cargado por:* ${cargado_por}\n\n🔗 <https://tuterapia-casos.vercel.app/casos|Ver casos>`,
+      cerrado: `✅ *Caso ${nro_caso} cerrado*\n*Área:* ${area}\n*Tipo:* ${tipo_caso}\n*Paciente:* ${pac_nombre}\n*Cerrado por:* ${cargado_por}\n\n🔗 <https://tuterapia-casos.vercel.app/casos|Ver casos>`,
+      reabierto: `↺ *Caso ${nro_caso} reabierto*\n*Área:* ${area}\n*Tipo:* ${tipo_caso}\n*Paciente:* ${pac_nombre}\n*Reabierto por:* ${cargado_por}\n\n🔗 <https://tuterapia-casos.vercel.app/casos|Ver casos>`,
+    }
+    const mensaje = mensajes[evento || 'nuevo']
 
     await fetch(webhook, {
       method: 'POST',

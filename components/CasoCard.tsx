@@ -130,7 +130,14 @@ export function CasoCard({ caso, onUpdate, sector, showDelete }: any) {
     if (accion==='Cerrar para Business') u.estado_business='Cerrado'
     if (Object.keys(u).length>0) {
       u.estado = calcularEstadoGlobal(caso.area, u.estado_admin??caso.estado_admin, u.estado_talent??caso.estado_talent, u.estado_cx??caso.estado_cx, u.estado_business??caso.estado_business)
+      u.updated_at = new Date().toISOString()
       await supabase.from('casos').update(u).eq('id',caso.id)
+      onUpdate()
+      if (u.estado === 'Cerrado' && caso.estado !== 'Cerrado') {
+        fetch('/api/notify-slack', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ evento:'cerrado', nro_caso: caso.nro_caso, area: caso.area, tipo_caso: caso.tipo_caso, pac_nombre: caso.pac_nombre, cargado_por: autor, pais: caso.pais }) })
+      }
+    } else {
+      await supabase.from('casos').update({ updated_at: new Date().toISOString() }).eq('id',caso.id)
       onUpdate()
     }
     setTexto(''); loadActs()
@@ -158,6 +165,7 @@ export function CasoCard({ caso, onUpdate, sector, showDelete }: any) {
       estado_business: nuevaArea === 'Business' ? (caso.estado_business === 'Cerrado' ? 'Cerrado' : 'Pendiente') : 'Pendiente',
     }
     u.estado = calcularEstadoGlobal(nuevaArea, u.estado_admin, u.estado_talent, u.estado_cx, u.estado_business)
+    u.updated_at = new Date().toISOString()
     await supabase.from('casos').update(u).eq('id', caso.id)
     setReasignar(false)
     setNuevoTipo('')
@@ -172,8 +180,10 @@ export function CasoCard({ caso, onUpdate, sector, showDelete }: any) {
     if (caso.area === 'CX' && caso.estado_cx === 'Cerrado') u.estado_cx = 'En curso'
     if (caso.area === 'Business' && caso.estado_business === 'Cerrado') u.estado_business = 'En curso'
     u.estado = calcularEstadoGlobal(caso.area, u.estado_admin??caso.estado_admin, u.estado_talent??caso.estado_talent, u.estado_cx??caso.estado_cx, u.estado_business??caso.estado_business)
+    u.updated_at = new Date().toISOString()
     await supabase.from('caso_actualizaciones').insert({ caso_id: caso.id, autor, texto: `[Reabierto] ${autor} reabrió el caso` })
     await supabase.from('casos').update(u).eq('id', caso.id)
+    fetch('/api/notify-slack', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ evento:'reabierto', nro_caso: caso.nro_caso, area: caso.area, tipo_caso: caso.tipo_caso, pac_nombre: caso.pac_nombre, cargado_por: autor, pais: caso.pais }) })
     onUpdate()
     loadActs()
   }
@@ -188,6 +198,9 @@ export function CasoCard({ caso, onUpdate, sector, showDelete }: any) {
             <span style={{ fontWeight:700, color:'#264534', fontSize:14 }}>{caso.nro_caso}</span>
             <span style={{ fontSize:11, background:'#F3F4F6', borderRadius:4, padding:'2px 7px', color:'#374151' }}>{caso.area}</span>
             <span style={{ fontSize:11, color:'#9CA3AF' }}>{caso.fecha}</span>
+            {caso.updated_at && (new Date(caso.updated_at).getTime() - new Date(caso.created_at).getTime() > 60000) && (
+              <span style={{ fontSize:10, background:'#FEF3C7', color:'#92400E', borderRadius:5, padding:'2px 7px', fontWeight:600 }}>● Actualizado {timeAgo(caso.updated_at)}</span>
+            )}
           </div>
           <div style={{ display:'flex', alignItems:'center', gap:4, flexWrap:'wrap' }}>
             {caso.area?.includes('Admin') && <Badge label="Admin" estado={caso.estado_admin||'Pendiente'} />}

@@ -49,7 +49,13 @@ export default function Page() {
 
       {loading ? <p>Cargando...</p> : filtrados.length === 0
         ? <p style={{color:'#9CA3AF'}}>No hay casos {filtro !== 'Todos' ? `en ${filtro}` : ''}.</p>
-        : [...filtrados].sort((a,b) => ord(a.estado)-ord(b.estado)).map(c =>
+        : [...filtrados].sort((a,b) => {
+            const diffEstado = ord(a.estado)-ord(b.estado)
+            if (diffEstado !== 0) return diffEstado
+            const ta = new Date(a.updated_at || a.created_at).getTime()
+            const tb = new Date(b.updated_at || b.created_at).getTime()
+            return tb - ta
+          }).map(c =>
             <CasoCard key={c.id} caso={c} onUpdate={load} sector="todos" showDelete={true} />
           )
       }
