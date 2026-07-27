@@ -97,6 +97,8 @@ export function CasoCard({ caso, onUpdate, sector, showDelete }: any) {
   const [accion, setAccion] = useState('Actualización')
   const [del, setDel] = useState(false)
   const [reasignar, setReasignar] = useState(false)
+  const [adjuntos, setAdjuntos] = useState<any[]>([])
+  const [subiendo, setSubiendo] = useState(false)
   const [nuevaArea, setNuevaArea] = useState<string>(caso.area || 'Admin')
   const [nuevoTipo, setNuevoTipo] = useState<string>('')
 
@@ -107,6 +109,36 @@ export function CasoCard({ caso, onUpdate, sector, showDelete }: any) {
   async function loadActs() {
     const { data } = await supabase.from('caso_actualizaciones').select('*').eq('caso_id',caso.id).order('created_at',{ascending:true})
     if (data) setActs(data)
+    const { data: adj } = await supabase.from('caso_adjuntos').select('*').eq('caso_id',caso.id).order('created_at',{ascending:false})
+    if (adj) setAdjuntos(adj)
+  }
+
+  async function subirAdjunto(e: any) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setSubiendo(true)
+    const safeName = file.name.replace(/[^\w.\-]+/g, '_')
+    const path = `${caso.id}/${crypto.randomUUID()}-${safeName}`
+    const { error: upErr } = await supabase.storage.from('casos-adjuntos').upload(path, file, { upsert:false })
+    if (upErr) { alert('Error al subir: '+upErr.message); setSubiendo(false); return }
+    await supabase.from('caso_adjuntos').insert({ caso_id: caso.id, autor, file_path: path, file_name: file.name })
+    await supabase.from('caso_actualizaciones').insert({ caso_id:caso.id, autor, texto:`[Adjunto] ${autor} adjuntó "${file.name}"` })
+    e.target.value = ''
+    setSubiendo(false)
+    loadActs()
+  }
+
+  async function descargarAdjunto(a: any) {
+    const { data, error } = await supabase.storage.from('casos-adjuntos').createSignedUrl(a.file_path, 60)
+    if (error || !data) { alert('No se pudo generar el link.'); return }
+    window.open(data.signedUrl, '_blank')
+  }
+
+  async function eliminarAdjunto(a: any) {
+    if (!confirm(`¿Eliminar el adjunto "${a.file_name}"?`)) return
+    await supabase.storage.from('casos-adjuntos').remove([a.file_path])
+    await supabase.from('caso_adjuntos').delete().eq('id', a.id)
+    loadActs()
   }
 
   async function agregar() {
@@ -244,6 +276,25 @@ export function CasoCard({ caso, onUpdate, sector, showDelete }: any) {
                 )
               })}</div>
             }
+            <div style={{ marginBottom:12, borderTop:acts.length>0?'1px solid #F3F4F6':'none', paddingTop:acts.length>0?12:0 }}>
+              <div style={{ fontSize:11, color:'#6B7280', fontWeight:600, marginBottom:6 }}>📎 Adjuntos {adjuntos.length>0 && `(${adjuntos.length})`}</div>
+              {adjuntos.length>0 && (
+                <div style={{ display:'flex', flexDirection:'column', gap:6, marginBottom:8 }}>
+                  {adjuntos.map((a:any)=>(
+                    <div key={a.id} style={{ display:'flex', alignItems:'center', gap:8, background:'#fff', borderRadius:8, padding:'6px 10px', fontSize:12 }}>
+                      <span style={{ flex:1, color:'#374151', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{a.file_name}</span>
+                      <span style={{ color:'#9CA3AF', fontSize:10 }}>{a.autor}</span>
+                      <button onClick={()=>descargarAdjunto(a)} style={{ background:'#EFF6FF', color:'#1D4ED8', border:'none', borderRadius:5, padding:'4px 9px', fontSize:11, cursor:'pointer', fontWeight:600 }}>Ver</button>
+                      <button onClick={()=>eliminarAdjunto(a)} style={{ background:'transparent', color:'#EF4444', border:'none', fontSize:11, cursor:'pointer' }}>✕</button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <label style={{ display:'inline-block', background: subiendo?'#E5E7EB':'#F3F4F6', color:'#374151', borderRadius:6, padding:'7px 14px', fontSize:12, cursor: subiendo?'not-allowed':'pointer', fontWeight:600, border:'1px dashed #D1D5DB' }}>
+                {subiendo?'Subiendo...':'📎 Adjuntar archivo / screenshot'}
+                <input type="file" accept="image/*,.pdf" onChange={subirAdjunto} disabled={subiendo} style={{ display:'none' }} />
+              </label>
+            </div>
             {cerrado&&(
               <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap', borderTop:acts.length>0?'1px solid #F3F4F6':'none', paddingTop:acts.length>0?12:0 }}>
                 <select value={autor} onChange={e=>setAutor(e.target.value)} style={{ border:'1.5px solid #E5E7EB', borderRadius:6, padding:'7px 10px', fontSize:12, background:'#fff' }}>
