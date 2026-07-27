@@ -12,8 +12,8 @@ const TIPOS_CRUZADOS_CX_BUSINESS = ['Problemas con el cupon', 'Contacto con la e
 const TIPOS_CASO: any = {
   'Admin': { area: 'Admin', desc: false, tipos: ['Link de pago','Devolucion dentro del plazo','Devolucion fuera del plazo sin falla','Envio de factura','Problema con factura','Cupon no aplicado','Pago duplicado','Transferencia sesiones','Contracargo MP','Cambiar modalidad','Cambiar modalidad de sesiones (psicologo ya confirmo)','Ajuste de modalidad de pago'] },
   'Talent': { area: 'Talent', desc: false, tipos: ['Disponibilidad agenda','No confirma sesion','Cancelacion psicologo','Calendario incorrecto','Sesiones pendientes aprobacion','Psicologo fantasmeado','Pocas horas','Sin horas','Mejora perfil','Psicologo lleva pacientes por fuera de plataforma'] },
-  'Admin+Talent (con descuento)': { area: 'Admin+Talent', desc: true, tipos: ['Devolucion fuera plazo con falla','Sesion sin consentimiento','Sesion marcada realizada no ocurrio','Descontar sesion'] },
-  'Admin+Talent': { area: 'Admin+Talent', desc: false, tipos: ['Desvinculacion con pacientes activos','Cobra fuera plataforma','Horario incorrecto con dano'] },
+  'Admin+Talent (con descuento)': { area: 'Admin+Talent', desc: true, tipos: ['Sesion sin consentimiento','Sesion marcada realizada no ocurrio','Descontar sesion'] },
+  'Admin+Talent': { area: 'Admin+Talent', desc: false, tipos: ['Devolucion fuera plazo con falla','Desvinculacion con pacientes activos','Cobra fuera plataforma','Horario incorrecto con dano'] },
   'CX': { area: 'CX', desc: false, tipos: ['Cargo mal los datos en la factura','Contactar retencion','Derivacion psicologo','Mala experiencia devolucion autonoma','Cancelacion por paciente'] },
   'CX ↔ Business': { area: 'CX', desc: false, tipos: TIPOS_CRUZADOS_CX_BUSINESS, crossAssign: true },
   'Business': { area: 'Business', desc: false, tipos: ['Alianza nueva','Renovacion contrato','Reporte a empresa','Seguimiento de facturacion empresa'] },
