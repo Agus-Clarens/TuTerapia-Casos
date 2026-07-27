@@ -213,6 +213,7 @@ export function CasoCard({ caso, onUpdate, sector, showDelete }: any) {
     if (caso.area === 'Business' && caso.estado_business === 'Cerrado') u.estado_business = 'En curso'
     u.estado = calcularEstadoGlobal(caso.area, u.estado_admin??caso.estado_admin, u.estado_talent??caso.estado_talent, u.estado_cx??caso.estado_cx, u.estado_business??caso.estado_business)
     u.updated_at = new Date().toISOString()
+    u.reabierto = true
     await supabase.from('caso_actualizaciones').insert({ caso_id: caso.id, autor, texto: `[Reabierto] ${autor} reabrió el caso` })
     await supabase.from('casos').update(u).eq('id', caso.id)
     fetch('/api/notify-slack', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ evento:'reabierto', nro_caso: caso.nro_caso, area: caso.area, tipo_caso: caso.tipo_caso, pac_nombre: caso.pac_nombre, cargado_por: autor, pais: caso.pais }) })
@@ -232,6 +233,9 @@ export function CasoCard({ caso, onUpdate, sector, showDelete }: any) {
             <span style={{ fontSize:11, color:'#9CA3AF' }}>{caso.fecha}</span>
             {caso.updated_at && (new Date(caso.updated_at).getTime() - new Date(caso.created_at).getTime() > 60000) && (
               <span style={{ fontSize:10, background:'#FEF3C7', color:'#92400E', borderRadius:5, padding:'2px 7px', fontWeight:600 }}>● Actualizado {timeAgo(caso.updated_at)}</span>
+            )}
+            {caso.reabierto && (
+              <span style={{ fontSize:10, background:'#FEE2E2', color:'#B91C1C', borderRadius:5, padding:'2px 7px', fontWeight:600 }}>↺ Reabierto</span>
             )}
           </div>
           <div style={{ display:'flex', alignItems:'center', gap:4, flexWrap:'wrap' }}>
