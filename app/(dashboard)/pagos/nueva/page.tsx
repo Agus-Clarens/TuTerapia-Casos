@@ -10,7 +10,7 @@ export default function Page() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
 
-  const [tipo, setTipo] = useState<'Pago a proveedor' | 'Reembolso'>('Pago a proveedor')
+  const [tipo, setTipo] = useState<'Pago a proveedor' | 'Reembolso' | 'Factura equipo interno'>('Pago a proveedor')
   const [solicitante, setSolicitante] = useState('')
   const [destinatario, setDestinatario] = useState('')
   const [rutCuit, setRutCuit] = useState('')
@@ -32,7 +32,7 @@ export default function Page() {
 
   // Si es reembolso, el destinatario es el mismo solicitante
   useEffect(() => {
-    if (tipo === 'Reembolso' && solicitante) setDestinatario(solicitante)
+    if ((tipo === 'Reembolso' || tipo === 'Factura equipo interno') && solicitante) setDestinatario(solicitante)
   }, [tipo, solicitante])
 
   async function submit() {
@@ -43,6 +43,8 @@ export default function Page() {
     if (!motivo.trim()) return setError('Ingresá el motivo.')
     if (!monto || Number(monto) <= 0) return setError('Ingresá un monto válido.')
     if (tipo === 'Pago a proveedor' && !datosCuenta.trim()) return setError('Ingresá los datos de cuenta.')
+    if (tipo === 'Factura equipo interno' && !datosCuenta.trim()) return setError('Ingresá los datos de cuenta.')
+    if (tipo === 'Factura equipo interno' && !file) return setError('Adjuntá la factura en PDF.')
     if (file && file.type !== 'application/pdf') return setError('El archivo debe ser un PDF.')
 
     setSubmitting(true)
@@ -98,7 +100,7 @@ export default function Page() {
         <div style={{ marginBottom: 16 }}>
           <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 6 }}>Tipo de solicitud *</label>
           <div style={{ display: 'flex', gap: 8 }}>
-            {(['Pago a proveedor', 'Reembolso'] as const).map(t => (
+            {(['Pago a proveedor', 'Reembolso', 'Factura equipo interno'] as const).map(t => (
               <button key={t} onClick={() => setTipo(t)} type="button"
                 style={{
                   flex: 1, padding: '10px 12px', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer',
@@ -106,14 +108,16 @@ export default function Page() {
                   background: tipo === t ? '#264534' : '#fff',
                   color: tipo === t ? '#fff' : '#6B7280',
                 }}>
-                {t === 'Pago a proveedor' ? '💸 Pago a proveedor' : '🧾 Reembolso'}
+                {t === 'Pago a proveedor' ? '💸 Pago a proveedor' : t === 'Reembolso' ? '🧾 Reembolso' : '📄 Factura equipo interno'}
               </button>
             ))}
           </div>
           <p style={{ fontSize: 11, color: '#9CA3AF', marginTop: 6, marginBottom: 0 }}>
             {tipo === 'Pago a proveedor'
               ? 'La empresa le paga a un tercero (proveedor, evento, servicio).'
-              : 'Vos ya pagaste algo y necesitás que la empresa te lo devuelva.'}
+              : tipo === 'Reembolso'
+                ? 'Vos ya pagaste algo y necesitás que la empresa te lo devuelva.'
+                : 'Alguien del equipo le factura a la empresa por su trabajo (monotributo/factura propia).'}
           </p>
         </div>
 
@@ -130,7 +134,7 @@ export default function Page() {
         </div>
 
         {/* Destinatario - solo se muestra si es Pago a proveedor */}
-        {tipo === 'Pago a proveedor' && (
+        {tipo !== 'Reembolso' && (
           <div style={{ marginBottom: 12 }}>
             <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 4 }}>
               Pagar a *
@@ -153,7 +157,7 @@ export default function Page() {
         <div style={{ marginBottom: 12 }}>
           <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 4 }}>Motivo *</label>
           <textarea value={motivo} onChange={e => setMotivo(e.target.value)} rows={2}
-            placeholder={tipo === 'Pago a proveedor' ? 'Ej: catering para evento del 20/07' : 'Ej: nafta viaje a Rosario para reunión con cliente'}
+            placeholder={tipo === 'Pago a proveedor' ? 'Ej: catering para evento del 20/07' : tipo === 'Reembolso' ? 'Ej: nafta viaje a Rosario para reunión con cliente' : 'Ej: factura de servicios profesionales julio 2026'}
             style={{ width: '100%', padding: '9px 12px', borderRadius: 6, border: '1.5px solid #E5E7EB', fontSize: 13, boxSizing: 'border-box', resize: 'vertical', fontFamily: 'inherit' }} />
         </div>
 
@@ -177,7 +181,7 @@ export default function Page() {
         {/* Datos de cuenta */}
         <div style={{ marginBottom: 12 }}>
           <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 4 }}>
-            Datos de cuenta {tipo === 'Pago a proveedor' ? '*' : '(si querés que te transfieran)'}
+            Datos de cuenta {tipo === 'Reembolso' ? '(si querés que te transfieran)' : '*'}
           </label>
           <textarea value={datosCuenta} onChange={e => setDatosCuenta(e.target.value)} rows={2}
             placeholder="CBU / Alias / Titular / Banco"
@@ -187,7 +191,7 @@ export default function Page() {
         {/* PDF */}
         <div style={{ marginBottom: 16 }}>
           <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 4 }}>
-            Factura / comprobante (PDF)
+            Factura / comprobante (PDF) {tipo === 'Factura equipo interno' ? '*' : ''}
           </label>
           <input type="file" accept="application/pdf" onChange={e => setFile(e.target.files?.[0] || null)}
             style={{ width: '100%', padding: '7px 10px', borderRadius: 6, border: '1.5px solid #E5E7EB', fontSize: 13, boxSizing: 'border-box', background: '#fff' }} />
