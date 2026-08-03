@@ -88,6 +88,11 @@ export default function Page() {
       setSubmitting(false); return
     }
 
+    fetch('/api/notify-slack-pagos', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nro_solicitud, tipo, solicitante, destinatario: destinatario.trim(), monto: Number(monto), moneda, motivo: motivo.trim() })
+    })
+
     router.push('/pagos/mis-solicitudes')
   }
 
