@@ -95,6 +95,7 @@ export function SolicitudCard({ sol, userEmail, onUpdate }: any) {
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, fontSize: 13, marginBottom: 8 }}>
         <div><span style={{ color: '#6B7280', fontSize: 11, fontWeight: 600 }}>SOLICITA</span><div>{sol.solicitante}</div></div>
         <div><span style={{ color: '#6B7280', fontSize: 11, fontWeight: 600 }}>{sol.tipo === 'Reembolso' ? 'A REEMBOLSAR A' : 'PAGAR A'}</span><div>{sol.destinatario}</div></div>
+        {sol.rut_cuit && <div><span style={{ color: '#6B7280', fontSize: 11, fontWeight: 600 }}>RUT / CUIT</span><div>{sol.rut_cuit}</div></div>}
         <div style={{ gridColumn: '1 / -1' }}><span style={{ color: '#6B7280', fontSize: 11, fontWeight: 600 }}>MOTIVO</span><div>{sol.motivo}</div></div>
         <div><span style={{ color: '#6B7280', fontSize: 11, fontWeight: 600 }}>MONTO</span><div style={{ fontWeight: 700, fontSize: 15, color: '#264534' }}>{fmt(sol.monto, sol.moneda)}</div></div>
         {sol.datos_cuenta && <div><span style={{ color: '#6B7280', fontSize: 11, fontWeight: 600 }}>DATOS DE CUENTA</span><div style={{ fontSize: 12, whiteSpace: 'pre-wrap' }}>{sol.datos_cuenta}</div></div>}

@@ -13,6 +13,7 @@ export default function Page() {
   const [tipo, setTipo] = useState<'Pago a proveedor' | 'Reembolso'>('Pago a proveedor')
   const [solicitante, setSolicitante] = useState('')
   const [destinatario, setDestinatario] = useState('')
+  const [rutCuit, setRutCuit] = useState('')
   const [motivo, setMotivo] = useState('')
   const [monto, setMonto] = useState('')
   const [moneda, setMoneda] = useState<'ARS' | 'UYU'>('ARS')
@@ -38,6 +39,7 @@ export default function Page() {
     setError('')
     if (!solicitante) return setError('Elegí quién solicita.')
     if (!destinatario.trim()) return setError('Ingresá el destinatario del pago.')
+    if (!rutCuit.trim()) return setError('Ingresá el RUT o CUIT.')
     if (!motivo.trim()) return setError('Ingresá el motivo.')
     if (!monto || Number(monto) <= 0) return setError('Ingresá un monto válido.')
     if (tipo === 'Pago a proveedor' && !datosCuenta.trim()) return setError('Ingresá los datos de cuenta.')
@@ -70,6 +72,7 @@ export default function Page() {
       solicitante,
       solicitante_email: userEmail,
       destinatario: destinatario.trim(),
+      rut_cuit: rutCuit.trim(),
       motivo: motivo.trim(),
       monto: Number(monto),
       moneda,
@@ -137,6 +140,14 @@ export default function Page() {
               style={{ width: '100%', padding: '9px 12px', borderRadius: 6, border: '1.5px solid #E5E7EB', fontSize: 13, boxSizing: 'border-box', fontFamily: 'inherit' }} />
           </div>
         )}
+
+        {/* RUT / CUIT */}
+        <div style={{ marginBottom: 12 }}>
+          <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 4 }}>RUT / CUIT *</label>
+          <input value={rutCuit} onChange={e => setRutCuit(e.target.value)}
+            placeholder="Ej: 20-36896551-1"
+            style={{ width: '100%', padding: '9px 12px', borderRadius: 6, border: '1.5px solid #E5E7EB', fontSize: 13, boxSizing: 'border-box', fontFamily: 'inherit' }} />
+        </div>
 
         {/* Motivo */}
         <div style={{ marginBottom: 12 }}>
