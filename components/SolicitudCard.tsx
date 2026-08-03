@@ -14,7 +14,7 @@ export function SolicitudCard({ sol, userEmail, onUpdate }: any) {
 
   const puedeMarcar = EMAILS_PAGOS.map(e => e.toLowerCase()).includes(userEmail.toLowerCase())
   const esCreador = userEmail.toLowerCase() === (sol.solicitante_email || '').toLowerCase()
-  const puedeDescargarFactura = userEmail.toLowerCase() === 'admin@tuterapia.com.ar'
+  const puedeDescargarFactura = ['admin@tuterapia.com.ar','aclarens@tuterapia.com.ar','people@tuterapia.com.uy'].includes(userEmail.toLowerCase())
 
   async function descargar(path: string) {
     const { data, error: e } = await supabase.storage.from('pagos').createSignedUrl(path, 60)
