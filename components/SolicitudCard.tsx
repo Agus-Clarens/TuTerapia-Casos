@@ -14,6 +14,7 @@ export function SolicitudCard({ sol, userEmail, onUpdate }: any) {
 
   const puedeMarcar = EMAILS_PAGOS.map(e => e.toLowerCase()).includes(userEmail.toLowerCase())
   const esCreador = userEmail.toLowerCase() === (sol.solicitante_email || '').toLowerCase()
+  const puedeDescargarFactura = userEmail.toLowerCase() === 'admin@tuterapia.com.ar'
 
   async function descargar(path: string) {
     const { data, error: e } = await supabase.storage.from('pagos').createSignedUrl(path, 60)
@@ -112,16 +113,28 @@ export function SolicitudCard({ sol, userEmail, onUpdate }: any) {
       {/* Botones de archivos y acciones */}
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
         {sol.factura_path && (
-          <button onClick={() => descargar(sol.factura_path)}
-            style={{ background: '#EFF6FF', color: '#1e40af', border: '1px solid #BFDBFE', borderRadius: 6, padding: '6px 12px', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
-            📄 Ver factura
-          </button>
+          puedeDescargarFactura ? (
+            <button onClick={() => descargar(sol.factura_path)}
+              style={{ background: '#EFF6FF', color: '#1e40af', border: '1px solid #BFDBFE', borderRadius: 6, padding: '6px 12px', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+              📄 Ver factura
+            </button>
+          ) : (
+            <span style={{ background: '#F9FAFB', color: '#9CA3AF', border: '1px solid #E5E7EB', borderRadius: 6, padding: '6px 12px', fontSize: 12, fontWeight: 600 }}>
+              📄 Factura adjunta (descarga restringida)
+            </span>
+          )
         )}
         {sol.comprobante_pago_path && (
-          <button onClick={() => descargar(sol.comprobante_pago_path)}
-            style={{ background: '#F0FDF4', color: '#166534', border: '1px solid #BBF7D0', borderRadius: 6, padding: '6px 12px', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
-            📄 Ver comprobante de pago
-          </button>
+          puedeDescargarFactura ? (
+            <button onClick={() => descargar(sol.comprobante_pago_path)}
+              style={{ background: '#F0FDF4', color: '#166534', border: '1px solid #BBF7D0', borderRadius: 6, padding: '6px 12px', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+              📄 Ver comprobante de pago
+            </button>
+          ) : (
+            <span style={{ background: '#F9FAFB', color: '#9CA3AF', border: '1px solid #E5E7EB', borderRadius: 6, padding: '6px 12px', fontSize: 12, fontWeight: 600 }}>
+              📄 Comprobante adjunto (descarga restringida)
+            </span>
+          )
         )}
 
         <div style={{ marginLeft: 'auto', display: 'flex', gap: 6 }}>
