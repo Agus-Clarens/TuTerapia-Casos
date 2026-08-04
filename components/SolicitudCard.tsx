@@ -48,6 +48,11 @@ export function SolicitudCard({ sol, userEmail, onUpdate }: any) {
 
     if (updErr) { setError('Error al marcar: ' + updErr.message); setMarcando(false); return }
 
+    fetch('/api/notify-pago-dm', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: sol.solicitante_email, nro_solicitud: sol.nro_solicitud, tipo: sol.tipo, monto: sol.monto, moneda: sol.moneda, motivo: sol.motivo })
+    })
+
     setMarcando(false); setShowAccion(false); setNota(''); setComprobante(null)
     onUpdate()
   }
