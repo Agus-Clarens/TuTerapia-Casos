@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { EMAILS_PAGOS } from '../lib/solicitantes-pago'
 
@@ -11,6 +11,12 @@ export function SolicitudCard({ sol, userEmail, onUpdate }: any) {
   const [comprobante, setComprobante] = useState<File | null>(null)
   const [showAccion, setShowAccion] = useState(false)
   const [error, setError] = useState('')
+  const [extraAdjuntos, setExtraAdjuntos] = useState<any[]>([])
+
+  useEffect(() => {
+    supabase.from('solicitud_pago_adjuntos').select('*').eq('solicitud_id', sol.id)
+      .then(({ data }) => { if (data) setExtraAdjuntos(data) })
+  }, [sol.id])
 
   const puedeMarcar = EMAILS_PAGOS.map(e => e.toLowerCase()).includes(userEmail.toLowerCase())
   const esCreador = userEmail.toLowerCase() === (sol.solicitante_email || '').toLowerCase()
@@ -73,6 +79,7 @@ export function SolicitudCard({ sol, userEmail, onUpdate }: any) {
     if (!confirm(`¿Eliminar la solicitud ${sol.nro_solicitud}?`)) return
     if (sol.factura_path) await supabase.storage.from('pagos').remove([sol.factura_path])
     if (sol.comprobante_pago_path) await supabase.storage.from('pagos').remove([sol.comprobante_pago_path])
+    if (extraAdjuntos.length > 0) await supabase.storage.from('pagos').remove(extraAdjuntos.map((a: any) => a.file_path))
     await supabase.from('solicitudes_pago').delete().eq('id', sol.id)
     onUpdate()
   }
@@ -141,6 +148,19 @@ export function SolicitudCard({ sol, userEmail, onUpdate }: any) {
             </span>
           )
         )}
+
+        {extraAdjuntos.map((a: any) => (
+          puedeDescargarFactura ? (
+            <button key={a.id} onClick={() => descargar(a.file_path)}
+              style={{ background: '#EFF6FF', color: '#1e40af', border: '1px solid #BFDBFE', borderRadius: 6, padding: '6px 12px', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+              📄 {a.file_name}
+            </button>
+          ) : (
+            <span key={a.id} style={{ background: '#F9FAFB', color: '#9CA3AF', border: '1px solid #E5E7EB', borderRadius: 6, padding: '6px 12px', fontSize: 12, fontWeight: 600 }}>
+              📄 Adjunto (descarga restringida)
+            </span>
+          )
+        ))}
 
         <div style={{ marginLeft: 'auto', display: 'flex', gap: 6 }}>
           {puedeMarcar && !pagada && !showAccion && (

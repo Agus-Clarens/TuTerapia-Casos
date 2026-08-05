@@ -19,7 +19,7 @@ export default function Page() {
   const [monto, setMonto] = useState('')
   const [moneda, setMoneda] = useState<'ARS' | 'UYU'>('ARS')
   const [datosCuenta, setDatosCuenta] = useState('')
-  const [file, setFile] = useState<File | null>(null)
+  const [files, setFiles] = useState<File[]>([])
 
   // Preseleccionar solicitante según email del usuario logueado
   useEffect(() => {
@@ -46,25 +46,27 @@ export default function Page() {
     if (!monto || Number(monto) <= 0) return setError('Ingresá un monto válido.')
     if (tipo === 'Pago a proveedor' && !datosCuenta.trim()) return setError('Ingresá los datos de cuenta.')
     if (tipo === 'Factura equipo interno' && !datosCuenta.trim()) return setError('Ingresá los datos de cuenta.')
-    if (tipo === 'Factura equipo interno' && !file) return setError('Adjuntá la factura en PDF.')
-    if (file && file.type !== 'application/pdf') return setError('El archivo debe ser un PDF.')
+    if (tipo === 'Factura equipo interno' && files.length === 0) return setError('Adjuntá la factura en PDF.')
+    if (files.some(f => f.type !== 'application/pdf')) return setError('Los archivos deben ser PDF.')
 
     setSubmitting(true)
 
-    // Subir PDF si hay
+    // Subir PDFs si hay
     let factura_path: string | null = null
-    if (file) {
+    const paths: { path: string; name: string }[] = []
+    for (const f of files) {
       const now = new Date()
       const yyyymm = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}`
-      const safeName = file.name.replace(/[^\w.\-]+/g, '_')
+      const safeName = f.name.replace(/[^\w.\-]+/g, '_')
       const uid = crypto.randomUUID()
       const path = `${yyyymm}/${uid}-${safeName}`
-      const { error: upErr } = await supabase.storage.from('pagos').upload(path, file, {
+      const { error: upErr } = await supabase.storage.from('pagos').upload(path, f, {
         contentType: 'application/pdf', upsert: false,
       })
-      if (upErr) { setError('Error al subir el PDF: ' + upErr.message); setSubmitting(false); return }
-      factura_path = path
+      if (upErr) { setError('Error al subir "' + f.name + '": ' + upErr.message); setSubmitting(false); return }
+      paths.push({ path, name: f.name })
     }
+    if (paths.length > 0) factura_path = paths[0].path
 
     const { data: inserted, error: insErr } = await supabase.from('solicitudes_pago').insert({
       tipo,
@@ -81,8 +83,14 @@ export default function Page() {
     }).select().single()
     if (insErr) {
       setError('Error al guardar: ' + insErr.message)
-      if (factura_path) await supabase.storage.from('pagos').remove([factura_path])
+      for (const p of paths) await supabase.storage.from('pagos').remove([p.path])
       setSubmitting(false); return
+    }
+
+    if (paths.length > 1) {
+      await supabase.from('solicitud_pago_adjuntos').insert(
+        paths.slice(1).map(p => ({ solicitud_id: inserted.id, file_path: p.path, file_name: p.name }))
+      )
     }
 
     fetch('/api/notify-slack-pagos', {
@@ -199,10 +207,22 @@ export default function Page() {
         {/* PDF */}
         <div style={{ marginBottom: 16 }}>
           <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 4 }}>
-            Factura / comprobante (PDF) {tipo === 'Factura equipo interno' ? '*' : ''}
+            Factura / comprobante (PDF) {tipo === 'Factura equipo interno' ? '*' : ''} <span style={{ color: '#9CA3AF', fontWeight: 400 }}>(podés elegir varios)</span>
           </label>
-          <input type="file" accept="application/pdf" onChange={e => setFile(e.target.files?.[0] || null)}
+          <input type="file" accept="application/pdf" multiple
+            onChange={e => setFiles(prev => [...prev, ...Array.from(e.target.files || [])])}
             style={{ width: '100%', padding: '7px 10px', borderRadius: 6, border: '1.5px solid #E5E7EB', fontSize: 13, boxSizing: 'border-box', background: '#fff' }} />
+          {files.length > 0 && (
+            <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 4 }}>
+              {files.map((f, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, background: '#F9FAFB', borderRadius: 5, padding: '5px 9px' }}>
+                  <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.name}</span>
+                  <button type="button" onClick={() => setFiles(prev => prev.filter((_, idx) => idx !== i))}
+                    style={{ background: 'transparent', border: 'none', color: '#EF4444', cursor: 'pointer', fontSize: 12 }}>✕</button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {error && <p style={{ color: '#EF4444', fontSize: 13, margin: '0 0 12px' }}>{error}</p>}
