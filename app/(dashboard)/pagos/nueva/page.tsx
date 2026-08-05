@@ -51,10 +51,6 @@ export default function Page() {
 
     setSubmitting(true)
 
-    // Generar nro de solicitud correlativo: SP-001, SP-002...
-    const { count } = await supabase.from('solicitudes_pago').select('*', { count: 'exact', head: true })
-    const nro_solicitud = `SP-${String((count || 0) + 1).padStart(3, '0')}`
-
     // Subir PDF si hay
     let factura_path: string | null = null
     if (file) {
@@ -70,8 +66,7 @@ export default function Page() {
       factura_path = path
     }
 
-    const { error: insErr } = await supabase.from('solicitudes_pago').insert({
-      nro_solicitud,
+    const { data: inserted, error: insErr } = await supabase.from('solicitudes_pago').insert({
       tipo,
       solicitante,
       solicitante_email: userEmail,
@@ -83,7 +78,7 @@ export default function Page() {
       datos_cuenta: datosCuenta.trim() || null,
       factura_path,
       estado: 'Nueva',
-    })
+    }).select().single()
     if (insErr) {
       setError('Error al guardar: ' + insErr.message)
       if (factura_path) await supabase.storage.from('pagos').remove([factura_path])
@@ -92,7 +87,7 @@ export default function Page() {
 
     fetch('/api/notify-slack-pagos', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nro_solicitud, tipo, solicitante, destinatario: destinatario.trim(), monto: Number(monto), moneda, motivo: motivo.trim() })
+      body: JSON.stringify({ nro_solicitud: inserted.nro_solicitud, tipo, solicitante, destinatario: destinatario.trim(), monto: Number(monto), moneda, motivo: motivo.trim() })
     })
 
     router.push('/pagos/mis-solicitudes')
