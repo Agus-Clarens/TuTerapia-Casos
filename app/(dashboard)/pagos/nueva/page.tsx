@@ -34,7 +34,7 @@ export default function Page() {
   // Si es reembolso, el destinatario es el mismo solicitante
   useEffect(() => {
     if ((tipo === 'Reembolso' || tipo === 'Factura equipo interno') && solicitante) setDestinatario(solicitante)
-    if (tipo !== 'Reembolso' && noAplicaRut) setNoAplicaRut(false)
+    if (tipo !== 'Reembolso' && tipo !== 'Factura equipo interno' && noAplicaRut) setNoAplicaRut(false)
   }, [tipo, solicitante])
 
   async function submit() {
@@ -161,7 +161,7 @@ export default function Page() {
           <input value={rutCuit} onChange={e => setRutCuit(e.target.value)} disabled={noAplicaRut}
             placeholder="Ej: 20-36896551-1"
             style={{ width: '100%', padding: '9px 12px', borderRadius: 6, border: '1.5px solid #E5E7EB', fontSize: 13, boxSizing: 'border-box', fontFamily: 'inherit', background: noAplicaRut ? '#F3F4F6' : '#fff', color: noAplicaRut ? '#9CA3AF' : 'inherit' }} />
-          {tipo === 'Reembolso' && (
+          {(tipo === 'Reembolso' || tipo === 'Factura equipo interno') && (
             <label style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 6, fontSize: 12, color: '#6B7280', cursor: 'pointer' }}>
               <input type="checkbox" checked={noAplicaRut} onChange={e => { setNoAplicaRut(e.target.checked); if (e.target.checked) setRutCuit('') }} />
               No aplica RUT / CUIT para este reembolso
