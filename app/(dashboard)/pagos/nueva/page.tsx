@@ -14,6 +14,7 @@ export default function Page() {
   const [solicitante, setSolicitante] = useState('')
   const [destinatario, setDestinatario] = useState('')
   const [rutCuit, setRutCuit] = useState('')
+  const [noAplicaRut, setNoAplicaRut] = useState(false)
   const [motivo, setMotivo] = useState('')
   const [monto, setMonto] = useState('')
   const [moneda, setMoneda] = useState<'ARS' | 'UYU'>('ARS')
@@ -33,13 +34,14 @@ export default function Page() {
   // Si es reembolso, el destinatario es el mismo solicitante
   useEffect(() => {
     if ((tipo === 'Reembolso' || tipo === 'Factura equipo interno') && solicitante) setDestinatario(solicitante)
+    if (tipo !== 'Reembolso' && noAplicaRut) setNoAplicaRut(false)
   }, [tipo, solicitante])
 
   async function submit() {
     setError('')
     if (!solicitante) return setError('Elegí quién solicita.')
     if (!destinatario.trim()) return setError('Ingresá el destinatario del pago.')
-    if (!rutCuit.trim()) return setError('Ingresá el RUT o CUIT.')
+    if (!noAplicaRut && !rutCuit.trim()) return setError('Ingresá el RUT o CUIT.')
     if (!motivo.trim()) return setError('Ingresá el motivo.')
     if (!monto || Number(monto) <= 0) return setError('Ingresá un monto válido.')
     if (tipo === 'Pago a proveedor' && !datosCuenta.trim()) return setError('Ingresá los datos de cuenta.')
@@ -74,7 +76,7 @@ export default function Page() {
       solicitante,
       solicitante_email: userEmail,
       destinatario: destinatario.trim(),
-      rut_cuit: rutCuit.trim(),
+      rut_cuit: noAplicaRut ? null : rutCuit.trim(),
       motivo: motivo.trim(),
       monto: Number(monto),
       moneda,
@@ -152,10 +154,16 @@ export default function Page() {
 
         {/* RUT / CUIT */}
         <div style={{ marginBottom: 12 }}>
-          <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 4 }}>RUT / CUIT *</label>
-          <input value={rutCuit} onChange={e => setRutCuit(e.target.value)}
+          <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 4 }}>RUT / CUIT {noAplicaRut ? '' : '*'}</label>
+          <input value={rutCuit} onChange={e => setRutCuit(e.target.value)} disabled={noAplicaRut}
             placeholder="Ej: 20-36896551-1"
-            style={{ width: '100%', padding: '9px 12px', borderRadius: 6, border: '1.5px solid #E5E7EB', fontSize: 13, boxSizing: 'border-box', fontFamily: 'inherit' }} />
+            style={{ width: '100%', padding: '9px 12px', borderRadius: 6, border: '1.5px solid #E5E7EB', fontSize: 13, boxSizing: 'border-box', fontFamily: 'inherit', background: noAplicaRut ? '#F3F4F6' : '#fff', color: noAplicaRut ? '#9CA3AF' : 'inherit' }} />
+          {tipo === 'Reembolso' && (
+            <label style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 6, fontSize: 12, color: '#6B7280', cursor: 'pointer' }}>
+              <input type="checkbox" checked={noAplicaRut} onChange={e => { setNoAplicaRut(e.target.checked); if (e.target.checked) setRutCuit('') }} />
+              No aplica RUT / CUIT para este reembolso
+            </label>
+          )}
         </div>
 
         {/* Motivo */}
