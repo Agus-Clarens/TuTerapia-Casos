@@ -237,6 +237,11 @@ export function CasoCard({ caso, onUpdate, sector, showDelete }: any) {
             {caso.reabierto && (
               <span style={{ fontSize:10, background:'#FEE2E2', color:'#B91C1C', borderRadius:5, padding:'2px 7px', fontWeight:600 }}>↺ Reabierto</span>
             )}
+            {(caso.area === 'Talent' || caso.area === 'Admin+Talent') && caso.talent_accion !== null && caso.talent_accion !== undefined && (
+              caso.talent_accion
+                ? <span style={{ fontSize:10, background:'#7C3AED', color:'#fff', borderRadius:5, padding:'2px 7px', fontWeight:700 }}>Accionar</span>
+                : <span style={{ fontSize:10, background:'#FCE7F3', color:'#BE185D', borderRadius:5, padding:'2px 7px', fontWeight:700 }}>Aviso</span>
+            )}
           </div>
           <div style={{ display:'flex', alignItems:'center', gap:4, flexWrap:'wrap' }}>
             {caso.area?.includes('Admin') && <Badge label="Admin" estado={caso.estado_admin||'Pendiente'} />}

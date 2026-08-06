@@ -46,6 +46,7 @@ export default function NuevoCaso() {
   const router = useRouter()
   const [form, setForm] = useState({ cargado_por: CARGADO_POR[0], pais: 'Argentina', pac_nombre: '', pac_mail: '', psi_nombre: '', psi_mail: '', tipo_caso: '', descripcion: '', monto_descuento: '', mes_descuento: 'Enero', tipo_sesion: 'Presencial' })
   const [sinPsi, setSinPsi] = useState(false)
+  const [talentAccion, setTalentAccion] = useState(true)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -70,6 +71,7 @@ export default function NuevoCaso() {
       monto_descuento: info?.desc ? Number(form.monto_descuento) : null,
       mes_descuento: info?.desc ? form.mes_descuento : null,
       tipo_sesion: info?.desc ? form.tipo_sesion : null,
+      talent_accion: (areaFinal === 'Talent' || areaFinal === 'Admin+Talent') ? talentAccion : null,
     })
     if (err) { setError('Error: ' + err.message); setLoading(false); return }
     if (info?.desc) {
@@ -108,6 +110,28 @@ export default function NuevoCaso() {
         </select>
         {form.tipo_caso && <p style={{ fontSize:12, color:'#007271', fontWeight:600, marginTop:4 }}>Área: {getAreaFinal(form.tipo_caso, form.cargado_por)}{info?.desc ? ' · Requiere descuento' : ''}</p>}
       </div>
+      {form.tipo_caso && (getAreaFinal(form.tipo_caso, form.cargado_por) === 'Talent' || getAreaFinal(form.tipo_caso, form.cargado_por) === 'Admin+Talent') && (
+        <div style={{ marginBottom:16 }}>
+          <label style={lbl}>Para Talent, este caso es *</label>
+          <div style={{ display:'flex', gap:8 }}>
+            <button type="button" onClick={()=>setTalentAccion(true)}
+              style={{ flex:1, padding:'10px 12px', borderRadius:8, fontSize:13, fontWeight:700, cursor:'pointer',
+                border: talentAccion ? '2px solid #7C3AED' : '1.5px solid #E5E7EB',
+                background: talentAccion ? '#7C3AED' : '#fff', color: talentAccion ? '#fff' : '#6B7280' }}>
+              Accionar
+            </button>
+            <button type="button" onClick={()=>setTalentAccion(false)}
+              style={{ flex:1, padding:'10px 12px', borderRadius:8, fontSize:13, fontWeight:700, cursor:'pointer',
+                border: !talentAccion ? '2px solid #EC4899' : '1.5px solid #E5E7EB',
+                background: !talentAccion ? '#EC4899' : '#fff', color: !talentAccion ? '#fff' : '#6B7280' }}>
+              Aviso
+            </button>
+          </div>
+          <p style={{ fontSize:11, color:'#9CA3AF', marginTop:4 }}>
+            {talentAccion ? 'Talent tiene que hacer algo con este caso.' : 'Es solo para que Talent esté al tanto, no requiere que actúen.'}
+          </p>
+        </div>
+      )}
       {info?.desc && (
         <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:16, marginBottom:16 }}>
           <div><label style={lbl}>Monto *</label><input type="number" value={form.monto_descuento} onChange={e=>setForm({...form,monto_descuento:e.target.value})} style={inp}/></div>
