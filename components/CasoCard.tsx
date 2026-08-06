@@ -97,6 +97,14 @@ export function CasoCard({ caso, onUpdate, sector, showDelete }: any) {
   const [accion, setAccion] = useState('Actualización')
   const [del, setDel] = useState(false)
   const [reasignar, setReasignar] = useState(false)
+  const [editandoCaso, setEditandoCaso] = useState(false)
+  const [eGuardando, setEGuardando] = useState(false)
+  const [ePacNombre, setEPacNombre] = useState(caso.pac_nombre||'')
+  const [ePacMail, setEPacMail] = useState(caso.pac_mail||'')
+  const [ePsiNombre, setEPsiNombre] = useState(caso.psi_nombre||'')
+  const [ePsiMail, setEPsiMail] = useState(caso.psi_mail||'')
+  const [eDescripcion, setEDescripcion] = useState(caso.descripcion||'')
+  const [eTalentAccion, setETalentAccion] = useState(caso.talent_accion !== false)
   const [adjuntos, setAdjuntos] = useState<any[]>([])
   const [subiendo, setSubiendo] = useState(false)
   const [nuevaArea, setNuevaArea] = useState<string>(caso.area || 'Admin')
@@ -221,6 +229,26 @@ export function CasoCard({ caso, onUpdate, sector, showDelete }: any) {
     loadActs()
   }
 
+  async function guardarEdicionCaso() {
+    setEGuardando(true)
+    const u: any = {
+      pac_nombre: ePacNombre.trim(),
+      pac_mail: ePacMail.trim(),
+      psi_nombre: ePsiNombre.trim() || null,
+      psi_mail: ePsiMail.trim() || null,
+      descripcion: eDescripcion.trim(),
+      updated_at: new Date().toISOString(),
+      last_updated_by: autor,
+    }
+    if (caso.area === 'Talent' || caso.area === 'Admin+Talent') u.talent_accion = eTalentAccion
+    await supabase.from('casos').update(u).eq('id', caso.id)
+    await supabase.from('caso_actualizaciones').insert({ caso_id: caso.id, autor, texto: `[Editado] ${autor} editó los datos del caso` })
+    setEGuardando(false)
+    setEditandoCaso(false)
+    onUpdate()
+    loadActs()
+  }
+
   useEffect(()=>{ if(open) loadActs() },[open])
 
   return (
@@ -314,6 +342,51 @@ export function CasoCard({ caso, onUpdate, sector, showDelete }: any) {
             )}
             {!cerrado&&(
               <div style={{ display:'flex', flexDirection:'column', gap:8, borderTop:acts.length>0?'1px solid #F3F4F6':'none', paddingTop:acts.length>0?12:0 }}>
+                {/* Panel de editar caso */}
+                {!editandoCaso ? (
+                  <button onClick={()=>{ setEditandoCaso(true); setEPacNombre(caso.pac_nombre||''); setEPacMail(caso.pac_mail||''); setEPsiNombre(caso.psi_nombre||''); setEPsiMail(caso.psi_mail||''); setEDescripcion(caso.descripcion||''); setETalentAccion(caso.talent_accion !== false) }} style={{ background:'transparent', color:'#264534', border:'1px dashed #A7C4B5', borderRadius:6, padding:'6px 12px', fontSize:11, cursor:'pointer', fontWeight:600, alignSelf:'flex-start' }}>
+                    ✎ Editar caso
+                  </button>
+                ) : (
+                  <div style={{ background:'#F0FDF4', border:'1.5px solid #A7C4B5', borderRadius:8, padding:12, display:'flex', flexDirection:'column', gap:8 }}>
+                    <div style={{ fontSize:12, fontWeight:600, color:'#264534' }}>Editar datos del caso</div>
+                    <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8 }}>
+                      <div>
+                        <label style={{ fontSize:11, color:'#6B7280', fontWeight:600, display:'block', marginBottom:3 }}>Nombre paciente</label>
+                        <input value={ePacNombre} onChange={e=>setEPacNombre(e.target.value)} style={{ width:'100%', border:'1.5px solid #E5E7EB', borderRadius:6, padding:'7px 10px', fontSize:12, boxSizing:'border-box' }} />
+                      </div>
+                      <div>
+                        <label style={{ fontSize:11, color:'#6B7280', fontWeight:600, display:'block', marginBottom:3 }}>Email paciente</label>
+                        <input value={ePacMail} onChange={e=>setEPacMail(e.target.value)} style={{ width:'100%', border:'1.5px solid #E5E7EB', borderRadius:6, padding:'7px 10px', fontSize:12, boxSizing:'border-box' }} />
+                      </div>
+                      <div>
+                        <label style={{ fontSize:11, color:'#6B7280', fontWeight:600, display:'block', marginBottom:3 }}>Nombre psicólogo</label>
+                        <input value={ePsiNombre} onChange={e=>setEPsiNombre(e.target.value)} style={{ width:'100%', border:'1.5px solid #E5E7EB', borderRadius:6, padding:'7px 10px', fontSize:12, boxSizing:'border-box' }} />
+                      </div>
+                      <div>
+                        <label style={{ fontSize:11, color:'#6B7280', fontWeight:600, display:'block', marginBottom:3 }}>Email psicólogo</label>
+                        <input value={ePsiMail} onChange={e=>setEPsiMail(e.target.value)} style={{ width:'100%', border:'1.5px solid #E5E7EB', borderRadius:6, padding:'7px 10px', fontSize:12, boxSizing:'border-box' }} />
+                      </div>
+                    </div>
+                    <div>
+                      <label style={{ fontSize:11, color:'#6B7280', fontWeight:600, display:'block', marginBottom:3 }}>Descripción</label>
+                      <textarea value={eDescripcion} onChange={e=>setEDescripcion(e.target.value)} rows={3} style={{ width:'100%', border:'1.5px solid #E5E7EB', borderRadius:6, padding:'7px 10px', fontSize:12, boxSizing:'border-box', resize:'vertical', fontFamily:'inherit' }} />
+                    </div>
+                    {(caso.area === 'Talent' || caso.area === 'Admin+Talent') && (
+                      <div>
+                        <label style={{ fontSize:11, color:'#6B7280', fontWeight:600, display:'block', marginBottom:3 }}>Para Talent, este caso es</label>
+                        <div style={{ display:'flex', gap:8 }}>
+                          <button type="button" onClick={()=>setETalentAccion(true)} style={{ flex:1, padding:'8px 10px', borderRadius:6, fontSize:12, fontWeight:700, cursor:'pointer', border: eTalentAccion?'2px solid #7C3AED':'1.5px solid #E5E7EB', background: eTalentAccion?'#7C3AED':'#fff', color: eTalentAccion?'#fff':'#6B7280' }}>Accionar</button>
+                          <button type="button" onClick={()=>setETalentAccion(false)} style={{ flex:1, padding:'8px 10px', borderRadius:6, fontSize:12, fontWeight:700, cursor:'pointer', border: !eTalentAccion?'2px solid #EC4899':'1.5px solid #E5E7EB', background: !eTalentAccion?'#EC4899':'#fff', color: !eTalentAccion?'#fff':'#6B7280' }}>Aviso</button>
+                        </div>
+                      </div>
+                    )}
+                    <div style={{ display:'flex', gap:6 }}>
+                      <button onClick={guardarEdicionCaso} disabled={eGuardando} style={{ background:'#264534', color:'#fff', border:'none', borderRadius:6, padding:'7px 14px', fontSize:12, cursor: eGuardando?'not-allowed':'pointer', fontWeight:600, opacity: eGuardando?0.6:1 }}>{eGuardando?'Guardando...':'Guardar cambios'}</button>
+                      <button onClick={()=>setEditandoCaso(false)} style={{ background:'transparent', color:'#6B7280', border:'1px solid #E5E7EB', borderRadius:6, padding:'7px 14px', fontSize:12, cursor:'pointer' }}>Cancelar</button>
+                    </div>
+                  </div>
+                )}
                 {/* Panel de reasignar sector */}
                 {!reasignar ? (
                   <button onClick={()=>{ setReasignar(true); setNuevaArea(caso.area||'Admin'); setNuevoTipo('') }} style={{ background:'transparent', color:'#7C3AED', border:'1px dashed #C4B5FD', borderRadius:6, padding:'6px 12px', fontSize:11, cursor:'pointer', fontWeight:600, alignSelf:'flex-start' }}>
