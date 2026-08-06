@@ -12,6 +12,16 @@ export function SolicitudCard({ sol, userEmail, onUpdate }: any) {
   const [showAccion, setShowAccion] = useState(false)
   const [error, setError] = useState('')
   const [extraAdjuntos, setExtraAdjuntos] = useState<any[]>([])
+  const [editando, setEditando] = useState(false)
+  const [guardandoEdit, setGuardandoEdit] = useState(false)
+  const [errorEdit, setErrorEdit] = useState('')
+  const [eDestinatario, setEDestinatario] = useState(sol.destinatario || '')
+  const [eRutCuit, setERutCuit] = useState(sol.rut_cuit || '')
+  const [eNoAplicaRut, setENoAplicaRut] = useState(!sol.rut_cuit)
+  const [eMotivo, setEMotivo] = useState(sol.motivo || '')
+  const [eMonto, setEMonto] = useState(String(sol.monto ?? ''))
+  const [eMoneda, setEMoneda] = useState(sol.moneda || 'ARS')
+  const [eDatosCuenta, setEDatosCuenta] = useState(sol.datos_cuenta || '')
 
   useEffect(() => {
     supabase.from('solicitud_pago_adjuntos').select('*').eq('solicitud_id', sol.id)
@@ -81,6 +91,28 @@ export function SolicitudCard({ sol, userEmail, onUpdate }: any) {
     if (sol.comprobante_pago_path) await supabase.storage.from('pagos').remove([sol.comprobante_pago_path])
     if (extraAdjuntos.length > 0) await supabase.storage.from('pagos').remove(extraAdjuntos.map((a: any) => a.file_path))
     await supabase.from('solicitudes_pago').delete().eq('id', sol.id)
+    onUpdate()
+  }
+
+  async function guardarEdicion() {
+    setErrorEdit('')
+    if (!eDestinatario.trim()) return setErrorEdit('Ingresá el destinatario.')
+    if (!eNoAplicaRut && !eRutCuit.trim()) return setErrorEdit('Ingresá el RUT o CUIT (o tildá que no aplica).')
+    if (!eMotivo.trim()) return setErrorEdit('Ingresá el motivo.')
+    if (!eMonto || Number(eMonto) <= 0) return setErrorEdit('Ingresá un monto válido.')
+
+    setGuardandoEdit(true)
+    const { error: updErr } = await supabase.from('solicitudes_pago').update({
+      destinatario: eDestinatario.trim(),
+      rut_cuit: eNoAplicaRut ? null : eRutCuit.trim(),
+      motivo: eMotivo.trim(),
+      monto: Number(eMonto),
+      moneda: eMoneda,
+      datos_cuenta: eDatosCuenta.trim() || null,
+    }).eq('id', sol.id)
+    setGuardandoEdit(false)
+    if (updErr) { setErrorEdit('Error al guardar: ' + updErr.message); return }
+    setEditando(false)
     onUpdate()
   }
 
@@ -175,6 +207,12 @@ export function SolicitudCard({ sol, userEmail, onUpdate }: any) {
               Reabrir
             </button>
           )}
+          {esCreador && !pagada && !editando && (
+            <button onClick={() => setEditando(true)}
+              style={{ background: 'transparent', color: '#264534', border: '1px solid #E5E7EB', borderRadius: 6, padding: '6px 12px', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+              ✎ Editar
+            </button>
+          )}
           {(puedeMarcar || esCreador) && (
             <button onClick={eliminar}
               style={{ background: 'transparent', color: '#D1D5DB', border: '1px solid #E5E7EB', borderRadius: 6, padding: '6px 10px', fontSize: 12, cursor: 'pointer' }}>
@@ -183,6 +221,64 @@ export function SolicitudCard({ sol, userEmail, onUpdate }: any) {
           )}
         </div>
       </div>
+
+      {/* Panel de edicion */}
+      {editando && (
+        <div style={{ background: '#F9FAFB', border: '1.5px solid #E5E7EB', borderRadius: 8, padding: 12, marginTop: 10 }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: '#264534', marginBottom: 8 }}>Editar solicitud</div>
+
+          <label style={{ fontSize: 11, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 3 }}>{sol.tipo === 'Reembolso' ? 'A reembolsar a' : 'Pagar a'}</label>
+          <input value={eDestinatario} onChange={e => setEDestinatario(e.target.value)}
+            style={{ width: '100%', padding: '7px 10px', borderRadius: 6, border: '1.5px solid #E5E7EB', fontSize: 12, boxSizing: 'border-box', marginBottom: 8 }} />
+
+          <label style={{ fontSize: 11, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 3 }}>RUT / CUIT</label>
+          <input value={eRutCuit} onChange={e => setERutCuit(e.target.value)} disabled={eNoAplicaRut}
+            style={{ width: '100%', padding: '7px 10px', borderRadius: 6, border: '1.5px solid #E5E7EB', fontSize: 12, boxSizing: 'border-box', marginBottom: 4, background: eNoAplicaRut ? '#F3F4F6' : '#fff' }} />
+          {(sol.tipo === 'Reembolso' || sol.tipo === 'Factura equipo interno') && (
+            <label style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8, fontSize: 11, color: '#6B7280', cursor: 'pointer' }}>
+              <input type="checkbox" checked={eNoAplicaRut} onChange={e => { setENoAplicaRut(e.target.checked); if (e.target.checked) setERutCuit('') }} />
+              No aplica RUT / CUIT
+            </label>
+          )}
+
+          <label style={{ fontSize: 11, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 3 }}>Motivo</label>
+          <textarea value={eMotivo} onChange={e => setEMotivo(e.target.value)} rows={2}
+            style={{ width: '100%', padding: '7px 10px', borderRadius: 6, border: '1.5px solid #E5E7EB', fontSize: 12, boxSizing: 'border-box', marginBottom: 8, resize: 'vertical', fontFamily: 'inherit' }} />
+
+          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 8, marginBottom: 8 }}>
+            <div>
+              <label style={{ fontSize: 11, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 3 }}>Monto</label>
+              <input type="number" step="0.01" value={eMonto} onChange={e => setEMonto(e.target.value)}
+                style={{ width: '100%', padding: '7px 10px', borderRadius: 6, border: '1.5px solid #E5E7EB', fontSize: 12, boxSizing: 'border-box' }} />
+            </div>
+            <div>
+              <label style={{ fontSize: 11, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 3 }}>Moneda</label>
+              <select value={eMoneda} onChange={e => setEMoneda(e.target.value)}
+                style={{ width: '100%', padding: '7px 10px', borderRadius: 6, border: '1.5px solid #E5E7EB', fontSize: 12, background: '#fff', boxSizing: 'border-box' }}>
+                <option value="ARS">ARS</option>
+                <option value="UYU">UYU</option>
+              </select>
+            </div>
+          </div>
+
+          <label style={{ fontSize: 11, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 3 }}>Datos de cuenta</label>
+          <textarea value={eDatosCuenta} onChange={e => setEDatosCuenta(e.target.value)} rows={2}
+            style={{ width: '100%', padding: '7px 10px', borderRadius: 6, border: '1.5px solid #E5E7EB', fontSize: 12, boxSizing: 'border-box', marginBottom: 8, resize: 'vertical', fontFamily: 'inherit' }} />
+
+          {errorEdit && <p style={{ color: '#EF4444', fontSize: 12, margin: '0 0 8px' }}>{errorEdit}</p>}
+
+          <div style={{ display: 'flex', gap: 6 }}>
+            <button onClick={guardarEdicion} disabled={guardandoEdit}
+              style={{ background: '#264534', color: '#fff', border: 'none', borderRadius: 6, padding: '7px 14px', fontSize: 12, fontWeight: 700, cursor: guardandoEdit ? 'not-allowed' : 'pointer', opacity: guardandoEdit ? 0.6 : 1 }}>
+              {guardandoEdit ? 'Guardando...' : 'Guardar cambios'}
+            </button>
+            <button onClick={() => { setEditando(false); setErrorEdit('') }}
+              style={{ background: 'transparent', color: '#6B7280', border: '1px solid #E5E7EB', borderRadius: 6, padding: '7px 14px', fontSize: 12, cursor: 'pointer' }}>
+              Cancelar
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Panel de acción para marcar como pagada */}
       {showAccion && (
