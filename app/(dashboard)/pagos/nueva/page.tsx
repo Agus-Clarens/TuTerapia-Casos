@@ -190,6 +190,7 @@ export default function Page() {
               style={{ width: '100%', padding: '9px 12px', borderRadius: 6, border: '1.5px solid #E5E7EB', fontSize: 13, background: '#fff', boxSizing: 'border-box' }}>
               <option value="ARS">ARS</option>
               <option value="UYU">UYU</option>
+              <option value="USD">USD</option>
             </select>
           </div>
         </div>
