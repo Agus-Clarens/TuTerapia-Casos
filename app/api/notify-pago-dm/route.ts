@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@supabase/supabase-js'
 
 export async function POST(req: NextRequest) {
   try {
@@ -6,8 +7,13 @@ export async function POST(req: NextRequest) {
     const token = process.env.SLACK_BOT_TOKEN
     if (!token || !email) return NextResponse.json({ ok: false, error: 'faltan datos' })
 
+    // 0. Ver si este mail de la app tiene un mail distinto registrado en Slack
+    const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
+    const { data: map } = await supabase.from('slack_email_map').select('slack_email').eq('app_email', email.toLowerCase()).maybeSingle()
+    const emailParaSlack = map?.slack_email || email
+
     // 1. Buscar el usuario de Slack por su mail
-    const lookupRes = await fetch(`https://slack.com/api/users.lookupByEmail?email=${encodeURIComponent(email)}`, {
+    const lookupRes = await fetch(`https://slack.com/api/users.lookupByEmail?email=${encodeURIComponent(emailParaSlack)}`, {
       headers: { Authorization: `Bearer ${token}` },
     })
     const lookup = await lookupRes.json()
