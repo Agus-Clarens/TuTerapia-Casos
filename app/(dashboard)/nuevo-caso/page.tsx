@@ -14,7 +14,7 @@ const TIPOS_CASO: any = {
   'Talent': { area: 'Talent', desc: false, tipos: ['Disponibilidad agenda','No confirma sesion','Cancelacion psicologo','Calendario incorrecto','Sesiones pendientes aprobacion','Psicologo fantasmeado','Pocas horas','Sin horas','Mejora perfil','Psicologo lleva pacientes por fuera de plataforma','Otro'] },
   'Admin+Talent (con descuento)': { area: 'Admin+Talent', desc: true, tipos: ['Sesion sin consentimiento','Sesion marcada realizada no ocurrio','Descontar sesion'] },
   'Admin+Talent': { area: 'Admin+Talent', desc: false, tipos: ['Devolucion fuera plazo con falla','Desvinculacion con pacientes activos','Cobra fuera plataforma','Horario incorrecto con dano','Otro'] },
-  'CX': { area: 'CX', desc: false, tipos: ['Cargo mal los datos en la factura','Contactar retencion','Derivacion psicologo','Mala experiencia devolucion autonoma','Cancelacion por paciente','Otro'] },
+  'CX': { area: 'CX', desc: false, tipos: ['Cargo mal los datos en la factura','Contactar retencion','Derivacion psicologo','Mala experiencia devolucion autonoma','Cancelacion por paciente','Solicitar reseñas a los pacientes','Otro'] },
   'CX ↔ Business': { area: 'CX', desc: false, tipos: TIPOS_CRUZADOS_CX_BUSINESS, crossAssign: true },
   'Business': { area: 'Business', desc: false, tipos: ['Alianza nueva','Renovacion contrato','Reporte a empresa','Seguimiento de facturacion empresa','Otro'] },
 }
