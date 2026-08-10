@@ -104,6 +104,7 @@ export function CasoCard({ caso, onUpdate, sector, showDelete }: any) {
   const [ePsiNombre, setEPsiNombre] = useState(caso.psi_nombre||'')
   const [ePsiMail, setEPsiMail] = useState(caso.psi_mail||'')
   const [eDescripcion, setEDescripcion] = useState(caso.descripcion||'')
+  const [eCargadoPor, setECargadoPor] = useState(caso.cargado_por||CARGADO_POR[0])
   const [eTalentAccion, setETalentAccion] = useState(caso.talent_accion !== false)
   const [adjuntos, setAdjuntos] = useState<any[]>([])
   const [subiendo, setSubiendo] = useState(false)
@@ -237,6 +238,7 @@ export function CasoCard({ caso, onUpdate, sector, showDelete }: any) {
       psi_nombre: ePsiNombre.trim() || null,
       psi_mail: ePsiMail.trim() || null,
       descripcion: eDescripcion.trim(),
+      cargado_por: eCargadoPor,
       updated_at: new Date().toISOString(),
       last_updated_by: autor,
     }
@@ -344,12 +346,18 @@ export function CasoCard({ caso, onUpdate, sector, showDelete }: any) {
               <div style={{ display:'flex', flexDirection:'column', gap:8, borderTop:acts.length>0?'1px solid #F3F4F6':'none', paddingTop:acts.length>0?12:0 }}>
                 {/* Panel de editar caso */}
                 {!editandoCaso ? (
-                  <button onClick={()=>{ setEditandoCaso(true); setEPacNombre(caso.pac_nombre||''); setEPacMail(caso.pac_mail||''); setEPsiNombre(caso.psi_nombre||''); setEPsiMail(caso.psi_mail||''); setEDescripcion(caso.descripcion||''); setETalentAccion(caso.talent_accion !== false) }} style={{ background:'transparent', color:'#264534', border:'1px dashed #A7C4B5', borderRadius:6, padding:'6px 12px', fontSize:11, cursor:'pointer', fontWeight:600, alignSelf:'flex-start' }}>
+                  <button onClick={()=>{ setEditandoCaso(true); setEPacNombre(caso.pac_nombre||''); setEPacMail(caso.pac_mail||''); setEPsiNombre(caso.psi_nombre||''); setEPsiMail(caso.psi_mail||''); setEDescripcion(caso.descripcion||''); setETalentAccion(caso.talent_accion !== false); setECargadoPor(caso.cargado_por||CARGADO_POR[0]) }} style={{ background:'transparent', color:'#264534', border:'1px dashed #A7C4B5', borderRadius:6, padding:'6px 12px', fontSize:11, cursor:'pointer', fontWeight:600, alignSelf:'flex-start' }}>
                     ✎ Editar caso
                   </button>
                 ) : (
                   <div style={{ background:'#F0FDF4', border:'1.5px solid #A7C4B5', borderRadius:8, padding:12, display:'flex', flexDirection:'column', gap:8 }}>
                     <div style={{ fontSize:12, fontWeight:600, color:'#264534' }}>Editar datos del caso</div>
+                    <div>
+                      <label style={{ fontSize:11, color:'#6B7280', fontWeight:600, display:'block', marginBottom:3 }}>Cargado por</label>
+                      <select value={eCargadoPor} onChange={e=>setECargadoPor(e.target.value)} style={{ width:'100%', border:'1.5px solid #E5E7EB', borderRadius:6, padding:'7px 10px', fontSize:12, boxSizing:'border-box', background:'#fff' }}>
+                        {CARGADO_POR.map(p=><option key={p}>{p}</option>)}
+                      </select>
+                    </div>
                     <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8 }}>
                       <div>
                         <label style={{ fontSize:11, color:'#6B7280', fontWeight:600, display:'block', marginBottom:3 }}>Nombre paciente</label>
