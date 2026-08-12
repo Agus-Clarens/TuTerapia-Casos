@@ -262,7 +262,7 @@ export function CasoCard({ caso, onUpdate, sector, showDelete }: any) {
             <span style={{ fontSize:11, background:'#F3F4F6', borderRadius:4, padding:'2px 7px', color:'#374151' }}>{caso.area}</span>
             <span style={{ fontSize:11, color:'#9CA3AF' }}>{caso.fecha}</span>
             {caso.updated_at && (new Date(caso.updated_at).getTime() - new Date(caso.created_at).getTime() > 60000) && (
-              <span style={{ fontSize:10, background:'#FEF3C7', color:'#92400E', borderRadius:5, padding:'2px 7px', fontWeight:600 }}>● Actualizado por {caso.last_updated_by||'?'} · {timeAgo(caso.updated_at)}</span>
+              <span onClick={()=>{ setOpen(true); loadActs() }} style={{ fontSize:10, background:'#FEF3C7', color:'#92400E', borderRadius:5, padding:'2px 7px', fontWeight:600, cursor:'pointer' }}>● Actualizado por {caso.last_updated_by||'?'} · {timeAgo(caso.updated_at)}</span>
             )}
             {caso.reabierto && (
               <span style={{ fontSize:10, background:'#FEE2E2', color:'#B91C1C', borderRadius:5, padding:'2px 7px', fontWeight:600 }}>↺ Reabierto</span>
