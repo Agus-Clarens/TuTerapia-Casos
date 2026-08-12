@@ -3,7 +3,7 @@ import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { supabase } from '../../../lib/supabase'
 import { CasoCard, Caso } from '../../../components/CasoCard'
-import { casoRelevanteParaUsuario } from '../../../lib/sectores-usuario'
+import { nombreDeUsuario } from '../../../lib/sectores-usuario'
 
 const ord = (e: string) => ({'Nuevo':0,'En curso':1,'Cerrado':3} as Record<string,number>)[e] ?? 2
 
@@ -18,6 +18,7 @@ function PageInner() {
   const [loading, setLoading] = useState(true)
   const [filtro, setFiltro] = useState<string>('Todos')
   const [userEmail, setUserEmail] = useState<string | null>(null)
+  const [idsActualizados, setIdsActualizados] = useState<string[] | null>(null)
   const searchParams = useSearchParams()
   const soloActualizados = searchParams.get('actualizados') === '1'
 
@@ -32,18 +33,32 @@ function PageInner() {
     supabase.auth.getSession().then(({ data: { session } }) => setUserEmail(session?.user?.email || ''))
   }, [])
 
-  const esActualizadoReciente = (c: any) => {
-    if (c.estado === 'Cerrado') return false
-    if (!c.updated_at) return false
-    const fueTocado = new Date(c.updated_at).getTime() - new Date(c.created_at).getTime() > 60000
-    const esReciente = Date.now() - new Date(c.updated_at).getTime() < 24 * 60 * 60 * 1000
-    return fueTocado && esReciente && casoRelevanteParaUsuario(userEmail || '', c.area, c.cargado_por)
-  }
+  // Calcular casos donde participé y la última actualización la hizo otra persona (últimas 24h)
+  useEffect(() => {
+    if (!soloActualizados || userEmail === null) return
+    const miNombre = nombreDeUsuario(userEmail)
+    if (!miNombre) { setIdsActualizados([]); return }
+    const hace24h = Date.now() - 24 * 60 * 60 * 1000
+    supabase.from('caso_actualizaciones').select('caso_id, autor, created_at')
+      .order('created_at', { ascending: true }).then(({ data: acts }) => {
+        if (!acts) { setIdsActualizados([]); return }
+        const porCaso: Record<string, { autores: string[], ultimoAutor: string, ultimaFecha: string }> = {}
+        for (const a of acts) {
+          if (!porCaso[a.caso_id]) porCaso[a.caso_id] = { autores: [], ultimoAutor: '', ultimaFecha: '' }
+          if (!porCaso[a.caso_id].autores.includes(a.autor)) porCaso[a.caso_id].autores.push(a.autor)
+          porCaso[a.caso_id].ultimoAutor = a.autor
+          porCaso[a.caso_id].ultimaFecha = a.created_at
+        }
+        const ids = Object.entries(porCaso).filter(([_, i]) =>
+          i.autores.includes(miNombre) && i.ultimoAutor !== miNombre && new Date(i.ultimaFecha).getTime() > hace24h
+        ).map(([id]) => id)
+        setIdsActualizados(ids)
+      })
+  }, [soloActualizados, userEmail])
 
-  // Mientras no cargó el email, no filtramos la vista de actualizados (para no mostrar de más)
-  const esperandoEmail = soloActualizados && userEmail === null
+  const esperandoEmail = soloActualizados && (userEmail === null || idsActualizados === null)
 
-  const base = soloActualizados ? casos.filter(esActualizadoReciente) : casos
+  const base = soloActualizados ? casos.filter(c => (idsActualizados || []).includes(c.id) && c.estado !== 'Cerrado') : casos
   const filtrados = filtro === 'Todos' ? base : base.filter(c => c.area === filtro)
   const conteoPorSector: Record<string, number> = { Todos: base.length }
   SECTORES.slice(1).forEach(s => { conteoPorSector[s] = base.filter(c => c.area === s).length })

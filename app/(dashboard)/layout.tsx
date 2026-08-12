@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '../../lib/supabase'
-import { casoRelevanteParaUsuario } from '../../lib/sectores-usuario'
+import { nombreDeUsuario } from '../../lib/sectores-usuario'
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
@@ -23,16 +23,43 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   async function cargarActualizados() {
     if (userEmail === null) return
+
+    // Nombre del usuario segun su email (asi figura como 'autor' en el hilo)
+    const miNombre = nombreDeUsuario(userEmail)
+    if (!miNombre) { setActualizados([]); return }
+
+    // 1. Traer todas las actualizaciones recientes del hilo (ultimas 24h)
     const hace24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
-    const { data } = await supabase.from('casos').select('id,nro_caso,area,updated_at,created_at,last_updated_by,estado,cargado_por')
-      .neq('estado', 'Cerrado').gte('updated_at', hace24h)
-    if (data) {
-      const filtrados = data.filter((c: any) =>
-        new Date(c.updated_at).getTime() - new Date(c.created_at).getTime() > 60000 &&
-        casoRelevanteParaUsuario(userEmail, c.area, c.cargado_por)
-      )
-      setActualizados(filtrados)
+    const { data: acts } = await supabase.from('caso_actualizaciones')
+      .select('caso_id, autor, created_at')
+      .order('created_at', { ascending: true })
+    if (!acts) { setActualizados([]); return }
+
+    // 2. Agrupar por caso
+    const porCaso: Record<string, { autores: string[], ultimoAutor: string, ultimaFecha: string }> = {}
+    for (const a of acts) {
+      if (!porCaso[a.caso_id]) porCaso[a.caso_id] = { autores: [], ultimoAutor: '', ultimaFecha: '' }
+      if (!porCaso[a.caso_id].autores.includes(a.autor)) porCaso[a.caso_id].autores.push(a.autor)
+      porCaso[a.caso_id].ultimoAutor = a.autor
+      porCaso[a.caso_id].ultimaFecha = a.created_at
     }
+
+    // 3. Casos donde YO participé y la ULTIMA actualización la hizo OTRA persona, reciente
+    const idsRelevantes = Object.entries(porCaso)
+      .filter(([_, info]) =>
+        info.autores.includes(miNombre) &&
+        info.ultimoAutor !== miNombre &&
+        new Date(info.ultimaFecha).getTime() > new Date(hace24h).getTime()
+      )
+      .map(([id]) => id)
+
+    if (idsRelevantes.length === 0) { setActualizados([]); return }
+
+    // 4. Traer esos casos (que no esten cerrados)
+    const { data } = await supabase.from('casos')
+      .select('id,nro_caso,area,estado')
+      .in('id', idsRelevantes).neq('estado', 'Cerrado')
+    setActualizados(data || [])
   }
 
   useEffect(() => {

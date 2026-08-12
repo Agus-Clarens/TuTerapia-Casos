@@ -49,6 +49,25 @@ export function casoCompeteAUsuario(email: string, areaCaso: string): boolean {
   return sectores.some(s => areaCaso === s || areaCaso.includes(s))
 }
 
+// Mapea el email del usuario al nombre con que figura como 'autor' en el hilo.
+const EMAIL_A_NOMBRE: Record<string, string> = {
+  'info@tuterapia.com.ar': 'Sol CX',
+  'aclarens@tuterapia.com.ar': 'Agus Admin',
+  'admin@tuterapia.com.ar': 'Sofi Admin',
+  'talent@tuterapia.com.ar': 'Orne Talent',
+  'talent@tuterapia.com.uy': 'Orne Talent',
+  'cbarros@tuterapia.com.uy': 'Caro Talent',
+  'people@tuterapia.com.uy': 'Belu Talent',
+  'firoldi@tuterapia.com.uy': 'Flor Business',
+  'nicolasbrupbacher@gmail.com': 'Nico Director',
+  'jdelgado@tuterapia.com.uy': 'Nacho Director',
+}
+
+export function nombreDeUsuario(email: string): string | null {
+  if (!email) return null
+  return EMAIL_A_NOMBRE[email.toLowerCase()] || null
+}
+
 // Le aparece a: quien lo tiene asignado por sector O quien lo creó.
 export function casoRelevanteParaUsuario(email: string, areaCaso: string, cargadoPor: string): boolean {
   return casoCompeteAUsuario(email, areaCaso) || usuarioCreoCaso(email, cargadoPor)
