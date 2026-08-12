@@ -3,6 +3,7 @@ import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { supabase } from '../../../lib/supabase'
 import { CasoCard, Caso } from '../../../components/CasoCard'
+import { casoCompeteAUsuario } from '../../../lib/sectores-usuario'
 
 const ord = (e: string) => ({'Nuevo':0,'En curso':1,'Cerrado':3} as Record<string,number>)[e] ?? 2
 
@@ -16,6 +17,7 @@ function PageInner() {
   const [casos, setCasos] = useState<Caso[]>([])
   const [loading, setLoading] = useState(true)
   const [filtro, setFiltro] = useState<string>('Todos')
+  const [userEmail, setUserEmail] = useState('')
   const searchParams = useSearchParams()
   const soloActualizados = searchParams.get('actualizados') === '1'
 
@@ -25,14 +27,17 @@ function PageInner() {
     setLoading(false)
   }
 
-  useEffect(() => { load() }, [])
+  useEffect(() => {
+    load()
+    supabase.auth.getSession().then(({ data: { session } }) => setUserEmail(session?.user?.email || ''))
+  }, [])
 
   const esActualizadoReciente = (c: any) => {
     if (c.estado === 'Cerrado') return false
     if (!c.updated_at) return false
     const fueTocado = new Date(c.updated_at).getTime() - new Date(c.created_at).getTime() > 60000
     const esReciente = Date.now() - new Date(c.updated_at).getTime() < 24 * 60 * 60 * 1000
-    return fueTocado && esReciente
+    return fueTocado && esReciente && casoCompeteAUsuario(userEmail, c.area)
   }
 
   const base = soloActualizados ? casos.filter(esActualizadoReciente) : casos

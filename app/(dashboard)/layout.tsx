@@ -2,16 +2,18 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '../../lib/supabase'
+import { casoCompeteAUsuario } from '../../lib/sectores-usuario'
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
   const [actualizados, setActualizados] = useState<any[]>([])
+  const [userEmail, setUserEmail] = useState('')
   const router = useRouter()
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) router.replace('/login')
-      else setLoading(false)
+      else { setUserEmail(session.user.email || ''); setLoading(false) }
     })
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_OUT') router.replace('/login')
@@ -24,7 +26,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     const { data } = await supabase.from('casos').select('id,nro_caso,area,updated_at,created_at,last_updated_by,estado')
       .neq('estado', 'Cerrado').gte('updated_at', hace24h)
     if (data) {
-      const filtrados = data.filter((c: any) => new Date(c.updated_at).getTime() - new Date(c.created_at).getTime() > 60000)
+      const filtrados = data.filter((c: any) =>
+        new Date(c.updated_at).getTime() - new Date(c.created_at).getTime() > 60000 &&
+        casoCompeteAUsuario(userEmail, c.area)
+      )
       setActualizados(filtrados)
     }
   }
@@ -34,7 +39,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     cargarActualizados()
     const interval = setInterval(cargarActualizados, 60000)
     return () => clearInterval(interval)
-  }, [loading])
+  }, [loading, userEmail])
 
   if (loading) return <div style={{ display:'flex', alignItems:'center', justifyContent:'center', height:'100vh', background:'#FEFAF5' }}><p style={{ color:'#264534' }}>Cargando...</p></div>
 
