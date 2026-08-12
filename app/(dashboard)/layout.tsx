@@ -43,7 +43,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <div style={{ width:240, flexShrink:0 }} />
       <main style={{ flex:1, padding: actualizados.length > 0 ? '0 40px 36px' : '36px 40px', background:'#FEFAF5', minHeight:'100vh' }}>
         {actualizados.length > 0 && (
-          <div onClick={() => { window.location.href = '/casos' }} style={{
+          <div onClick={() => { window.location.href = '/casos?actualizados=1' }} style={{
             position:'sticky', top:0, zIndex:50, cursor:'pointer',
             background:'#FEF3C7', border:'1px solid #FCD34D', borderRadius:8,
             padding:'10px 16px', margin:'20px 0', display:'flex', alignItems:'center', gap:8,

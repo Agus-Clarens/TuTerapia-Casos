@@ -1,5 +1,6 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { supabase } from '../../../lib/supabase'
 import { CasoCard, Caso } from '../../../components/CasoCard'
 
@@ -8,9 +9,15 @@ const ord = (e: string) => ({'Nuevo':0,'En curso':1,'Cerrado':3} as Record<strin
 const SECTORES = ['Todos', 'CX', 'Admin', 'Talent', 'Admin+Talent', 'Business']
 
 export default function Page() {
+  return <Suspense fallback={<div style={{padding:24}}>Cargando...</div>}><PageInner /></Suspense>
+}
+
+function PageInner() {
   const [casos, setCasos] = useState<Caso[]>([])
   const [loading, setLoading] = useState(true)
   const [filtro, setFiltro] = useState<string>('Todos')
+  const searchParams = useSearchParams()
+  const soloActualizados = searchParams.get('actualizados') === '1'
 
   async function load() {
     const { data } = await supabase.from('casos').select('*').order('created_at', {ascending: false})
@@ -20,13 +27,30 @@ export default function Page() {
 
   useEffect(() => { load() }, [])
 
-  const filtrados = filtro === 'Todos' ? casos : casos.filter(c => c.area === filtro)
-  const conteoPorSector: Record<string, number> = { Todos: casos.length }
-  SECTORES.slice(1).forEach(s => { conteoPorSector[s] = casos.filter(c => c.area === s).length })
+  const esActualizadoReciente = (c: any) => {
+    if (c.estado === 'Cerrado') return false
+    if (!c.updated_at) return false
+    const fueTocado = new Date(c.updated_at).getTime() - new Date(c.created_at).getTime() > 60000
+    const esReciente = Date.now() - new Date(c.updated_at).getTime() < 24 * 60 * 60 * 1000
+    return fueTocado && esReciente
+  }
+
+  const base = soloActualizados ? casos.filter(esActualizadoReciente) : casos
+  const filtrados = filtro === 'Todos' ? base : base.filter(c => c.area === filtro)
+  const conteoPorSector: Record<string, number> = { Todos: base.length }
+  SECTORES.slice(1).forEach(s => { conteoPorSector[s] = base.filter(c => c.area === s).length })
 
   return (
     <div style={{padding: 24}}>
-      <h1 style={{fontSize: 22, fontWeight: 700, color: '#264534', marginBottom: 14}}>Todos los casos</h1>
+      <h1 style={{fontSize: 22, fontWeight: 700, color: '#264534', marginBottom: 14}}>
+        {soloActualizados ? 'Casos actualizados (últimas 24h)' : 'Todos los casos'}
+      </h1>
+
+      {soloActualizados && (
+        <a href="/casos" style={{ display:'inline-block', fontSize:12, color:'#007271', fontWeight:600, marginBottom:14, textDecoration:'none' }}>
+          ← Ver todos los casos
+        </a>
+      )}
 
       {/* Filtro por sector */}
       <div style={{ display: 'flex', gap: 6, marginBottom: 20, flexWrap: 'wrap' }}>
@@ -48,7 +72,7 @@ export default function Page() {
       </div>
 
       {loading ? <p>Cargando...</p> : filtrados.length === 0
-        ? <p style={{color:'#9CA3AF'}}>No hay casos {filtro !== 'Todos' ? `en ${filtro}` : ''}.</p>
+        ? <p style={{color:'#9CA3AF'}}>{soloActualizados ? 'No hay casos actualizados recientemente.' : `No hay casos ${filtro !== 'Todos' ? `en ${filtro}` : ''}.`}</p>
         : [...filtrados].sort((a,b) => {
             const diffEstado = ord(a.estado)-ord(b.estado)
             if (diffEstado !== 0) return diffEstado
