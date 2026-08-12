@@ -28,29 +28,29 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     const miNombre = nombreDeUsuario(userEmail)
     if (!miNombre) { setActualizados([]); return }
 
-    // 1. Traer todas las actualizaciones recientes del hilo (ultimas 24h)
+    // 1. Casos donde YO participé alguna vez (sin límite de fecha)
+    const { data: mias } = await supabase.from('caso_actualizaciones')
+      .select('caso_id').eq('autor', miNombre)
+    if (!mias) { setActualizados([]); return }
+    const casosMios = Array.from(new Set(mias.map((m: any) => m.caso_id)))
+    if (casosMios.length === 0) { setActualizados([]); return }
+
+    // 2. De esos casos, traer las actualizaciones de las últimas 24h
     const hace24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
-    const { data: acts } = await supabase.from('caso_actualizaciones')
+    const { data: recientes } = await supabase.from('caso_actualizaciones')
       .select('caso_id, autor, created_at')
+      .in('caso_id', casosMios)
+      .gte('created_at', hace24h)
       .order('created_at', { ascending: true })
-    if (!acts) { setActualizados([]); return }
+    if (!recientes || recientes.length === 0) { setActualizados([]); return }
 
-    // 2. Agrupar por caso
-    const porCaso: Record<string, { autores: string[], ultimoAutor: string, ultimaFecha: string }> = {}
-    for (const a of acts) {
-      if (!porCaso[a.caso_id]) porCaso[a.caso_id] = { autores: [], ultimoAutor: '', ultimaFecha: '' }
-      if (!porCaso[a.caso_id].autores.includes(a.autor)) porCaso[a.caso_id].autores.push(a.autor)
-      porCaso[a.caso_id].ultimoAutor = a.autor
-      porCaso[a.caso_id].ultimaFecha = a.created_at
-    }
+    // 3. Por cada caso, ver quién hizo la última actualización reciente
+    const ultimoPorCaso: Record<string, string> = {}
+    for (const a of recientes) ultimoPorCaso[a.caso_id] = a.autor
 
-    // 3. Casos donde YO participé y la ULTIMA actualización la hizo OTRA persona, reciente
-    const idsRelevantes = Object.entries(porCaso)
-      .filter(([_, info]) =>
-        info.autores.includes(miNombre) &&
-        info.ultimoAutor !== miNombre &&
-        new Date(info.ultimaFecha).getTime() > new Date(hace24h).getTime()
-      )
+    // 4. Me quedo con los casos donde la última actualización la hizo OTRA persona
+    const idsRelevantes = Object.entries(ultimoPorCaso)
+      .filter(([_, ultimoAutor]) => ultimoAutor !== miNombre)
       .map(([id]) => id)
 
     if (idsRelevantes.length === 0) { setActualizados([]); return }

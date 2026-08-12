@@ -38,22 +38,21 @@ function PageInner() {
     if (!soloActualizados || userEmail === null) return
     const miNombre = nombreDeUsuario(userEmail)
     if (!miNombre) { setIdsActualizados([]); return }
-    const hace24h = Date.now() - 24 * 60 * 60 * 1000
-    supabase.from('caso_actualizaciones').select('caso_id, autor, created_at')
-      .order('created_at', { ascending: true }).then(({ data: acts }) => {
-        if (!acts) { setIdsActualizados([]); return }
-        const porCaso: Record<string, { autores: string[], ultimoAutor: string, ultimaFecha: string }> = {}
-        for (const a of acts) {
-          if (!porCaso[a.caso_id]) porCaso[a.caso_id] = { autores: [], ultimoAutor: '', ultimaFecha: '' }
-          if (!porCaso[a.caso_id].autores.includes(a.autor)) porCaso[a.caso_id].autores.push(a.autor)
-          porCaso[a.caso_id].ultimoAutor = a.autor
-          porCaso[a.caso_id].ultimaFecha = a.created_at
-        }
-        const ids = Object.entries(porCaso).filter(([_, i]) =>
-          i.autores.includes(miNombre) && i.ultimoAutor !== miNombre && new Date(i.ultimaFecha).getTime() > hace24h
-        ).map(([id]) => id)
-        setIdsActualizados(ids)
-      })
+    ;(async () => {
+      const { data: mias } = await supabase.from('caso_actualizaciones').select('caso_id').eq('autor', miNombre)
+      if (!mias) { setIdsActualizados([]); return }
+      const casosMios = Array.from(new Set(mias.map((m: any) => m.caso_id)))
+      if (casosMios.length === 0) { setIdsActualizados([]); return }
+      const hace24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+      const { data: recientes } = await supabase.from('caso_actualizaciones')
+        .select('caso_id, autor, created_at').in('caso_id', casosMios)
+        .gte('created_at', hace24h).order('created_at', { ascending: true })
+      if (!recientes || recientes.length === 0) { setIdsActualizados([]); return }
+      const ultimoPorCaso: Record<string, string> = {}
+      for (const a of recientes) ultimoPorCaso[a.caso_id] = a.autor
+      const ids = Object.entries(ultimoPorCaso).filter(([_, u]) => u !== miNombre).map(([id]) => id)
+      setIdsActualizados(ids)
+    })()
   }, [soloActualizados, userEmail])
 
   const esperandoEmail = soloActualizados && (userEmail === null || idsActualizados === null)
