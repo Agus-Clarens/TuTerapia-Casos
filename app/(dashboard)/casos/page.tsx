@@ -17,7 +17,7 @@ function PageInner() {
   const [casos, setCasos] = useState<Caso[]>([])
   const [loading, setLoading] = useState(true)
   const [filtro, setFiltro] = useState<string>('Todos')
-  const [userEmail, setUserEmail] = useState('')
+  const [userEmail, setUserEmail] = useState<string | null>(null)
   const searchParams = useSearchParams()
   const soloActualizados = searchParams.get('actualizados') === '1'
 
@@ -37,8 +37,11 @@ function PageInner() {
     if (!c.updated_at) return false
     const fueTocado = new Date(c.updated_at).getTime() - new Date(c.created_at).getTime() > 60000
     const esReciente = Date.now() - new Date(c.updated_at).getTime() < 24 * 60 * 60 * 1000
-    return fueTocado && esReciente && casoRelevanteParaUsuario(userEmail, c.area, c.cargado_por)
+    return fueTocado && esReciente && casoRelevanteParaUsuario(userEmail || '', c.area, c.cargado_por)
   }
+
+  // Mientras no cargó el email, no filtramos la vista de actualizados (para no mostrar de más)
+  const esperandoEmail = soloActualizados && userEmail === null
 
   const base = soloActualizados ? casos.filter(esActualizadoReciente) : casos
   const filtrados = filtro === 'Todos' ? base : base.filter(c => c.area === filtro)
@@ -76,7 +79,7 @@ function PageInner() {
         })}
       </div>
 
-      {loading ? <p>Cargando...</p> : filtrados.length === 0
+      {(loading || esperandoEmail) ? <p>Cargando...</p> : filtrados.length === 0
         ? <p style={{color:'#9CA3AF'}}>{soloActualizados ? 'No hay casos actualizados recientemente.' : `No hay casos ${filtro !== 'Todos' ? `en ${filtro}` : ''}.`}</p>
         : [...filtrados].sort((a,b) => {
             const diffEstado = ord(a.estado)-ord(b.estado)

@@ -7,7 +7,7 @@ import { casoRelevanteParaUsuario } from '../../lib/sectores-usuario'
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
   const [actualizados, setActualizados] = useState<any[]>([])
-  const [userEmail, setUserEmail] = useState('')
+  const [userEmail, setUserEmail] = useState<string | null>(null)
   const router = useRouter()
 
   useEffect(() => {
@@ -22,6 +22,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }, [router])
 
   async function cargarActualizados() {
+    if (userEmail === null) return
     const hace24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
     const { data } = await supabase.from('casos').select('id,nro_caso,area,updated_at,created_at,last_updated_by,estado,cargado_por')
       .neq('estado', 'Cerrado').gte('updated_at', hace24h)
@@ -35,7 +36,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }
 
   useEffect(() => {
-    if (loading) return
+    if (loading || userEmail === null) return
     cargarActualizados()
     const interval = setInterval(cargarActualizados, 60000)
     return () => clearInterval(interval)
