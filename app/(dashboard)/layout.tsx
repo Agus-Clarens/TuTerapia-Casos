@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '../../lib/supabase'
-import { casoCompeteAUsuario } from '../../lib/sectores-usuario'
+import { casoRelevanteParaUsuario } from '../../lib/sectores-usuario'
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
@@ -23,12 +23,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   async function cargarActualizados() {
     const hace24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
-    const { data } = await supabase.from('casos').select('id,nro_caso,area,updated_at,created_at,last_updated_by,estado')
+    const { data } = await supabase.from('casos').select('id,nro_caso,area,updated_at,created_at,last_updated_by,estado,cargado_por')
       .neq('estado', 'Cerrado').gte('updated_at', hace24h)
     if (data) {
       const filtrados = data.filter((c: any) =>
         new Date(c.updated_at).getTime() - new Date(c.created_at).getTime() > 60000 &&
-        casoCompeteAUsuario(userEmail, c.area)
+        casoRelevanteParaUsuario(userEmail, c.area, c.cargado_por)
       )
       setActualizados(filtrados)
     }

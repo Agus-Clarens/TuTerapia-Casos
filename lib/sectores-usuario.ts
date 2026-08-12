@@ -20,6 +20,25 @@ export function sectoresDeUsuario(email: string): string[] | null {
   return MAPA[email.toLowerCase()] || null
 }
 
+// Mapea el nombre que aparece en "Cargado por" al email del usuario.
+const NOMBRE_A_EMAIL: Record<string, string> = {
+  'Sol CX': 'info@tuterapia.com.ar',
+  'Agus Admin': 'aclarens@tuterapia.com.ar',
+  'Sofi Admin': 'admin@tuterapia.com.ar',
+  'Orne Talent': 'talent@tuterapia.com.ar',
+  'Caro Talent': 'cbarros@tuterapia.com.uy',
+  'Belu Talent': 'people@tuterapia.com.uy',
+  'Flor Business': 'firoldi@tuterapia.com.uy',
+  'Nico Director': 'nicolasbrupbacher@gmail.com',
+  'Nacho Director': 'jdelgado@tuterapia.com.uy',
+}
+
+// Devuelve true si el usuario fue quien cargó el caso.
+export function usuarioCreoCaso(email: string, cargadoPor: string): boolean {
+  if (!email || !cargadoPor) return false
+  return (NOMBRE_A_EMAIL[cargadoPor] || '').toLowerCase() === email.toLowerCase()
+}
+
 // Decide si un caso le compete a un usuario segun su area.
 // area del caso puede ser 'CX', 'Admin', 'Talent', 'Admin+Talent', 'Business'.
 export function casoCompeteAUsuario(email: string, areaCaso: string): boolean {
@@ -28,4 +47,9 @@ export function casoCompeteAUsuario(email: string, areaCaso: string): boolean {
   if (!areaCaso) return false
   // Admin+Talent le compete a quien vea Admin o Talent
   return sectores.some(s => areaCaso === s || areaCaso.includes(s))
+}
+
+// Le aparece a: quien lo tiene asignado por sector O quien lo creó.
+export function casoRelevanteParaUsuario(email: string, areaCaso: string, cargadoPor: string): boolean {
+  return casoCompeteAUsuario(email, areaCaso) || usuarioCreoCaso(email, cargadoPor)
 }

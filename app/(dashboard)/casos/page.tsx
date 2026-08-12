@@ -3,7 +3,7 @@ import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { supabase } from '../../../lib/supabase'
 import { CasoCard, Caso } from '../../../components/CasoCard'
-import { casoCompeteAUsuario } from '../../../lib/sectores-usuario'
+import { casoRelevanteParaUsuario } from '../../../lib/sectores-usuario'
 
 const ord = (e: string) => ({'Nuevo':0,'En curso':1,'Cerrado':3} as Record<string,number>)[e] ?? 2
 
@@ -37,7 +37,7 @@ function PageInner() {
     if (!c.updated_at) return false
     const fueTocado = new Date(c.updated_at).getTime() - new Date(c.created_at).getTime() > 60000
     const esReciente = Date.now() - new Date(c.updated_at).getTime() < 24 * 60 * 60 * 1000
-    return fueTocado && esReciente && casoCompeteAUsuario(userEmail, c.area)
+    return fueTocado && esReciente && casoRelevanteParaUsuario(userEmail, c.area, c.cargado_por)
   }
 
   const base = soloActualizados ? casos.filter(esActualizadoReciente) : casos
