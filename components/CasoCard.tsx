@@ -59,13 +59,14 @@ function sectorDeAutor(autor: string) {
 }
 
 function getAcciones(sector: string, area: string) {
-  // Todos ven todo, cada sector ve sus propias acciones + todas las de actualización
-  if (sector === 'todos') return ['Actualización','En curso','Cerrar para Admin','Cerrar para Talent','Cerrar para CX','Cerrar para Business']
-  if (sector === 'admin') return ['Actualización','En curso','Cerrar para Admin']
-  if (sector === 'talent') return ['Actualización','En curso','Cerrar para Talent']
-  if (sector === 'cx') return ['Actualización','En curso','Cerrar para CX']
-  if (sector === 'business') return ['Actualización','En curso','Cerrar para Business']
-  return ['Actualización']
+  // Las acciones de cerrar dependen del ÁREA del caso, no de la pantalla donde estás.
+  const base = ['Actualización', 'En curso']
+  const cierres: string[] = []
+  if (area?.includes('Admin')) cierres.push('Cerrar para Admin')
+  if (area?.includes('Talent')) cierres.push('Cerrar para Talent')
+  if (area === 'CX') cierres.push('Cerrar para CX')
+  if (area === 'Business') cierres.push('Cerrar para Business')
+  return [...base, ...cierres]
 }
 
 
