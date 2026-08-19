@@ -252,9 +252,30 @@ export function CasoCard({ caso, onUpdate, sector, showDelete }: any) {
       updated_at: new Date().toISOString(),
       last_updated_by: autor,
     }
+
+    // Detectar si pasa de Aviso (false) a Accionar (true)
+    const eraAviso = caso.talent_accion === false
+    const pasaAAccionar = eTalentAccion === true
+    const reactivaTalent = (caso.area === 'Talent' || caso.area === 'Admin+Talent') && eraAviso && pasaAAccionar
+
     if (caso.area === 'Talent' || caso.area === 'Admin+Talent') u.talent_accion = eTalentAccion
+
+    if (reactivaTalent) {
+      // Reabrir para Talent: si estaba cerrado, vuelve a Nuevo
+      if (caso.estado_talent === 'Cerrado' || !caso.estado_talent) u.estado_talent = 'Nuevo'
+      u.reactivado_talent_at = new Date().toISOString()
+      // Recalcular estado global
+      u.estado = calcularEstadoGlobal(caso.area, u.estado_admin??caso.estado_admin, u.estado_talent??caso.estado_talent, u.estado_cx??caso.estado_cx, u.estado_business??caso.estado_business)
+    }
+
     await supabase.from('casos').update(u).eq('id', caso.id)
-    await supabase.from('caso_actualizaciones').insert({ caso_id: caso.id, autor, texto: `[Editado] ${autor} editó los datos del caso` })
+
+    if (reactivaTalent) {
+      // Registrar en el hilo con nombres de Talent como participantes, para que les aparezca el aviso rojo
+      await supabase.from('caso_actualizaciones').insert({ caso_id: caso.id, autor, texto: `🔴 [Reactivado para Talent] ${autor} marcó este caso como "Accionar" — Talent debe accionar (antes era solo aviso)` })
+    } else {
+      await supabase.from('caso_actualizaciones').insert({ caso_id: caso.id, autor, texto: `[Editado] ${autor} editó los datos del caso` })
+    }
     setEGuardando(false)
     setEditandoCaso(false)
     onUpdate()

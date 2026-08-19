@@ -72,32 +72,43 @@ export default function Sidebar() {
     const miNombre = nombreDeUsuario(email)
     if (!miNombre) return
 
-    // Casos donde participé alguna vez
-    const { data: mias } = await supabase.from('caso_actualizaciones').select('caso_id').eq('autor', miNombre)
-    if (!mias) return
-    const casosMios = Array.from(new Set(mias.map((m: any) => m.caso_id)))
-    if (casosMios.length === 0) { setConteoPorRuta({}); return }
-
-    // Ultima actualizacion reciente de esos casos
     const hace24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
-    const { data: recientes } = await supabase.from('caso_actualizaciones')
-      .select('caso_id, autor, created_at').in('caso_id', casosMios)
-      .gte('created_at', hace24h).order('created_at', { ascending: true })
-    if (!recientes) return
-    const ultimoPorCaso: Record<string, string> = {}
-    for (const a of recientes) ultimoPorCaso[a.caso_id] = a.autor
-    const ids = Object.entries(ultimoPorCaso).filter(([_, u]) => u !== miNombre).map(([id]) => id)
-    if (ids.length === 0) { setConteoPorRuta({}); return }
+    const idsFinal = new Set<string>()
+
+    // A) Casos donde participé alguna vez y otro hizo la última actualización reciente
+    const { data: mias } = await supabase.from('caso_actualizaciones').select('caso_id').eq('autor', miNombre)
+    const casosMios = Array.from(new Set((mias || []).map((m: any) => m.caso_id)))
+    if (casosMios.length > 0) {
+      const { data: recientes } = await supabase.from('caso_actualizaciones')
+        .select('caso_id, autor, created_at').in('caso_id', casosMios)
+        .gte('created_at', hace24h).order('created_at', { ascending: true })
+      const ultimoPorCaso: Record<string, string> = {}
+      for (const a of (recientes || [])) ultimoPorCaso[a.caso_id] = a.autor
+      Object.entries(ultimoPorCaso).filter(([_, u]) => u !== miNombre).forEach(([id]) => idsFinal.add(id))
+    }
+
+    // B) Si soy de Talent, casos reactivados para Talent recientemente (aunque no haya comentado)
+    const esTalent = /talent/i.test(miNombre)
+    if (esTalent) {
+      const { data: react } = await supabase.from('casos').select('id')
+        .gte('reactivado_talent_at', hace24h).neq('estado', 'Cerrado')
+      for (const c of (react || [])) idsFinal.add(c.id)
+    }
+
+    if (idsFinal.size === 0) {
+      setConteoPorRuta({})
+      if (typeof document !== 'undefined') document.title = 'Tu Terapia - Casos'
+      return
+    }
 
     // Traer esos casos con su area (no cerrados)
-    const { data: casos } = await supabase.from('casos').select('id,area,estado').in('id', ids).neq('estado', 'Cerrado')
+    const { data: casos } = await supabase.from('casos').select('id,area,estado').in('id', Array.from(idsFinal)).neq('estado', 'Cerrado')
     const conteo: Record<string, number> = {}
     for (const c of (casos || [])) {
       for (const ruta of rutasDeArea(c.area)) conteo[ruta] = (conteo[ruta] || 0) + 1
     }
     setConteoPorRuta(conteo)
 
-    // Titulo de la pestaña con el total
     const total = (casos || []).length
     if (typeof document !== 'undefined') {
       document.title = total > 0 ? `(${total}) Tu Terapia - Casos` : 'Tu Terapia - Casos'
