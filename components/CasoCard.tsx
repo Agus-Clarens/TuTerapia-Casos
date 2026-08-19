@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
+import { nombreDeUsuario } from '../lib/sectores-usuario'
 
 const CARGADO_POR = ['Sol CX','Agus Admin','Sofi Admin','Orne Talent','Caro Talent','Belu Talent','Flor Business','Nico Director','Nacho Director']
 
@@ -95,6 +96,14 @@ export function CasoCard({ caso, onUpdate, sector, showDelete }: any) {
   const [acts, setActs] = useState<any[]>([])
   const [texto, setTexto] = useState('')
   const [autor, setAutor] = useState(CARGADO_POR[0])
+  const [autorFijo, setAutorFijo] = useState(false)
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      const nombre = nombreDeUsuario(session?.user?.email || '')
+      if (nombre) { setAutor(nombre); setAutorFijo(true) }
+    })
+  }, [])
   const [accion, setAccion] = useState('Actualización')
   const [del, setDel] = useState(false)
   const [reasignar, setReasignar] = useState(false)
@@ -337,9 +346,11 @@ export function CasoCard({ caso, onUpdate, sector, showDelete }: any) {
             </div>
             {cerrado&&(
               <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap', borderTop:acts.length>0?'1px solid #F3F4F6':'none', paddingTop:acts.length>0?12:0 }}>
-                <select value={autor} onChange={e=>setAutor(e.target.value)} style={{ border:'1.5px solid #E5E7EB', borderRadius:6, padding:'7px 10px', fontSize:12, background:'#fff' }}>
-                  {CARGADO_POR.map(p=><option key={p}>{p}</option>)}
-                </select>
+                {autorFijo
+                  ? <span style={{ fontSize:12, fontWeight:600, color:'#264534', padding:'7px 10px', background:'#F0FDF4', borderRadius:6 }}>{autor}</span>
+                  : <select value={autor} onChange={e=>setAutor(e.target.value)} style={{ border:'1.5px solid #E5E7EB', borderRadius:6, padding:'7px 10px', fontSize:12, background:'#fff' }}>
+                      {CARGADO_POR.map(p=><option key={p}>{p}</option>)}
+                    </select>}
                 <button onClick={reabrir} style={{ background:'#F59E0B', color:'#fff', border:'none', borderRadius:6, padding:'8px 16px', fontSize:12, cursor:'pointer', fontWeight:600 }}>↺ Reabrir caso</button>
               </div>
             )}
@@ -428,9 +439,11 @@ export function CasoCard({ caso, onUpdate, sector, showDelete }: any) {
                 <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8 }}>
                   <div>
                     <label style={{ fontSize:11, color:'#6B7280', fontWeight:600, display:'block', marginBottom:3 }}>Quién actúa</label>
-                    <select value={autor} onChange={e=>setAutor(e.target.value)} style={{ width:'100%', border:'1.5px solid #E5E7EB', borderRadius:6, padding:'7px 10px', fontSize:12, background:'#fff' }}>
-                      {CARGADO_POR.map(p=><option key={p}>{p}</option>)}
-                    </select>
+                    {autorFijo
+                      ? <div style={{ fontSize:12, fontWeight:600, color:'#264534', padding:'7px 10px', background:'#F0FDF4', borderRadius:6 }}>{autor}</div>
+                      : <select value={autor} onChange={e=>setAutor(e.target.value)} style={{ width:'100%', border:'1.5px solid #E5E7EB', borderRadius:6, padding:'7px 10px', fontSize:12, background:'#fff' }}>
+                          {CARGADO_POR.map(p=><option key={p}>{p}</option>)}
+                        </select>}
                   </div>
                   <div>
                     <label style={{ fontSize:11, color:'#6B7280', fontWeight:600, display:'block', marginBottom:3 }}>Acción</label>
