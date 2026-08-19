@@ -4,6 +4,18 @@ import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
+import { nombreDeUsuario } from '../lib/sectores-usuario'
+
+// Mapea el area de un caso a las rutas del menu donde debe contar
+function rutasDeArea(area: string): string[] {
+  const r: string[] = ['/casos']
+  if (area === 'CX') r.push('/cx')
+  if (area === 'Admin') r.push('/admin')
+  if (area === 'Talent') r.push('/talent')
+  if (area === 'Admin+Talent') r.push('/admin-talent')
+  if (area === 'Business') r.push('/business')
+  return r
+}
 
 type NavItem = { href: string, label: string, primary?: boolean }
 type NavGroup = { key: string, titulo: string, items: NavItem[] }
@@ -50,8 +62,53 @@ export default function Sidebar() {
   const pathname = usePathname()
   const router = useRouter()
   const [abierto, setAbierto] = useState<string>(detectarGrupoActivo(pathname))
+  const [conteoPorRuta, setConteoPorRuta] = useState<Record<string, number>>({})
 
   useEffect(() => { setAbierto(detectarGrupoActivo(pathname)) }, [pathname])
+
+  async function cargarConteos() {
+    const { data: { session } } = await supabase.auth.getSession()
+    const email = session?.user?.email || ''
+    const miNombre = nombreDeUsuario(email)
+    if (!miNombre) return
+
+    // Casos donde participé alguna vez
+    const { data: mias } = await supabase.from('caso_actualizaciones').select('caso_id').eq('autor', miNombre)
+    if (!mias) return
+    const casosMios = Array.from(new Set(mias.map((m: any) => m.caso_id)))
+    if (casosMios.length === 0) { setConteoPorRuta({}); return }
+
+    // Ultima actualizacion reciente de esos casos
+    const hace24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+    const { data: recientes } = await supabase.from('caso_actualizaciones')
+      .select('caso_id, autor, created_at').in('caso_id', casosMios)
+      .gte('created_at', hace24h).order('created_at', { ascending: true })
+    if (!recientes) return
+    const ultimoPorCaso: Record<string, string> = {}
+    for (const a of recientes) ultimoPorCaso[a.caso_id] = a.autor
+    const ids = Object.entries(ultimoPorCaso).filter(([_, u]) => u !== miNombre).map(([id]) => id)
+    if (ids.length === 0) { setConteoPorRuta({}); return }
+
+    // Traer esos casos con su area (no cerrados)
+    const { data: casos } = await supabase.from('casos').select('id,area,estado').in('id', ids).neq('estado', 'Cerrado')
+    const conteo: Record<string, number> = {}
+    for (const c of (casos || [])) {
+      for (const ruta of rutasDeArea(c.area)) conteo[ruta] = (conteo[ruta] || 0) + 1
+    }
+    setConteoPorRuta(conteo)
+
+    // Titulo de la pestaña con el total
+    const total = (casos || []).length
+    if (typeof document !== 'undefined') {
+      document.title = total > 0 ? `(${total}) Tu Terapia - Casos` : 'Tu Terapia - Casos'
+    }
+  }
+
+  useEffect(() => {
+    cargarConteos()
+    const interval = setInterval(cargarConteos, 60000)
+    return () => clearInterval(interval)
+  }, [pathname])
 
   async function handleLogout() {
     await supabase.auth.signOut()
@@ -114,13 +171,21 @@ export default function Sidebar() {
                     }
                     return (
                       <Link key={href} href={href} style={{
-                        display: 'flex', alignItems: 'center',
+                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                         padding: '8px 12px 8px 20px', borderRadius: 8, textDecoration: 'none',
                         fontSize: 12.5, fontWeight: active ? 600 : 400,
                         color: active ? '#fff' : 'rgba(255,255,255,0.6)',
                         background: active ? 'rgba(255,255,255,0.12)' : 'transparent',
                       }}>
-                        {label}
+                        <span>{label}</span>
+                        {conteoPorRuta[href] > 0 && (
+                          <span style={{
+                            background: '#EF4444', color: '#fff', fontSize: 11, fontWeight: 700,
+                            minWidth: 18, height: 18, borderRadius: 9, display: 'flex',
+                            alignItems: 'center', justifyContent: 'center', padding: '0 5px',
+                            boxShadow: '0 0 0 2px rgba(239,68,68,0.3)',
+                          }}>{conteoPorRuta[href]}</span>
+                        )}
                       </Link>
                     )
                   })}
