@@ -142,7 +142,7 @@ export default function Page() {
 
         {/* Solicitante */}
         <div style={{ marginBottom: 12 }}>
-          <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 4 }}>Solicita *</label>
+          <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 4 }}>{tipo === 'Facturas a proveedores' ? 'Carga *' : 'Solicita *'}</label>
           <select value={solicitante} onChange={e => setSolicitante(e.target.value)}
             style={{ width: '100%', padding: '9px 12px', borderRadius: 6, border: '1.5px solid #E5E7EB', fontSize: 13, background: '#fff', boxSizing: 'border-box' }}>
             <option value="">Seleccionar...</option>
