@@ -7,8 +7,11 @@ export async function POST(req: NextRequest) {
     const webhook = process.env.SLACK_WEBHOOK_URL_ADMINISTRACION
     if (!webhook) return NextResponse.json({ ok: false, error: 'no webhook' })
 
-    const emojiTipo = tipo === 'Reembolso' ? '🧾' : tipo === 'Factura equipo interno' ? '📄' : '💸'
-    const mensaje = `${emojiTipo} *Nueva solicitud de pago ${nro_solicitud}*\n*Tipo:* ${tipo}\n*Solicita:* ${solicitante}\n*Pagar a:* ${destinatario}\n*Monto:* ${moneda} ${monto}\n*Motivo:* ${motivo}\n\n🔗 <https://tuterapia-casos.vercel.app/pagos/bandeja|Ver bandeja de pagos>`
+    const emojiTipo = tipo === 'Reembolso' ? '🧾' : tipo === 'Factura equipo interno' ? '📄' : tipo === 'Facturas a proveedores' ? '🗂️' : '💸'
+    const esArchivar = tipo === 'Facturas a proveedores'
+    const mensaje = esArchivar
+      ? `${emojiTipo} *Facturas a archivar ${nro_solicitud}*\n*Enviado por:* ${solicitante}\n*Proveedor:* ${destinatario}\n*Descripción:* ${motivo}\n\n🔗 <https://tuterapia-casos.vercel.app/pagos/bandeja|Ver bandeja de pagos>`
+      : `${emojiTipo} *Nueva solicitud de pago ${nro_solicitud}*\n*Tipo:* ${tipo}\n*Solicita:* ${solicitante}\n*Pagar a:* ${destinatario}\n*Monto:* ${moneda} ${monto}\n*Motivo:* ${motivo}\n\n🔗 <https://tuterapia-casos.vercel.app/pagos/bandeja|Ver bandeja de pagos>`
 
     await fetch(webhook, {
       method: 'POST',

@@ -10,7 +10,7 @@ export default function Page() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
 
-  const [tipo, setTipo] = useState<'Pago a proveedor' | 'Reembolso' | 'Factura equipo interno'>('Pago a proveedor')
+  const [tipo, setTipo] = useState<'Pago a proveedor' | 'Reembolso' | 'Factura equipo interno' | 'Facturas a proveedores'>('Pago a proveedor')
   const [solicitante, setSolicitante] = useState('')
   const [destinatario, setDestinatario] = useState('')
   const [rutCuit, setRutCuit] = useState('')
@@ -34,19 +34,26 @@ export default function Page() {
   // Si es reembolso, el destinatario es el mismo solicitante
   useEffect(() => {
     if ((tipo === 'Reembolso' || tipo === 'Factura equipo interno') && solicitante) setDestinatario(solicitante)
-    if (tipo !== 'Reembolso' && tipo !== 'Factura equipo interno' && noAplicaRut) setNoAplicaRut(false)
-  }, [tipo, solicitante])
+    if (tipo !== 'Reembolso' && tipo !== 'Factura equipo interno' && noAplicaRut) setNoAplicaRut(false)  }, [tipo, solicitante])
 
   async function submit() {
     setError('')
     if (!solicitante) return setError('Elegí quién solicita.')
-    if (!destinatario.trim()) return setError('Ingresá el destinatario del pago.')
-    if (!noAplicaRut && !rutCuit.trim()) return setError('Ingresá el RUT o CUIT.')
-    if (!motivo.trim()) return setError('Ingresá el motivo.')
-    if (!monto || Number(monto) <= 0) return setError('Ingresá un monto válido.')
-    if (tipo === 'Pago a proveedor' && !datosCuenta.trim()) return setError('Ingresá los datos de cuenta.')
-    if (tipo === 'Factura equipo interno' && !datosCuenta.trim()) return setError('Ingresá los datos de cuenta.')
-    if (tipo === 'Factura equipo interno' && files.length === 0) return setError('Adjuntá la factura en PDF.')
+
+    const esArchivar = tipo === 'Facturas a proveedores'
+
+    if (!destinatario.trim()) return setError(esArchivar ? 'Ingresá el proveedor.' : 'Ingresá el destinatario del pago.')
+    if (!motivo.trim()) return setError(esArchivar ? 'Ingresá una descripción.' : 'Ingresá el motivo.')
+
+    if (!esArchivar) {
+      if (!noAplicaRut && !rutCuit.trim()) return setError('Ingresá el RUT o CUIT.')
+      if (!monto || Number(monto) <= 0) return setError('Ingresá un monto válido.')
+      if (tipo === 'Pago a proveedor' && !datosCuenta.trim()) return setError('Ingresá los datos de cuenta.')
+      if (tipo === 'Factura equipo interno' && !datosCuenta.trim()) return setError('Ingresá los datos de cuenta.')
+      if (tipo === 'Factura equipo interno' && files.length === 0) return setError('Adjuntá la factura en PDF.')
+    } else {
+      if (files.length === 0) return setError('Adjuntá al menos una factura en PDF.')
+    }
     if (files.some(f => f.type !== 'application/pdf')) return setError('Los archivos deben ser PDF.')
 
     setSubmitting(true)
@@ -73,11 +80,11 @@ export default function Page() {
       solicitante,
       solicitante_email: userEmail,
       destinatario: destinatario.trim(),
-      rut_cuit: noAplicaRut ? null : rutCuit.trim(),
+      rut_cuit: esArchivar ? null : (noAplicaRut ? null : rutCuit.trim()),
       motivo: motivo.trim(),
-      monto: Number(monto),
+      monto: esArchivar ? 0 : Number(monto),
       moneda,
-      datos_cuenta: datosCuenta.trim() || null,
+      datos_cuenta: esArchivar ? null : (datosCuenta.trim() || null),
       factura_path,
       estado: 'Nueva',
     }).select().single()
@@ -109,16 +116,16 @@ export default function Page() {
         {/* Tipo (segmentado) */}
         <div style={{ marginBottom: 16 }}>
           <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 6 }}>Tipo de solicitud *</label>
-          <div style={{ display: 'flex', gap: 8 }}>
-            {(['Pago a proveedor', 'Reembolso', 'Factura equipo interno'] as const).map(t => (
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            {(['Pago a proveedor', 'Reembolso', 'Factura equipo interno', 'Facturas a proveedores'] as const).map(t => (
               <button key={t} onClick={() => setTipo(t)} type="button"
                 style={{
-                  flex: 1, padding: '10px 12px', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                  flex: '1 1 45%', padding: '10px 12px', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer',
                   border: tipo === t ? '2px solid #264534' : '1.5px solid #E5E7EB',
                   background: tipo === t ? '#264534' : '#fff',
                   color: tipo === t ? '#fff' : '#6B7280',
                 }}>
-                {t === 'Pago a proveedor' ? '💸 Pago a proveedor' : t === 'Reembolso' ? '🧾 Reembolso' : '📄 Factura equipo interno'}
+                {t === 'Pago a proveedor' ? '💸 Pago a proveedor' : t === 'Reembolso' ? '🧾 Reembolso' : t === 'Factura equipo interno' ? '📄 Factura equipo interno' : '🗂️ Facturas a proveedores'}
               </button>
             ))}
           </div>
@@ -127,7 +134,9 @@ export default function Page() {
               ? 'La empresa le paga a un tercero (proveedor, evento, servicio).'
               : tipo === 'Reembolso'
                 ? 'Vos ya pagaste algo y necesitás que la empresa te lo devuelva.'
-                : 'Alguien del equipo le factura a la empresa por su trabajo (monotributo/factura propia).'}
+                : tipo === 'Factura equipo interno'
+                  ? 'Alguien del equipo le factura a la empresa por su trabajo (monotributo/factura propia).'
+                  : 'Solo para archivar: le pasás facturas de un proveedor a Sofi para que las guarde. No es un pago.'}
           </p>
         </div>
 
@@ -147,7 +156,7 @@ export default function Page() {
         {tipo !== 'Reembolso' && (
           <div style={{ marginBottom: 12 }}>
             <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 4 }}>
-              Pagar a *
+              {tipo === 'Facturas a proveedores' ? 'Proveedor *' : 'Pagar a *'}
             </label>
             <input value={destinatario} onChange={e => setDestinatario(e.target.value)}
               placeholder="Nombre del proveedor / persona / empresa"
@@ -155,7 +164,8 @@ export default function Page() {
           </div>
         )}
 
-        {/* RUT / CUIT */}
+        {/* RUT / CUIT (no aplica para archivar) */}
+        {tipo !== 'Facturas a proveedores' && (
         <div style={{ marginBottom: 12 }}>
           <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 4 }}>RUT / CUIT {noAplicaRut ? '' : '*'}</label>
           <input value={rutCuit} onChange={e => setRutCuit(e.target.value)} disabled={noAplicaRut}
@@ -164,20 +174,22 @@ export default function Page() {
           {(tipo === 'Reembolso' || tipo === 'Factura equipo interno') && (
             <label style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 6, fontSize: 12, color: '#6B7280', cursor: 'pointer' }}>
               <input type="checkbox" checked={noAplicaRut} onChange={e => { setNoAplicaRut(e.target.checked); if (e.target.checked) setRutCuit('') }} />
-              No aplica RUT / CUIT para este reembolso
+              No aplica RUT / CUIT
             </label>
           )}
         </div>
+        )}
 
-        {/* Motivo */}
+        {/* Motivo / Descripción */}
         <div style={{ marginBottom: 12 }}>
-          <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 4 }}>Motivo *</label>
+          <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 4 }}>{tipo === 'Facturas a proveedores' ? 'Descripción *' : 'Motivo *'}</label>
           <textarea value={motivo} onChange={e => setMotivo(e.target.value)} rows={2}
-            placeholder={tipo === 'Pago a proveedor' ? 'Ej: catering para evento del 20/07' : tipo === 'Reembolso' ? 'Ej: nafta viaje a Rosario para reunión con cliente' : 'Ej: factura de servicios profesionales julio 2026'}
+            placeholder={tipo === 'Pago a proveedor' ? 'Ej: catering para evento del 20/07' : tipo === 'Reembolso' ? 'Ej: nafta viaje a Rosario para reunión con cliente' : tipo === 'Facturas a proveedores' ? 'Ej: facturas de agosto del proveedor de diseño' : 'Ej: factura de servicios profesionales julio 2026'}
             style={{ width: '100%', padding: '9px 12px', borderRadius: 6, border: '1.5px solid #E5E7EB', fontSize: 13, boxSizing: 'border-box', resize: 'vertical', fontFamily: 'inherit' }} />
         </div>
 
-        {/* Monto + Moneda */}
+        {/* Monto + Moneda (no aplica para archivar) */}
+        {tipo !== 'Facturas a proveedores' && (
         <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 12, marginBottom: 12 }}>
           <div>
             <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 4 }}>Monto *</label>
@@ -194,8 +206,10 @@ export default function Page() {
             </select>
           </div>
         </div>
+        )}
 
-        {/* Datos de cuenta */}
+        {/* Datos de cuenta (no aplica para archivar) */}
+        {tipo !== 'Facturas a proveedores' && (
         <div style={{ marginBottom: 12 }}>
           <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 4 }}>
             Datos de cuenta {tipo === 'Reembolso' ? '(si querés que te transfieran)' : '*'}
@@ -204,11 +218,12 @@ export default function Page() {
             placeholder="CBU / Alias / Titular / Banco"
             style={{ width: '100%', padding: '9px 12px', borderRadius: 6, border: '1.5px solid #E5E7EB', fontSize: 13, boxSizing: 'border-box', resize: 'vertical', fontFamily: 'inherit' }} />
         </div>
+        )}
 
         {/* PDF */}
         <div style={{ marginBottom: 16 }}>
           <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 4 }}>
-            Factura / comprobante (PDF) {tipo === 'Factura equipo interno' ? '*' : ''} <span style={{ color: '#9CA3AF', fontWeight: 400 }}>(podés elegir varios)</span>
+            Factura / comprobante (PDF) {(tipo === 'Factura equipo interno' || tipo === 'Facturas a proveedores') ? '*' : ''} <span style={{ color: '#9CA3AF', fontWeight: 400 }}>(podés elegir varios)</span>
           </label>
           <input type="file" accept="application/pdf" multiple
             onChange={e => setFiles(prev => [...prev, ...Array.from(e.target.files || [])])}
