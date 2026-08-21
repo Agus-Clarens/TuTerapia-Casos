@@ -125,7 +125,7 @@ export default function Page() {
                   background: tipo === t ? '#264534' : '#fff',
                   color: tipo === t ? '#fff' : '#6B7280',
                 }}>
-                {t === 'Pago a proveedor' ? '💸 Pago a proveedor' : t === 'Reembolso' ? '🧾 Reembolso' : t === 'Factura equipo interno' ? '📄 Factura equipo interno' : '🗂️ Facturas a proveedores'}
+                {t}
               </button>
             ))}
           </div>
