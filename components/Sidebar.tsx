@@ -44,6 +44,7 @@ const NAV_GROUPS: NavGroup[] = [
       { href: '/pagos/nueva',            label: '+ Nueva solicitud', primary: true },
       { href: '/pagos/mis-solicitudes',  label: 'Mis solicitudes' },
       { href: '/pagos/bandeja',          label: 'Bandeja de pagos' },
+      { href: '/pagos/facturas-proveedores', label: 'Facturas de proveedores' },
     ],
   },
 ]
