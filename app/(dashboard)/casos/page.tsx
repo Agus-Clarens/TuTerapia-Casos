@@ -17,6 +17,7 @@ function PageInner() {
   const [casos, setCasos] = useState<Caso[]>([])
   const [loading, setLoading] = useState(true)
   const [filtro, setFiltro] = useState<string>('Todos')
+  const [busqueda, setBusqueda] = useState('')
   const [userEmail, setUserEmail] = useState<string | null>(null)
   const [idsActualizados, setIdsActualizados] = useState<string[] | null>(null)
   const searchParams = useSearchParams()
@@ -58,7 +59,15 @@ function PageInner() {
   const esperandoEmail = soloActualizados && (userEmail === null || idsActualizados === null)
 
   const base = soloActualizados ? casos.filter(c => (idsActualizados || []).includes(c.id) && c.estado !== 'Cerrado') : casos
-  const filtrados = filtro === 'Todos' ? base : base.filter(c => c.area === filtro)
+  const porSector = filtro === 'Todos' ? base : base.filter(c => c.area === filtro)
+  const q = busqueda.trim().toLowerCase()
+  const filtrados = !q ? porSector : porSector.filter(c =>
+    (c.pac_mail || '').toLowerCase().includes(q) ||
+    (c.psi_mail || '').toLowerCase().includes(q) ||
+    (c.pac_nombre || '').toLowerCase().includes(q) ||
+    (c.psi_nombre || '').toLowerCase().includes(q) ||
+    (c.nro_caso || '').toLowerCase().includes(q)
+  )
   const conteoPorSector: Record<string, number> = { Todos: base.length }
   SECTORES.slice(1).forEach(s => { conteoPorSector[s] = base.filter(c => c.area === s).length })
 
@@ -73,6 +82,14 @@ function PageInner() {
           ← Ver todos los casos
         </a>
       )}
+
+      {/* Buscador por mail / nombre / nro de ticket */}
+      <input
+        value={busqueda}
+        onChange={e => setBusqueda(e.target.value)}
+        placeholder="🔍 Buscar por mail, nombre de paciente/psicólogo o N° de ticket..."
+        style={{ width: '100%', maxWidth: 520, padding: '10px 14px', borderRadius: 8, border: '1.5px solid #E5E7EB', fontSize: 13, boxSizing: 'border-box', marginBottom: 16 }}
+      />
 
       {/* Filtro por sector */}
       <div style={{ display: 'flex', gap: 6, marginBottom: 20, flexWrap: 'wrap' }}>
