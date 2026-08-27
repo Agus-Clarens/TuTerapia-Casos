@@ -5,6 +5,18 @@ import { nombreDeUsuario } from '../lib/sectores-usuario'
 
 const CARGADO_POR = ['Sol CX','Agus Admin','Sofi Admin','Orne Talent','Caro Talent','Belu Talent','Flor Business','Nico Director','Nacho Director']
 
+function BotonCopiar({ texto }: { texto: string }) {
+  const [copiado, setCopiado] = useState(false)
+  return (
+    <button
+      onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(texto); setCopiado(true); setTimeout(() => setCopiado(false), 1500) }}
+      title="Copiar mail"
+      style={{ background: copiado ? '#D1FAE5' : '#F3F4F6', color: copiado ? '#065F46' : '#6B7280', border: '1px solid #E5E7EB', borderRadius: 5, padding: '1px 7px', fontSize: 10, cursor: 'pointer', fontWeight: 600, marginLeft: 6 }}>
+      {copiado ? '✓ copiado' : 'copiar'}
+    </button>
+  )
+}
+
 // Todos los tipos existentes, agrupados por área, para el dropdown de reasignación
 const TIPOS_POR_AREA_REASIGNAR: Record<string, string[]> = {
   'Admin': ['Link de pago','Devolucion dentro del plazo','Devolucion fuera del plazo sin falla','Envio de factura','Problema con factura','Cupon no aplicado','Pago duplicado','Transferencia sesiones','Contracargo MP','Cambiar modalidad','Cambiar modalidad de sesiones (psicologo ya confirmo)','Ajuste de modalidad de pago','Otro'],
@@ -317,8 +329,8 @@ export function CasoCard({ caso, onUpdate, sector, showDelete }: any) {
         </div>
         <div style={{ marginTop:10, fontSize:13, display:'flex', flexDirection:'column', gap:3 }}>
           <div style={{ fontWeight:600, color:'#111827' }}>{caso.tipo_caso}</div>
-          <div style={{ color:'#374151' }}><span style={{ color:'#9CA3AF', fontSize:11 }}>PACIENTE </span>{caso.pac_nombre}{caso.pac_mail&&<span style={{ color:'#9CA3AF' }}> · {caso.pac_mail}</span>}</div>
-          {caso.psi_nombre&&<div style={{ color:'#374151' }}><span style={{ color:'#9CA3AF', fontSize:11 }}>PSICÓLOGO </span>{caso.psi_nombre}{caso.psi_mail&&<span style={{ color:'#9CA3AF' }}> · {caso.psi_mail}</span>}</div>}
+          <div style={{ color:'#374151' }}><span style={{ color:'#9CA3AF', fontSize:11 }}>PACIENTE </span>{caso.pac_nombre}{caso.pac_mail&&<span style={{ color:'#9CA3AF' }}> · {caso.pac_mail}</span>}{caso.pac_mail&&<BotonCopiar texto={caso.pac_mail} />}</div>
+          {caso.psi_nombre&&<div style={{ color:'#374151' }}><span style={{ color:'#9CA3AF', fontSize:11 }}>PSICÓLOGO </span>{caso.psi_nombre}{caso.psi_mail&&<span style={{ color:'#9CA3AF' }}> · {caso.psi_mail}</span>}{caso.psi_mail&&<BotonCopiar texto={caso.psi_mail} />}</div>}
           <div style={{ color:'#374151' }}><span style={{ color:'#9CA3AF', fontSize:11 }}>PAÍS </span>{caso.pais}</div>
           <div style={{ color:'#6B7280', fontStyle:'italic', marginTop:2 }}>{caso.descripcion}</div>
           <div style={{ color:'#9CA3AF', fontSize:11 }}>Cargado por {caso.cargado_por}</div>
