@@ -27,6 +27,7 @@ const EMAIL_A_NOMBRE: Record<string, string> = {
   'people@tuterapia.com.uy': 'Belu Talent',
   'firoldi@tuterapia.com.uy': 'Flor Business',
   'imazzilli@tuterapia.com.uy': 'Ismael Business',
+  'marketing@tuterapia.com.uy': 'Jose Marketing',
   'nicolasbrupbacher@gmail.com': 'Nico Director',
   'jdelgado@tuterapia.com.uy': 'Nacho Director',
 }

@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { nombreDeUsuario } from '../lib/sectores-usuario'
 
-const CARGADO_POR = ['Sol CX','Agus Admin','Sofi Admin','Orne Talent','Caro Talent','Belu Talent','Flor Business','Nico Director','Nacho Director']
+const CARGADO_POR = ['Sol CX','Agus Admin','Sofi Admin','Orne Talent','Caro Talent','Belu Talent','Flor Business','Jose Marketing','Nico Director','Nacho Director']
 
 function BotonCopiar({ texto }: { texto: string }) {
   const [copiado, setCopiado] = useState(false)
@@ -67,6 +67,7 @@ function sectorDeAutor(autor: string) {
   if (autor.includes('Talent')) return 'talent'
   if (autor.includes('CX')) return 'cx'
   if (autor.includes('Business')) return 'business'
+  if (autor.includes('Marketing')) return 'admin' // marketing actúa como admin
   if (autor.includes('Director')) return 'admin' // directores actúan como admin
   return null
 }
