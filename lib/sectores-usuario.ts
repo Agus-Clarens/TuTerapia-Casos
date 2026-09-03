@@ -1,6 +1,7 @@
 // Mapea el email de cada usuario a los sectores de casos que le competen.
 const MAPA: Record<string, string[]> = {
   'info@tuterapia.com.ar': ['CX'],
+  'marketing@tuterapia.com.uy': ['CX'],
   'aclarens@tuterapia.com.ar': ['Admin'],
   'admin@tuterapia.com.ar': ['Admin'],
   'people@tuterapia.com.uy': ['Talent'],

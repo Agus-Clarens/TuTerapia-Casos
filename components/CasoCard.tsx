@@ -67,7 +67,7 @@ function sectorDeAutor(autor: string) {
   if (autor.includes('Talent')) return 'talent'
   if (autor.includes('CX')) return 'cx'
   if (autor.includes('Business')) return 'business'
-  if (autor.includes('Marketing')) return 'admin' // marketing actúa como admin
+  if (autor.includes('Marketing')) return 'cx' // marketing actúa como CX
   if (autor.includes('Director')) return 'admin' // directores actúan como admin
   return null
 }
