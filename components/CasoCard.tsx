@@ -193,7 +193,13 @@ export function CasoCard({ caso, onUpdate, sector, showDelete }: any) {
     if (accion==='Cerrar para CX') u.estado_cx='Cerrado'
     if (accion==='Cerrar para Business') u.estado_business='Cerrado'
     if (Object.keys(u).length>0) {
-      u.estado = calcularEstadoGlobal(caso.area, u.estado_admin??caso.estado_admin, u.estado_talent??caso.estado_talent, u.estado_cx??caso.estado_cx, u.estado_business??caso.estado_business)
+      // Releer el estado actual del caso desde la base (por si otro sector cambió mientras tanto)
+      const { data: actual } = await supabase.from('casos').select('estado_admin,estado_talent,estado_cx,estado_business').eq('id',caso.id).single()
+      const ea = u.estado_admin ?? actual?.estado_admin ?? caso.estado_admin
+      const et = u.estado_talent ?? actual?.estado_talent ?? caso.estado_talent
+      const ec = u.estado_cx ?? actual?.estado_cx ?? caso.estado_cx
+      const eb = u.estado_business ?? actual?.estado_business ?? caso.estado_business
+      u.estado = calcularEstadoGlobal(caso.area, ea, et, ec, eb)
       u.updated_at = new Date().toISOString(); u.last_updated_by = autor
       await supabase.from('casos').update(u).eq('id',caso.id)
       onUpdate()
