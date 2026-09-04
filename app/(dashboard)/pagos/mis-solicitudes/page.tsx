@@ -28,7 +28,7 @@ export default function Page() {
       {loading ? <p style={{ color: '#9CA3AF', fontSize: 13 }}>Cargando...</p>
         : solicitudes.length === 0
           ? <p style={{ color: '#9CA3AF', fontSize: 13 }}>Aún no cargaste ninguna solicitud.</p>
-          : solicitudes.map(s => <SolicitudCard key={s.id} sol={s} userEmail={userEmail} onUpdate={load} />)
+          : solicitudes.map(s => <SolicitudCard key={s.id} sol={s} userEmail={userEmail} onUpdate={load} verMonto={true} />)
       }
     </div>
   )

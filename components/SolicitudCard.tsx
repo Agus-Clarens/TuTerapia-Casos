@@ -5,7 +5,7 @@ import { EMAILS_PAGOS } from '../lib/solicitantes-pago'
 
 const fmt = (m: number, moneda: string) => new Intl.NumberFormat('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(m) + ' ' + moneda
 
-export function SolicitudCard({ sol, userEmail, onUpdate }: any) {
+export function SolicitudCard({ sol, userEmail, onUpdate, verMonto }: any) {
   const [marcando, setMarcando] = useState(false)
   const [nota, setNota] = useState('')
   const [comprobante, setComprobante] = useState<File | null>(null)
@@ -142,7 +142,7 @@ export function SolicitudCard({ sol, userEmail, onUpdate }: any) {
         <div><span style={{ color: '#6B7280', fontSize: 11, fontWeight: 600 }}>{sol.tipo === 'Reembolso' ? 'A REEMBOLSAR A' : 'PAGAR A'}</span><div>{sol.destinatario}</div></div>
         {sol.rut_cuit && <div><span style={{ color: '#6B7280', fontSize: 11, fontWeight: 600 }}>RUT / CUIT</span><div>{sol.rut_cuit}</div></div>}
         <div style={{ gridColumn: '1 / -1' }}><span style={{ color: '#6B7280', fontSize: 11, fontWeight: 600 }}>MOTIVO</span><div>{sol.motivo}</div></div>
-        <div><span style={{ color: '#6B7280', fontSize: 11, fontWeight: 600 }}>MONTO</span><div style={{ fontWeight: 700, fontSize: 15, color: '#264534' }}>{fmt(sol.monto, sol.moneda)}</div></div>
+        {(puedeDescargarFactura || verMonto) && <div><span style={{ color: '#6B7280', fontSize: 11, fontWeight: 600 }}>MONTO</span><div style={{ fontWeight: 700, fontSize: 15, color: '#264534' }}>{fmt(sol.monto, sol.moneda)}</div></div>}
         {sol.datos_cuenta && <div><span style={{ color: '#6B7280', fontSize: 11, fontWeight: 600 }}>DATOS DE CUENTA</span><div style={{ fontSize: 12, whiteSpace: 'pre-wrap' }}>{sol.datos_cuenta}</div></div>}
       </div>
 

@@ -21,9 +21,12 @@ export default function Page() {
   }
   useEffect(() => { load() }, [])
 
-  const filtradas = solicitudes.filter(s => s.estado === tab)
-  const countNuevas = solicitudes.filter(s => s.estado === 'Nueva').length
-  const countPagadas = solicitudes.filter(s => s.estado === 'Pagada').length
+  const PRIVILEGIADOS = ['admin@tuterapia.com.ar', 'aclarens@tuterapia.com.ar', 'people@tuterapia.com.uy']
+  const veTodo = PRIVILEGIADOS.includes(userEmail.toLowerCase())
+  const visibles = veTodo ? solicitudes : solicitudes.filter(s => (s.solicitante_email || '').toLowerCase() === userEmail.toLowerCase())
+  const filtradas = visibles.filter(s => s.estado === tab)
+  const countNuevas = visibles.filter(s => s.estado === 'Nueva').length
+  const countPagadas = visibles.filter(s => s.estado === 'Pagada').length
 
   return (
     <div style={{ padding: 24, maxWidth: 1100 }}>
