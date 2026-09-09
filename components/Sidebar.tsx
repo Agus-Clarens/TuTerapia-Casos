@@ -35,6 +35,7 @@ const NAV_GROUPS: NavGroup[] = [
       { href: '/facturas',                label: 'Facturas' },
       { href: '/admin/ajustes-modalidad', label: 'Ajustes en la liquidación' },
       { href: '/descuentos',              label: 'Descuentos' },
+      { href: '/metricas',                label: 'Métricas' },
     ],
   },
   {
