@@ -12,9 +12,10 @@ export default function Page() {
   const [casos, setCasos] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [mes, setMes] = useState<string>('')
+  const [abierto, setAbierto] = useState<string | null>(null)
 
   useEffect(() => {
-    supabase.from('casos').select('area, tipo_caso, created_at').then(({ data }) => {
+    supabase.from('casos').select('area, tipo_caso, psi_nombre, created_at').then(({ data }) => {
       if (data) setCasos(data)
       setLoading(false)
     })
@@ -25,10 +26,15 @@ export default function Page() {
 
   const filtrados = mesActivo === 'todos' ? casos : casos.filter(c => (c.created_at || '').slice(0, 7) === mesActivo)
 
+  // Contar por tipo de caso, y dentro de cada uno, por psicólogo
   const conteo: Record<string, number> = {}
+  const psicosPorTipo: Record<string, Record<string, number>> = {}
   for (const c of filtrados) {
     const t = c.tipo_caso || '(sin tipo)'
     conteo[t] = (conteo[t] || 0) + 1
+    if (!psicosPorTipo[t]) psicosPorTipo[t] = {}
+    const psi = (c.psi_nombre && c.psi_nombre.trim()) ? c.psi_nombre.trim() : 'Sin psicólogo'
+    psicosPorTipo[t][psi] = (psicosPorTipo[t][psi] || 0) + 1
   }
   const ranking = Object.entries(conteo).sort((a, b) => b[1] - a[1])
   const maxVal = ranking.length > 0 ? ranking[0][1] : 1
@@ -45,7 +51,7 @@ export default function Page() {
   return (
     <div style={{ padding: 24, maxWidth: 820 }}>
       <h1 style={{ fontSize: 22, fontWeight: 700, color: '#264534', marginBottom: 6 }}>Métricas</h1>
-      <p style={{ fontSize: 13, color: '#6B7280', marginBottom: 20 }}>Ranking de los tipos de caso que más se repiten (todos los sectores).</p>
+      <p style={{ fontSize: 13, color: '#6B7280', marginBottom: 20 }}>Ranking de los tipos de caso que más se repiten. Tocá cada uno para ver los psicólogos.</p>
 
       <div style={{ display: 'flex', gap: 6, marginBottom: 22, flexWrap: 'wrap' }}>
         <button onClick={() => setMes('todos')} style={pill(mesActivo === 'todos')}>Todos los meses</button>
@@ -73,18 +79,33 @@ export default function Page() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {ranking.map(([tipo, cant], i) => {
                 const pct = Math.round((cant / total) * 100)
+                const estaAbierto = abierto === tipo
+                const psicos = Object.entries(psicosPorTipo[tipo] || {}).sort((a, b) => b[1] - a[1])
                 return (
-                  <div key={tipo} style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                    <div style={{ width: 30, textAlign: 'center', fontSize: i < 3 ? 18 : 13, fontWeight: 700, color: '#6B7280', flexShrink: 0 }}>{medalla(i)}</div>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 4 }}>
-                        <span style={{ fontSize: 13.5, color: '#374151', fontWeight: i < 3 ? 600 : 400 }}>{tipo}</span>
-                        <span style={{ fontSize: 13, color: '#6B7280' }}><b style={{ color: '#264534', fontSize: 15 }}>{cant}</b> · {pct}%</span>
-                      </div>
-                      <div style={{ background: '#F3F4F6', borderRadius: 6, height: 14, overflow: 'hidden' }}>
-                        <div style={{ width: `${(cant / maxVal) * 100}%`, background: i === 0 ? '#264534' : '#75B781', height: '100%', borderRadius: 6 }} />
+                  <div key={tipo} style={{ background: estaAbierto ? '#FAFAF9' : 'transparent', borderRadius: 8, padding: estaAbierto ? 12 : 0 }}>
+                    <div onClick={() => setAbierto(estaAbierto ? null : tipo)} style={{ display: 'flex', alignItems: 'center', gap: 14, cursor: 'pointer' }}>
+                      <div style={{ width: 30, textAlign: 'center', fontSize: i < 3 ? 18 : 13, fontWeight: 700, color: '#6B7280', flexShrink: 0 }}>{medalla(i)}</div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 4 }}>
+                          <span style={{ fontSize: 13.5, color: '#374151', fontWeight: i < 3 ? 600 : 400 }}>{estaAbierto ? '▾' : '▸'} {tipo}</span>
+                          <span style={{ fontSize: 13, color: '#6B7280' }}><b style={{ color: '#264534', fontSize: 15 }}>{cant}</b> · {pct}%</span>
+                        </div>
+                        <div style={{ background: '#F3F4F6', borderRadius: 6, height: 14, overflow: 'hidden' }}>
+                          <div style={{ width: `${(cant / maxVal) * 100}%`, background: i === 0 ? '#264534' : '#75B781', height: '100%', borderRadius: 6 }} />
+                        </div>
                       </div>
                     </div>
+                    {estaAbierto && (
+                      <div style={{ marginLeft: 44, marginTop: 12, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                        <div style={{ fontSize: 11, color: '#9CA3AF', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 }}>Psicólogos</div>
+                        {psicos.map(([psi, n]) => (
+                          <div key={psi} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: '#374151', padding: '4px 0', borderBottom: '1px solid #F3F4F6' }}>
+                            <span>{psi}</span>
+                            <span style={{ fontWeight: 700, color: '#264534' }}>{n}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 )
               })}
