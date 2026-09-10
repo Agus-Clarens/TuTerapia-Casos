@@ -130,6 +130,8 @@ export function CasoCard({ caso, onUpdate, sector, showDelete }: any) {
   const [eCargadoPor, setECargadoPor] = useState(caso.cargado_por||CARGADO_POR[0])
   const [eTalentAccion, setETalentAccion] = useState(caso.talent_accion !== false)
   const [adjuntos, setAdjuntos] = useState<any[]>([])
+  const [editandoAct, setEditandoAct] = useState<string | null>(null)
+  const [textoEdit, setTextoEdit] = useState('')
   const [subiendo, setSubiendo] = useState(false)
   const [nuevaArea, setNuevaArea] = useState<string>(caso.area || 'Admin')
   const [nuevoTipo, setNuevoTipo] = useState<string>('')
@@ -143,6 +145,18 @@ export function CasoCard({ caso, onUpdate, sector, showDelete }: any) {
     if (data) setActs(data)
     const { data: adj } = await supabase.from('caso_adjuntos').select('*').eq('caso_id',caso.id).order('created_at',{ascending:false})
     if (adj) setAdjuntos(adj)
+  }
+
+  async function guardarEdicionAct(a: any) {
+    const nuevo = textoEdit.trim()
+    if (!nuevo) return
+    // Conservar el prefijo [tag] si lo tenía
+    const m = a.texto.match(/^\[([^\]]+)\] ([\s\S]+)$/)
+    const textoFinal = m ? `[${m[1]}] ${nuevo}` : nuevo
+    await supabase.from('caso_actualizaciones').update({ texto: textoFinal }).eq('id', a.id)
+    setEditandoAct(null)
+    setTextoEdit('')
+    loadActs()
   }
 
   async function subirAdjunto(e: any) {
@@ -359,8 +373,21 @@ export function CasoCard({ caso, onUpdate, sector, showDelete }: any) {
                       <span style={{ background:autorColor(a.autor), color:'#374151', borderRadius:6, padding:'2px 8px', fontSize:11, fontWeight:700 }}>{a.autor}</span>
                       <span style={{ background:tagColor(tag), color:'#fff', borderRadius:4, padding:'1px 7px', fontSize:10, fontWeight:600 }}>{tag}</span>
                       <span style={{ color:'#9CA3AF', fontSize:11 }}>{timeAgo(a.created_at)}</span>
+                      {a.autor === autor && editandoAct !== a.id && (
+                        <button onClick={()=>{ setEditandoAct(a.id); setTextoEdit(msg) }} style={{ marginLeft:'auto', background:'transparent', border:'none', color:'#007271', fontSize:11, cursor:'pointer', fontWeight:600 }}>editar</button>
+                      )}
                     </div>
-                    <p style={{ margin:0, color:'#374151', lineHeight:1.5 }}>{msg}</p>
+                    {editandoAct === a.id ? (
+                      <div>
+                        <textarea value={textoEdit} onChange={e=>setTextoEdit(e.target.value)} rows={2} style={{ width:'100%', border:'1.5px solid #E5E7EB', borderRadius:6, padding:'6px 9px', fontSize:12, boxSizing:'border-box', resize:'vertical', fontFamily:'inherit' }} />
+                        <div style={{ display:'flex', gap:6, marginTop:5 }}>
+                          <button onClick={()=>guardarEdicionAct(a)} style={{ background:'#264534', color:'#fff', border:'none', borderRadius:5, padding:'5px 12px', fontSize:11, cursor:'pointer', fontWeight:600 }}>Guardar</button>
+                          <button onClick={()=>{ setEditandoAct(null); setTextoEdit('') }} style={{ background:'transparent', color:'#6B7280', border:'1px solid #E5E7EB', borderRadius:5, padding:'5px 12px', fontSize:11, cursor:'pointer' }}>Cancelar</button>
+                        </div>
+                      </div>
+                    ) : (
+                      <p style={{ margin:0, color:'#374151', lineHeight:1.5 }}>{msg}</p>
+                    )}
                   </div>
                 )
               })}</div>

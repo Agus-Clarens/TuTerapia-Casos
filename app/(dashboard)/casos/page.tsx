@@ -59,6 +59,14 @@ function PageInner() {
   const esperandoEmail = soloActualizados && (userEmail === null || idsActualizados === null)
 
   const base = soloActualizados ? casos.filter(c => (idsActualizados || []).includes(c.id) && c.estado !== 'Cerrado') : casos
+
+  // Psicólogos que aparecen en 3 o más casos (contando todos)
+  const conteoPsi: Record<string, number> = {}
+  for (const c of casos) {
+    const psi = (c.psi_nombre && c.psi_nombre.trim()) ? c.psi_nombre.trim() : null
+    if (psi) conteoPsi[psi] = (conteoPsi[psi] || 0) + 1
+  }
+  const psicosRepetidos = Object.entries(conteoPsi).filter(([_, n]) => n >= 3).sort((a, b) => b[1] - a[1])
   const porSector = filtro === 'Todos' ? base : base.filter(c => c.area === filtro)
   const q = busqueda.trim().toLowerCase()
   const filtrados = !q ? porSector : porSector.filter(c =>
@@ -81,6 +89,21 @@ function PageInner() {
         <a href="/casos" style={{ display:'inline-block', fontSize:12, color:'#007271', fontWeight:600, marginBottom:14, textDecoration:'none' }}>
           ← Ver todos los casos
         </a>
+      )}
+
+      {/* Alerta de psicólogos con 3+ casos */}
+      {!soloActualizados && psicosRepetidos.length > 0 && (
+        <div style={{ background: '#FEF2F2', border: '1.5px solid #FCA5A5', borderRadius: 10, padding: '12px 16px', marginBottom: 16 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: '#B91C1C', marginBottom: 8 }}>⚠️ Psicólogos con varios casos</div>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            {psicosRepetidos.map(([psi, n]) => (
+              <button key={psi} onClick={() => setBusqueda(psi)}
+                style={{ background: '#fff', border: '1px solid #FCA5A5', borderRadius: 999, padding: '5px 12px', fontSize: 12.5, cursor: 'pointer', color: '#991B1B', fontWeight: 600 }}>
+                {psi} <span style={{ background: '#B91C1C', color: '#fff', borderRadius: 999, padding: '0 7px', fontSize: 11, marginLeft: 4 }}>{n}</span>
+              </button>
+            ))}
+          </div>
+        </div>
       )}
 
       {/* Buscador por mail / nombre / nro de ticket */}
