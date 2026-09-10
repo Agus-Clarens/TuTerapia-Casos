@@ -14,6 +14,7 @@ export default function Page() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [lista, setLista] = useState<any[]>([])
+  const [seleccionadas, setSeleccionadas] = useState<string[]>([])
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -81,6 +82,27 @@ export default function Page() {
     window.open(data.signedUrl, '_blank')
   }
 
+  function toggleSeleccion(id: string) {
+    setSeleccionadas(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])
+  }
+
+  async function descargarSeleccionadas() {
+    // Juntar todos los adjuntos de las solicitudes seleccionadas
+    const adjuntos: string[] = []
+    for (const f of lista) {
+      if (seleccionadas.includes(f.id)) {
+        for (const a of (f.factura_proveedor_adjuntos || [])) adjuntos.push(a.file_path)
+      }
+    }
+    if (adjuntos.length === 0) { alert('No hay archivos en las solicitudes seleccionadas.'); return }
+    // Abrir cada PDF en una pestaña nueva (con una pequeña pausa para que el navegador no las bloquee)
+    for (let i = 0; i < adjuntos.length; i++) {
+      const { data } = await supabase.storage.from('pagos').createSignedUrl(adjuntos[i], 120)
+      if (data) window.open(data.signedUrl, '_blank')
+      await new Promise(r => setTimeout(r, 400))
+    }
+  }
+
   async function eliminar(f: any) {
     if (!confirm(`¿Eliminar las facturas de ${f.proveedor}?`)) return
     const adj = f.factura_proveedor_adjuntos || []
@@ -137,16 +159,35 @@ export default function Page() {
         </button>
       </div>
 
-      <h2 style={{ fontSize: 16, fontWeight: 700, color: '#264534', marginBottom: 12 }}>Facturas cargadas</h2>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, flexWrap: 'wrap', gap: 8 }}>
+        <h2 style={{ fontSize: 16, fontWeight: 700, color: '#264534', margin: 0 }}>Facturas cargadas</h2>
+        {puedeDescargar && lista.length > 0 && (
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <button onClick={() => setSeleccionadas(seleccionadas.length === lista.length ? [] : lista.map(f => f.id))}
+              style={{ background: 'transparent', color: '#6B7280', border: '1px solid #E5E7EB', borderRadius: 6, padding: '6px 12px', fontSize: 12, cursor: 'pointer' }}>
+              {seleccionadas.length === lista.length ? 'Deseleccionar todas' : 'Seleccionar todas'}
+            </button>
+            <button onClick={descargarSeleccionadas} disabled={seleccionadas.length === 0}
+              style={{ background: seleccionadas.length === 0 ? '#E5E7EB' : '#264534', color: seleccionadas.length === 0 ? '#9CA3AF' : '#fff', border: 'none', borderRadius: 6, padding: '6px 14px', fontSize: 12, fontWeight: 600, cursor: seleccionadas.length === 0 ? 'not-allowed' : 'pointer' }}>
+              Descargar seleccionadas ({seleccionadas.length})
+            </button>
+          </div>
+        )}
+      </div>
       {lista.length === 0 ? <p style={{ color: '#9CA3AF', fontSize: 13 }}>Todavía no hay facturas cargadas.</p> : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {lista.map(f => (
-            <div key={f.id} style={{ background: '#fff', borderRadius: 10, padding: 14, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+            <div key={f.id} style={{ background: '#fff', borderRadius: 10, padding: 14, boxShadow: '0 1px 4px rgba(0,0,0,0.06)', border: seleccionadas.includes(f.id) ? '2px solid #264534' : '2px solid transparent' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <div>
-                  <div style={{ fontWeight: 700, color: '#264534', fontSize: 14 }}>{f.proveedor}</div>
-                  {f.descripcion && <div style={{ fontSize: 13, color: '#374151', marginTop: 2 }}>{f.descripcion}</div>}
-                  <div style={{ fontSize: 11, color: '#9CA3AF', marginTop: 4 }}>Cargado por {f.cargado_por} · {new Date(f.created_at).toLocaleDateString('es-AR')}</div>
+                <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                  {puedeDescargar && (
+                    <input type="checkbox" checked={seleccionadas.includes(f.id)} onChange={() => toggleSeleccion(f.id)} style={{ marginTop: 3, cursor: 'pointer', width: 16, height: 16 }} />
+                  )}
+                  <div>
+                    <div style={{ fontWeight: 700, color: '#264534', fontSize: 14 }}>{f.proveedor}</div>
+                    {f.descripcion && <div style={{ fontSize: 13, color: '#374151', marginTop: 2 }}>{f.descripcion}</div>}
+                    <div style={{ fontSize: 11, color: '#9CA3AF', marginTop: 4 }}>Cargado por {f.cargado_por} · {new Date(f.created_at).toLocaleDateString('es-AR')}</div>
+                  </div>
                 </div>
                 {(esCreador(f) || puedeDescargar) && (
                   <button onClick={() => eliminar(f)} style={{ background: 'transparent', color: '#EF4444', border: '1px solid #FECACA', borderRadius: 6, padding: '4px 10px', fontSize: 11, cursor: 'pointer' }}>Eliminar</button>
