@@ -63,6 +63,7 @@ function PageInner() {
   // Psicólogos que aparecen en 3 o más casos (contando todos)
   const conteoPsi: Record<string, number> = {}
   for (const c of casos) {
+    if (c.tipo_caso === 'Solicitar reseñas a los pacientes') continue
     const psi = (c.psi_nombre && c.psi_nombre.trim()) ? c.psi_nombre.trim() : null
     if (psi) conteoPsi[psi] = (conteoPsi[psi] || 0) + 1
   }
