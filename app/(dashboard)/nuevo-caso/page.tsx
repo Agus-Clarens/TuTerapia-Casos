@@ -19,20 +19,32 @@ const TIPOS_CASO: any = {
   'Business': { area: 'Business', desc: false, tipos: ['Alianza nueva','Renovacion contrato','Reporte a empresa','Seguimiento de facturacion empresa','Otro'] },
 }
 
+// Separa "Grupo|||Tipo" en sus partes. Si no tiene grupo, devuelve solo el tipo.
+function parseTipo(valor: string): { grupo: string | null, tipo: string } {
+  if (valor.includes('|||')) {
+    const [grupo, tipo] = valor.split('|||')
+    return { grupo, tipo }
+  }
+  return { grupo: null, tipo: valor }
+}
+
 // Devuelve el área final según el tipo y quién lo carga (para casos cruzados CX ↔ Business)
-function getAreaFinal(tipo: string, cargadoPor: string): string {
+function getAreaFinal(valor: string, cargadoPor: string): string {
+  const { grupo, tipo } = parseTipo(valor)
   if (TIPOS_CRUZADOS_CX_BUSINESS.includes(tipo)) {
-    // Se le asigna al OPUESTO de quien lo carga
     if (cargadoPor.includes('CX')) return 'Business'
     if (cargadoPor.includes('Business')) return 'CX'
-    // Cualquier otro (Admin, Talent, Director) → CX por defecto
     return 'CX'
   }
-  const info = getTipoInfo(tipo)
+  // Si sabemos el grupo exacto, usamos su área (resuelve el "Otro" duplicado)
+  if (grupo && TIPOS_CASO[grupo]) return TIPOS_CASO[grupo].area
+  const info = getTipoInfo(valor)
   return info?.area || ''
 }
 
-function getTipoInfo(tipo: string) {
+function getTipoInfo(valor: string) {
+  const { grupo, tipo } = parseTipo(valor)
+  if (grupo && TIPOS_CASO[grupo]) return { area: TIPOS_CASO[grupo].area, desc: TIPOS_CASO[grupo].desc }
   for (const g of Object.values(TIPOS_CASO) as any[]) {
     if (g.tipos.includes(tipo)) return { area: g.area, desc: g.desc }
   }
@@ -59,12 +71,13 @@ export default function NuevoCaso() {
     const lastNum = last?.[0]?.nro_caso ? parseInt(last[0].nro_caso.replace('TKT-', '')) : 0
     const nro_caso = `TKT-${String(lastNum + 1).padStart(3, '0')}`
     const areaFinal = getAreaFinal(form.tipo_caso, form.cargado_por)
+    const tipoLimpio = form.tipo_caso.includes('|||') ? form.tipo_caso.split('|||')[1] : form.tipo_caso
     const { error: err } = await supabase.from('casos').insert({
       nro_caso, fecha: new Date().toISOString().split('T')[0],
       cargado_por: form.cargado_por, pais: form.pais,
       pac_nombre: form.pac_nombre, pac_mail: form.pac_mail,
       psi_nombre: sinPsi ? null : form.psi_nombre, psi_mail: sinPsi ? null : form.psi_mail,
-      tipo_caso: form.tipo_caso, area: areaFinal,
+      tipo_caso: tipoLimpio, area: areaFinal,
       descripcion: form.descripcion, estado: 'Nuevo',
       estado_admin: 'Pendiente', estado_talent: 'Pendiente', estado_cx: 'Pendiente', estado_business: 'Pendiente',
       requiere_descuento: info?.desc || false,
@@ -76,9 +89,9 @@ export default function NuevoCaso() {
     if (err) { setError('Error: ' + err.message); setLoading(false); return }
     if (info?.desc) {
       const { data: caso } = await supabase.from('casos').select('id').eq('nro_caso', nro_caso).single()
-      if (caso) await supabase.from('descuentos_psicologo').insert({ caso_id: caso.id, nro_caso, psi_nombre: form.psi_nombre, psi_mail: form.psi_mail, pac_nombre: form.pac_nombre, motivo: form.tipo_caso, monto: Number(form.monto_descuento), mes: form.mes_descuento, estado: 'Pendiente', tipo_sesion: form.tipo_sesion, descripcion: form.descripcion })
+      if (caso) await supabase.from('descuentos_psicologo').insert({ caso_id: caso.id, nro_caso, psi_nombre: form.psi_nombre, psi_mail: form.psi_mail, pac_nombre: form.pac_nombre, motivo: tipoLimpio, monto: Number(form.monto_descuento), mes: form.mes_descuento, estado: 'Pendiente', tipo_sesion: form.tipo_sesion, descripcion: form.descripcion })
     }
-    fetch('/api/notify-slack', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nro_caso, area: areaFinal, tipo_caso: form.tipo_caso, pac_nombre: form.pac_nombre, cargado_por: form.cargado_por, pais: form.pais }) })
+    fetch('/api/notify-slack', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nro_caso, area: areaFinal, tipo_caso: tipoLimpio, pac_nombre: form.pac_nombre, cargado_por: form.cargado_por, pais: form.pais }) })
     router.push('/casos')
   }
 
@@ -106,7 +119,7 @@ export default function NuevoCaso() {
         <label style={lbl}>Tipo de caso *</label>
         <select value={form.tipo_caso} onChange={e=>setForm({...form,tipo_caso:e.target.value})} style={inp}>
           <option value="">Seleccionar...</option>
-          {Object.entries(TIPOS_CASO).map(([g,v]:any)=><optgroup key={g} label={g}>{v.tipos.map((t:string)=><option key={t}>{t}</option>)}</optgroup>)}
+          {Object.entries(TIPOS_CASO).map(([g,v]:any)=><optgroup key={g} label={g}>{v.tipos.map((t:string)=><option key={g+t} value={`${g}|||${t}`}>{t}</option>)}</optgroup>)}
         </select>
         {form.tipo_caso && <p style={{ fontSize:12, color:'#007271', fontWeight:600, marginTop:4 }}>Área: {getAreaFinal(form.tipo_caso, form.cargado_por)}{info?.desc ? ' · Requiere descuento' : ''}</p>}
       </div>

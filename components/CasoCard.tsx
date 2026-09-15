@@ -353,7 +353,7 @@ export function CasoCard({ caso, onUpdate, sector, showDelete }: any) {
           <div style={{ color:'#374151' }}><span style={{ color:'#9CA3AF', fontSize:11 }}>PACIENTE </span>{caso.pac_nombre}{caso.pac_mail&&<span style={{ color:'#9CA3AF' }}> · {caso.pac_mail}</span>}{caso.pac_mail&&<BotonCopiar texto={caso.pac_mail} />}</div>
           {caso.psi_nombre&&<div style={{ color:'#374151' }}><span style={{ color:'#9CA3AF', fontSize:11 }}>PSICÓLOGO </span>{caso.psi_nombre}{caso.psi_mail&&<span style={{ color:'#9CA3AF' }}> · {caso.psi_mail}</span>}{caso.psi_mail&&<BotonCopiar texto={caso.psi_mail} />}</div>}
           <div style={{ color:'#374151' }}><span style={{ color:'#9CA3AF', fontSize:11 }}>PAÍS </span>{caso.pais}</div>
-          <div style={{ color:'#6B7280', fontStyle:'italic', marginTop:2 }}>{caso.descripcion}</div>
+          <div style={{ color:'#6B7280', fontStyle:'italic', marginTop:2, whiteSpace:'pre-wrap' }}>{caso.descripcion}</div>
           <div style={{ color:'#9CA3AF', fontSize:11 }}>Cargado por {caso.cargado_por}</div>
         </div>
         <button onClick={()=>{ setOpen(!open); if(!open) loadActs() }} style={{ marginTop:10, background:'transparent', border:'none', color:'#007271', fontSize:12, cursor:'pointer', fontWeight:600, padding:0 }}>
@@ -386,7 +386,7 @@ export function CasoCard({ caso, onUpdate, sector, showDelete }: any) {
                         </div>
                       </div>
                     ) : (
-                      <p style={{ margin:0, color:'#374151', lineHeight:1.5 }}>{msg}</p>
+                      <p style={{ margin:0, color:'#374151', lineHeight:1.5, whiteSpace:'pre-wrap' }}>{msg}</p>
                     )}
                   </div>
                 )
