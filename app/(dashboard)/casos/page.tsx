@@ -3,7 +3,7 @@ import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { supabase } from '../../../lib/supabase'
 import { CasoCard, Caso } from '../../../components/CasoCard'
-import { nombreDeUsuario } from '../../../lib/sectores-usuario'
+import { nombreDeUsuario, sectorDelUsuarioCerrado } from '../../../lib/sectores-usuario'
 
 const ord = (e: string) => ({'Nuevo':0,'En curso':1,'Cerrado':3} as Record<string,number>)[e] ?? 2
 
@@ -58,7 +58,7 @@ function PageInner() {
 
   const esperandoEmail = soloActualizados && (userEmail === null || idsActualizados === null)
 
-  const base = soloActualizados ? casos.filter(c => (idsActualizados || []).includes(c.id) && c.estado !== 'Cerrado') : casos
+  const base = soloActualizados ? casos.filter(c => (idsActualizados || []).includes(c.id) && c.estado !== 'Cerrado' && !sectorDelUsuarioCerrado(userEmail || '', c)) : casos
 
   // Psicólogos que aparecen en 3 o más casos (contando todos)
   const conteoPsi: Record<string, number> = {}

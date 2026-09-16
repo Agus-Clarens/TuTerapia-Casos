@@ -44,3 +44,20 @@ export function casoCompeteAUsuario(email: string, areaCaso: string): boolean {
   if (!areaCaso) return false
   return sectores.some(s => areaCaso === s || areaCaso.includes(s))
 }
+
+// Devuelve true si el sector del usuario YA cerró su parte de este caso.
+// Si el usuario ve todos (director) nunca se considera "cerrado para él".
+export function sectorDelUsuarioCerrado(email: string, caso: any): boolean {
+  const sectores = sectoresDeUsuario(email)
+  if (!sectores) return false // directores / no listados: nunca se les corta
+  // Un caso puede tocar varios sectores del usuario (raro), basta que TODOS los suyos esten cerrados
+  const relevantes = sectores.filter(s => caso.area === s || (caso.area || '').includes(s))
+  if (relevantes.length === 0) return false
+  return relevantes.every(s => {
+    if (s === 'Admin') return caso.estado_admin === 'Cerrado'
+    if (s === 'Talent') return caso.estado_talent === 'Cerrado'
+    if (s === 'CX') return caso.estado_cx === 'Cerrado'
+    if (s === 'Business') return caso.estado_business === 'Cerrado'
+    return false
+  })
+}

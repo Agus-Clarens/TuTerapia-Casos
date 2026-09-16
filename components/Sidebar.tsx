@@ -4,7 +4,7 @@ import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
-import { nombreDeUsuario } from '../lib/sectores-usuario'
+import { nombreDeUsuario, sectorDelUsuarioCerrado } from '../lib/sectores-usuario'
 
 // Mapea el area de un caso a las rutas del menu donde debe contar
 function rutasDeArea(area: string): string[] {
@@ -103,15 +103,16 @@ export default function Sidebar() {
       return
     }
 
-    // Traer esos casos con su area (no cerrados)
-    const { data: casos } = await supabase.from('casos').select('id,area,estado').in('id', Array.from(idsFinal)).neq('estado', 'Cerrado')
+    // Traer esos casos con su area y estados por sector (no cerrados)
+    const { data: casosRaw } = await supabase.from('casos').select('id,area,estado,estado_admin,estado_talent,estado_cx,estado_business').in('id', Array.from(idsFinal)).neq('estado', 'Cerrado')
+    const casos = (casosRaw || []).filter((c: any) => !sectorDelUsuarioCerrado(email, c))
     const conteo: Record<string, number> = {}
-    for (const c of (casos || [])) {
+    for (const c of casos) {
       for (const ruta of rutasDeArea(c.area)) conteo[ruta] = (conteo[ruta] || 0) + 1
     }
     setConteoPorRuta(conteo)
 
-    const total = (casos || []).length
+    const total = casos.length
     if (typeof document !== 'undefined') {
       document.title = total > 0 ? `(${total}) Tu Terapia - Casos` : 'Tu Terapia - Casos'
     }

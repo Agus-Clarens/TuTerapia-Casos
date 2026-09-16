@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '../../lib/supabase'
-import { nombreDeUsuario } from '../../lib/sectores-usuario'
+import { nombreDeUsuario, sectorDelUsuarioCerrado } from '../../lib/sectores-usuario'
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
@@ -57,9 +57,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
     // 5. Traer esos casos (que no esten cerrados) y adjuntar quién los actualizó
     const { data } = await supabase.from('casos')
-      .select('id,nro_caso,area,estado')
+      .select('id,nro_caso,area,estado,estado_admin,estado_talent,estado_cx,estado_business')
       .in('id', idsRelevantes).neq('estado', 'Cerrado')
-    const conAutor = (data || []).map((c: any) => ({ ...c, ultimoAutor: ultimoPorCaso[c.id] }))
+    const conAutor = (data || [])
+      .filter((c: any) => !sectorDelUsuarioCerrado(userEmail, c))
+      .map((c: any) => ({ ...c, ultimoAutor: ultimoPorCaso[c.id] }))
     setActualizados(conAutor)
   }
 
