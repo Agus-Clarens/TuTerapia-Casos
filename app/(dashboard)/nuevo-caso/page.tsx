@@ -91,7 +91,7 @@ export default function NuevoCaso() {
       const { data: caso } = await supabase.from('casos').select('id').eq('nro_caso', nro_caso).single()
       if (caso) await supabase.from('descuentos_psicologo').insert({ caso_id: caso.id, nro_caso, psi_nombre: form.psi_nombre, psi_mail: form.psi_mail, pac_nombre: form.pac_nombre, motivo: tipoLimpio, monto: Number(form.monto_descuento), mes: form.mes_descuento, estado: 'Pendiente', tipo_sesion: form.tipo_sesion, descripcion: form.descripcion })
     }
-    fetch('/api/notify-slack', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nro_caso, area: areaFinal, tipo_caso: tipoLimpio, pac_nombre: form.pac_nombre, cargado_por: form.cargado_por, pais: form.pais }) })
+    fetch('/api/notify-slack', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nro_caso, area: areaFinal, tipo_caso: tipoLimpio, pac_nombre: form.pac_nombre, psi_nombre: sinPsi ? null : form.psi_nombre, cargado_por: form.cargado_por, pais: form.pais }) })
     router.push('/casos')
   }
 

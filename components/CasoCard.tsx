@@ -218,7 +218,7 @@ export function CasoCard({ caso, onUpdate, sector, showDelete }: any) {
       await supabase.from('casos').update(u).eq('id',caso.id)
       onUpdate()
       if (u.estado === 'Cerrado' && caso.estado !== 'Cerrado') {
-        fetch('/api/notify-slack', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ evento:'cerrado', nro_caso: caso.nro_caso, area: caso.area, tipo_caso: caso.tipo_caso, pac_nombre: caso.pac_nombre, cargado_por: autor, pais: caso.pais }) })
+        fetch('/api/notify-slack', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ evento:'cerrado', nro_caso: caso.nro_caso, area: caso.area, tipo_caso: caso.tipo_caso, pac_nombre: caso.pac_nombre, psi_nombre: caso.psi_nombre, cargado_por: autor, pais: caso.pais }) })
       }
     } else {
       await supabase.from('casos').update({ updated_at: new Date().toISOString(), last_updated_by: autor }).eq('id',caso.id)
@@ -268,7 +268,7 @@ export function CasoCard({ caso, onUpdate, sector, showDelete }: any) {
     u.reabierto = true
     await supabase.from('caso_actualizaciones').insert({ caso_id: caso.id, autor, texto: `[Reabierto] ${autor} reabrió el caso` })
     await supabase.from('casos').update(u).eq('id', caso.id)
-    fetch('/api/notify-slack', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ evento:'reabierto', nro_caso: caso.nro_caso, area: caso.area, tipo_caso: caso.tipo_caso, pac_nombre: caso.pac_nombre, cargado_por: autor, pais: caso.pais }) })
+    fetch('/api/notify-slack', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ evento:'reabierto', nro_caso: caso.nro_caso, area: caso.area, tipo_caso: caso.tipo_caso, pac_nombre: caso.pac_nombre, psi_nombre: caso.psi_nombre, cargado_por: autor, pais: caso.pais }) })
     onUpdate()
     loadActs()
   }
