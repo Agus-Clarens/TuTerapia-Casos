@@ -19,6 +19,7 @@ export default function Page() {
   const [monto, setMonto] = useState('')
   const [moneda, setMoneda] = useState<'ARS' | 'UYU'>('ARS')
   const [datosCuenta, setDatosCuenta] = useState('')
+  const [cuentaSiempre, setCuentaSiempre] = useState(false)
   const [files, setFiles] = useState<File[]>([])
 
   // Preseleccionar solicitante según email del usuario logueado
@@ -34,18 +35,20 @@ export default function Page() {
   // Si es reembolso, el destinatario es el mismo solicitante
   useEffect(() => {
     if ((tipo === 'Reembolso' || tipo === 'Factura equipo interno') && solicitante) setDestinatario(solicitante)
-    if (tipo !== 'Reembolso' && tipo !== 'Factura equipo interno' && noAplicaRut) setNoAplicaRut(false)  }, [tipo, solicitante])
+    if (tipo !== 'Reembolso' && tipo !== 'Factura equipo interno' && noAplicaRut) setNoAplicaRut(false)
+    if (tipo !== 'Factura equipo interno' && cuentaSiempre) setCuentaSiempre(false)  }, [tipo, solicitante])
 
   async function submit() {
     setError('')
     if (!solicitante) return setError('Elegí quién solicita.')
-    if (!destinatario.trim()) return setError('Ingresá el destinatario del pago.')
+    const esInterna = tipo === 'Factura equipo interno'
+    if (!esInterna && !destinatario.trim()) return setError('Ingresá el destinatario del pago.')
     if (!motivo.trim()) return setError('Ingresá el motivo.')
-    if (!noAplicaRut && !rutCuit.trim()) return setError('Ingresá el RUT o CUIT.')
-    if (!monto || Number(monto) <= 0) return setError('Ingresá un monto válido.')
+    if (!esInterna && !noAplicaRut && !rutCuit.trim()) return setError('Ingresá el RUT o CUIT.')
+    if (!esInterna && (!monto || Number(monto) <= 0)) return setError('Ingresá un monto válido.')
     if (tipo === 'Pago a proveedor' && !datosCuenta.trim()) return setError('Ingresá los datos de cuenta.')
-    if (tipo === 'Factura equipo interno' && !datosCuenta.trim()) return setError('Ingresá los datos de cuenta.')
-    if (tipo === 'Factura equipo interno' && files.length === 0) return setError('Adjuntá la factura en PDF.')
+    if (esInterna && !cuentaSiempre && !datosCuenta.trim()) return setError('Ingresá los datos de cuenta o tildá "la misma de siempre".')
+    if (esInterna && files.length === 0) return setError('Adjuntá la factura en PDF.')
     if (files.some(f => f.type !== 'application/pdf')) return setError('Los archivos deben ser PDF.')
 
     setSubmitting(true)
@@ -71,12 +74,12 @@ export default function Page() {
       tipo,
       solicitante,
       solicitante_email: userEmail,
-      destinatario: destinatario.trim(),
-      rut_cuit: noAplicaRut ? null : rutCuit.trim(),
+      destinatario: esInterna ? solicitante : destinatario.trim(),
+      rut_cuit: esInterna ? null : (noAplicaRut ? null : rutCuit.trim()),
       motivo: motivo.trim(),
-      monto: Number(monto),
+      monto: esInterna ? 0 : Number(monto),
       moneda,
-      datos_cuenta: datosCuenta.trim() || null,
+      datos_cuenta: esInterna ? (cuentaSiempre ? 'La de siempre' : datosCuenta.trim()) : (datosCuenta.trim() || null),
       factura_path,
       estado: 'Nueva',
     }).select().single()
@@ -143,7 +146,7 @@ export default function Page() {
         </div>
 
         {/* Destinatario - solo se muestra si es Pago a proveedor */}
-        {tipo !== 'Reembolso' && (
+        {tipo === 'Pago a proveedor' && (
           <div style={{ marginBottom: 12 }}>
             <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 4 }}>
               Pagar a *
@@ -154,19 +157,21 @@ export default function Page() {
           </div>
         )}
 
-        {/* RUT / CUIT */}
+        {/* RUT / CUIT - no aplica para factura equipo interno */}
+        {tipo !== 'Factura equipo interno' && (
         <div style={{ marginBottom: 12 }}>
           <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 4 }}>RUT / CUIT {noAplicaRut ? '' : '*'}</label>
           <input value={rutCuit} onChange={e => setRutCuit(e.target.value)} disabled={noAplicaRut}
             placeholder="Ej: 20-36896551-1"
             style={{ width: '100%', padding: '9px 12px', borderRadius: 6, border: '1.5px solid #E5E7EB', fontSize: 13, boxSizing: 'border-box', fontFamily: 'inherit', background: noAplicaRut ? '#F3F4F6' : '#fff', color: noAplicaRut ? '#9CA3AF' : 'inherit' }} />
-          {(tipo === 'Reembolso' || tipo === 'Factura equipo interno') && (
+          {tipo === 'Reembolso' && (
             <label style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 6, fontSize: 12, color: '#6B7280', cursor: 'pointer' }}>
               <input type="checkbox" checked={noAplicaRut} onChange={e => { setNoAplicaRut(e.target.checked); if (e.target.checked) setRutCuit('') }} />
               No aplica RUT / CUIT
             </label>
           )}
         </div>
+        )}
 
         {/* Motivo */}
         <div style={{ marginBottom: 12 }}>
@@ -176,7 +181,8 @@ export default function Page() {
             style={{ width: '100%', padding: '9px 12px', borderRadius: 6, border: '1.5px solid #E5E7EB', fontSize: 13, boxSizing: 'border-box', resize: 'vertical', fontFamily: 'inherit' }} />
         </div>
 
-        {/* Monto + Moneda */}
+        {/* Monto + Moneda - no aplica para factura equipo interno */}
+        {tipo !== 'Factura equipo interno' && (
         <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 12, marginBottom: 12 }}>
           <div>
             <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 4 }}>Monto *</label>
@@ -193,15 +199,24 @@ export default function Page() {
             </select>
           </div>
         </div>
+        )}
 
         {/* Datos de cuenta */}
         <div style={{ marginBottom: 12 }}>
           <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 4 }}>
             Datos de cuenta {tipo === 'Reembolso' ? '(si querés que te transfieran)' : '*'}
           </label>
-          <textarea value={datosCuenta} onChange={e => setDatosCuenta(e.target.value)} rows={2}
-            placeholder="CBU / Alias / Titular / Banco"
-            style={{ width: '100%', padding: '9px 12px', borderRadius: 6, border: '1.5px solid #E5E7EB', fontSize: 13, boxSizing: 'border-box', resize: 'vertical', fontFamily: 'inherit' }} />
+          {tipo === 'Factura equipo interno' && (
+            <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, fontSize: 13, color: '#374151', cursor: 'pointer', background: cuentaSiempre ? '#F0FDF4' : '#F9FAFB', border: `1.5px solid ${cuentaSiempre ? '#A7C4B5' : '#E5E7EB'}`, borderRadius: 8, padding: '10px 12px' }}>
+              <input type="checkbox" checked={cuentaSiempre} onChange={e => { setCuentaSiempre(e.target.checked); if (e.target.checked) setDatosCuenta('') }} style={{ width: 16, height: 16 }} />
+              Enviar a la misma cuenta de siempre
+            </label>
+          )}
+          {!(tipo === 'Factura equipo interno' && cuentaSiempre) && (
+            <textarea value={datosCuenta} onChange={e => setDatosCuenta(e.target.value)} rows={2}
+              placeholder="CBU / Alias / Titular / Banco"
+              style={{ width: '100%', padding: '9px 12px', borderRadius: 6, border: '1.5px solid #E5E7EB', fontSize: 13, boxSizing: 'border-box', resize: 'vertical', fontFamily: 'inherit' }} />
+          )}
         </div>
 
         {/* PDF */}
