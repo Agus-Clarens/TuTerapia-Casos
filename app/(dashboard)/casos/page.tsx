@@ -3,7 +3,11 @@ import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { supabase } from '../../../lib/supabase'
 import { CasoCard, Caso } from '../../../components/CasoCard'
-import { nombreDeUsuario, sectorDelUsuarioCerrado } from '../../../lib/sectores-usuario'
+import { nombreDeUsuario, sectorDelUsuarioCerrado, casoCompeteAUsuario } from '../../../lib/sectores-usuario'
+
+// Psicólogos desvinculados: se excluyen del listado de "psicólogos repetidos" aunque
+// tengan casos históricos (no se borra nada de los casos, solo se oculta de este conteo)
+const PSICOS_DESVINCULADOS = ['Agustina Echenique']
 
 const ord = (e: string) => ({'Nuevo':0,'En curso':1,'Cerrado':3} as Record<string,number>)[e] ?? 2
 
@@ -41,8 +45,11 @@ function PageInner() {
     if (!miNombre) { setIdsActualizados([]); return }
     ;(async () => {
       const { data: mias } = await supabase.from('caso_actualizaciones').select('caso_id').eq('autor', miNombre)
-      if (!mias) { setIdsActualizados([]); return }
-      const casosMios = Array.from(new Set(mias.map((m: any) => m.caso_id)))
+      const casosComentados = (mias || []).map((m: any) => m.caso_id)
+      // además de los casos donde ya comenté, cuentan los de mi sector aunque todavía no los haya tocado
+      // (así a Flor/Isma les aparecen los casos nuevos de Business que crea José, no solo los que ya abrieron)
+      const casosDeSector = casos.filter(c => casoCompeteAUsuario(userEmail, c.area)).map(c => c.id)
+      const casosMios = Array.from(new Set([...casosComentados, ...casosDeSector]))
       if (casosMios.length === 0) { setIdsActualizados([]); return }
       const hace24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
       const { data: recientes } = await supabase.from('caso_actualizaciones')
@@ -54,7 +61,7 @@ function PageInner() {
       const ids = Object.entries(ultimoPorCaso).filter(([_, u]) => u !== miNombre).map(([id]) => id)
       setIdsActualizados(ids)
     })()
-  }, [soloActualizados, userEmail])
+  }, [soloActualizados, userEmail, casos])
 
   const esperandoEmail = soloActualizados && (userEmail === null || idsActualizados === null)
 
@@ -65,7 +72,7 @@ function PageInner() {
   for (const c of casos) {
     if (c.tipo_caso === 'Solicitar reseñas a los pacientes') continue
     const psi = (c.psi_nombre && c.psi_nombre.trim()) ? c.psi_nombre.trim() : null
-    if (psi) conteoPsi[psi] = (conteoPsi[psi] || 0) + 1
+    if (psi && !PSICOS_DESVINCULADOS.includes(psi)) conteoPsi[psi] = (conteoPsi[psi] || 0) + 1
   }
   const psicosRepetidos = Object.entries(conteoPsi).filter(([_, n]) => n >= 3).sort((a, b) => b[1] - a[1])
   const porSector = filtro === 'Todos' ? base : base.filter(c => c.area === filtro)
