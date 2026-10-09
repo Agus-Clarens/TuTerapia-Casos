@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '../../lib/supabase'
-import { nombreDeUsuario, sectorDelUsuarioCerrado } from '../../lib/sectores-usuario'
+import { nombreDeUsuario, sectorDelUsuarioCerrado, casoCompeteAUsuario } from '../../lib/sectores-usuario'
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
@@ -31,8 +31,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     // 1. Casos donde YO participé alguna vez (sin límite de fecha)
     const { data: mias } = await supabase.from('caso_actualizaciones')
       .select('caso_id').eq('autor', miNombre)
-    if (!mias) { setActualizados([]); return }
-    const casosMios = Array.from(new Set(mias.map((m: any) => m.caso_id)))
+    const casosComentados = (mias || []).map((m: any) => m.caso_id)
+
+    // 1b. Además, los casos de mi sector aunque todavía no los haya tocado yo
+    // (así le llega el aviso a Flor/Isma de los casos nuevos de Business que crea José, por ejemplo)
+    const { data: todosLosCasos } = await supabase.from('casos').select('id,area')
+    const casosDeSector = (todosLosCasos || []).filter((c: any) => casoCompeteAUsuario(userEmail, c.area)).map((c: any) => c.id)
+
+    const casosMios = Array.from(new Set([...casosComentados, ...casosDeSector]))
     if (casosMios.length === 0) { setActualizados([]); return }
 
     // 2. De esos casos, traer las actualizaciones de las últimas 24h
