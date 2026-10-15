@@ -50,9 +50,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       .order('created_at', { ascending: true })
     if (!recientes || recientes.length === 0) { setActualizados([]); return }
 
-    // 3. Por cada caso, ver quién hizo la última actualización reciente
+    // 3. Por cada caso, ver quién hizo la última actualización reciente y cuándo
     const ultimoPorCaso: Record<string, string> = {}
-    for (const a of recientes) ultimoPorCaso[a.caso_id] = a.autor
+    const fechaPorCaso: Record<string, string> = {}
+    for (const a of recientes) { ultimoPorCaso[a.caso_id] = a.autor; fechaPorCaso[a.caso_id] = a.created_at }
 
     // 4. Me quedo con los casos donde la última actualización la hizo OTRA persona
     const idsRelevantes = Object.entries(ultimoPorCaso)
@@ -61,10 +62,21 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
     if (idsRelevantes.length === 0) { setActualizados([]); return }
 
+    // 4.b Traer cuándo vi cada uno de esos casos y descartar los ya vistos después de la última actualización
+    const { data: vistas } = await supabase.from('caso_vistas')
+      .select('caso_id, visto_at').eq('user_email', userEmail.toLowerCase()).in('caso_id', idsRelevantes)
+    const vistoPorCaso: Record<string, string> = {}
+    for (const v of (vistas || [])) vistoPorCaso[v.caso_id] = v.visto_at
+    const idsNoVistos = idsRelevantes.filter(id => {
+      const visto = vistoPorCaso[id]
+      return !visto || new Date(visto).getTime() < new Date(fechaPorCaso[id]).getTime()
+    })
+    if (idsNoVistos.length === 0) { setActualizados([]); return }
+
     // 5. Traer esos casos (que no esten cerrados) y adjuntar quién los actualizó
     const { data } = await supabase.from('casos')
       .select('id,nro_caso,area,estado,estado_admin,estado_talent,estado_cx,estado_business')
-      .in('id', idsRelevantes).neq('estado', 'Cerrado')
+      .in('id', idsNoVistos).neq('estado', 'Cerrado')
     const conAutor = (data || [])
       .filter((c: any) => !sectorDelUsuarioCerrado(userEmail, c))
       .map((c: any) => ({ ...c, ultimoAutor: ultimoPorCaso[c.id] }))

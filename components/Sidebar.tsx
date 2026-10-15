@@ -76,6 +76,7 @@ export default function Sidebar() {
 
     const hace24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
     const idsFinal = new Set<string>()
+    const fechaPorCaso: Record<string, string> = {}
 
     // A) Casos donde participé alguna vez y otro hizo la última actualización reciente
     const { data: mias } = await supabase.from('caso_actualizaciones').select('caso_id').eq('autor', miNombre)
@@ -85,7 +86,7 @@ export default function Sidebar() {
         .select('caso_id, autor, created_at').in('caso_id', casosMios)
         .gte('created_at', hace24h).order('created_at', { ascending: true })
       const ultimoPorCaso: Record<string, string> = {}
-      for (const a of (recientes || [])) ultimoPorCaso[a.caso_id] = a.autor
+      for (const a of (recientes || [])) { ultimoPorCaso[a.caso_id] = a.autor; fechaPorCaso[a.caso_id] = a.created_at }
       Object.entries(ultimoPorCaso).filter(([_, u]) => u !== miNombre).forEach(([id]) => idsFinal.add(id))
     }
 
@@ -103,8 +104,25 @@ export default function Sidebar() {
       return
     }
 
+    // Descartar los casos que ya vi después de su última actualización
+    const idsArr = Array.from(idsFinal)
+    const { data: vistas } = await supabase.from('caso_vistas').select('caso_id, visto_at').eq('user_email', email.toLowerCase()).in('caso_id', idsArr)
+    const vistoPorCaso: Record<string, string> = {}
+    for (const v of (vistas || [])) vistoPorCaso[v.caso_id] = v.visto_at
+    const idsNoVistos = idsArr.filter(id => {
+      const f = fechaPorCaso[id]
+      if (!f) return true // casos reactivados-talent (sin fecha de comentario) siempre entran
+      const visto = vistoPorCaso[id]
+      return !visto || new Date(visto).getTime() < new Date(f).getTime()
+    })
+    if (idsNoVistos.length === 0) {
+      setConteoPorRuta({})
+      if (typeof document !== 'undefined') document.title = 'Tu Terapia - Casos'
+      return
+    }
+
     // Traer esos casos con su area y estados por sector (no cerrados)
-    const { data: casosRaw } = await supabase.from('casos').select('id,area,estado,estado_admin,estado_talent,estado_cx,estado_business').in('id', Array.from(idsFinal)).neq('estado', 'Cerrado')
+    const { data: casosRaw } = await supabase.from('casos').select('id,area,estado,estado_admin,estado_talent,estado_cx,estado_business').in('id', idsNoVistos).neq('estado', 'Cerrado')
     const casos = (casosRaw || []).filter((c: any) => !sectorDelUsuarioCerrado(email, c))
     const conteo: Record<string, number> = {}
     for (const c of casos) {

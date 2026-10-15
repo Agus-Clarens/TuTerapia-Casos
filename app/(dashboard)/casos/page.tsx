@@ -57,9 +57,18 @@ function PageInner() {
         .gte('created_at', hace24h).order('created_at', { ascending: true })
       if (!recientes || recientes.length === 0) { setIdsActualizados([]); return }
       const ultimoPorCaso: Record<string, string> = {}
-      for (const a of recientes) ultimoPorCaso[a.caso_id] = a.autor
+      const fechaPorCaso: Record<string, string> = {}
+      for (const a of recientes) { ultimoPorCaso[a.caso_id] = a.autor; fechaPorCaso[a.caso_id] = a.created_at }
       const ids = Object.entries(ultimoPorCaso).filter(([_, u]) => u !== miNombre).map(([id]) => id)
-      setIdsActualizados(ids)
+      // Descartar los ya vistos después de la última actualización
+      const { data: vistas } = await supabase.from('caso_vistas').select('caso_id, visto_at').eq('user_email', (userEmail || '').toLowerCase()).in('caso_id', ids)
+      const vistoPorCaso: Record<string, string> = {}
+      for (const v of (vistas || [])) vistoPorCaso[v.caso_id] = v.visto_at
+      const idsNoVistos = ids.filter(id => {
+        const visto = vistoPorCaso[id]
+        return !visto || new Date(visto).getTime() < new Date(fechaPorCaso[id]).getTime()
+      })
+      setIdsActualizados(idsNoVistos)
     })()
   }, [soloActualizados, userEmail, casos])
 

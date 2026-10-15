@@ -315,7 +315,14 @@ export function CasoCard({ caso, onUpdate, sector, showDelete }: any) {
     loadActs()
   }
 
-  useEffect(()=>{ if(open) loadActs() },[open])
+  async function marcarVisto() {
+    const { data: { session } } = await supabase.auth.getSession()
+    const email = session?.user?.email
+    if (!email || !caso.id) return
+    await supabase.from('caso_vistas').upsert({ user_email: email.toLowerCase(), caso_id: caso.id, visto_at: new Date().toISOString() }, { onConflict: 'user_email,caso_id' })
+  }
+
+  useEffect(()=>{ if(open){ loadActs(); marcarVisto() } },[open])
 
   return (
     <div style={{ background:bgCard, borderRadius:12, marginBottom:12, boxShadow:'0 1px 4px rgba(0,0,0,0.06)', opacity:cerrado?0.6:1, borderLeft:`5px solid ${bdCard}`, overflow:'hidden' }}>
