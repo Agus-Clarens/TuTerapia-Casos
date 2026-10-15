@@ -19,6 +19,12 @@ export default function DescuentosPage() {
     load()
   }
 
+  async function eliminar(d: any) {
+    if (!confirm(`¿Eliminar el descuento de ${d.psi_nombre || 'este psicólogo'} (${d.nro_caso})? Esta acción no se puede deshacer.`)) return
+    await supabase.from('descuentos_psicologo').delete().eq('id', d.id)
+    load()
+  }
+
   function buildMensaje(d: any) {
     return `Hola ${d.psi_nombre}! 👋\n\nTe escribimos para avisarte que en tu próxima liquidación se descontará una sesión ${d.tipo_sesion || 'Presencial'} correspondiente al paciente ${d.pac_nombre}.\n\n🗓️ Mes: ${d.mes}\n💰 Monto a descontar: $${d.monto}\n\nMotivo: ${d.descripcion || d.motivo}\n\nAnte cualquier consulta no dudes en escribirnos, estamos para ayudarte.\n\n¡Saludos! 🌿\nSofía\nEquipo Tu Terapia`
   }
@@ -73,6 +79,7 @@ export default function DescuentosPage() {
                     {d.estado !== 'Aplicado' && (
                       <button onClick={()=>marcarAplicado(d.id)} style={{ background:'#75B781', color:'#fff', border:'none', borderRadius:6, padding:'5px 10px', fontSize:11, cursor:'pointer', fontWeight:600 }}>Marcar aplicado</button>
                     )}
+                    <button onClick={()=>eliminar(d)} style={{ background:'transparent', color:'#EF4444', border:'1px solid #FECACA', borderRadius:6, padding:'5px 10px', fontSize:11, cursor:'pointer', fontWeight:600 }}>Eliminar</button>
                   </div>
                 </td>
               </tr>
