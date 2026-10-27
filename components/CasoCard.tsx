@@ -127,6 +127,7 @@ export function CasoCard({ caso, onUpdate, sector, showDelete }: any) {
   const [ePsiNombre, setEPsiNombre] = useState(caso.psi_nombre||'')
   const [ePsiMail, setEPsiMail] = useState(caso.psi_mail||'')
   const [eDescripcion, setEDescripcion] = useState(caso.descripcion||'')
+  const [eTipoCaso, setETipoCaso] = useState(caso.tipo_caso||'')
   const [eCargadoPor, setECargadoPor] = useState(caso.cargado_por||CARGADO_POR[0])
   const [eTalentAccion, setETalentAccion] = useState(caso.talent_accion !== false)
   const [adjuntos, setAdjuntos] = useState<any[]>([])
@@ -282,6 +283,7 @@ export function CasoCard({ caso, onUpdate, sector, showDelete }: any) {
       psi_mail: ePsiMail.trim() || null,
       descripcion: eDescripcion.trim(),
       cargado_por: eCargadoPor,
+      tipo_caso: eTipoCaso,
       updated_at: new Date().toISOString(),
       last_updated_by: autor,
     }
@@ -432,7 +434,7 @@ export function CasoCard({ caso, onUpdate, sector, showDelete }: any) {
               <div style={{ display:'flex', flexDirection:'column', gap:8, borderTop:acts.length>0?'1px solid #F3F4F6':'none', paddingTop:acts.length>0?12:0 }}>
                 {/* Panel de editar caso */}
                 {!editandoCaso ? (
-                  <button onClick={()=>{ setEditandoCaso(true); setEPacNombre(caso.pac_nombre||''); setEPacMail(caso.pac_mail||''); setEPsiNombre(caso.psi_nombre||''); setEPsiMail(caso.psi_mail||''); setEDescripcion(caso.descripcion||''); setETalentAccion(caso.talent_accion !== false); setECargadoPor(caso.cargado_por||CARGADO_POR[0]) }} style={{ background:'transparent', color:'#264534', border:'1px dashed #A7C4B5', borderRadius:6, padding:'6px 12px', fontSize:11, cursor:'pointer', fontWeight:600, alignSelf:'flex-start' }}>
+                  <button onClick={()=>{ setEditandoCaso(true); setEPacNombre(caso.pac_nombre||''); setEPacMail(caso.pac_mail||''); setEPsiNombre(caso.psi_nombre||''); setEPsiMail(caso.psi_mail||''); setEDescripcion(caso.descripcion||''); setETalentAccion(caso.talent_accion !== false); setECargadoPor(caso.cargado_por||CARGADO_POR[0]); setETipoCaso(caso.tipo_caso||'') }} style={{ background:'transparent', color:'#264534', border:'1px dashed #A7C4B5', borderRadius:6, padding:'6px 12px', fontSize:11, cursor:'pointer', fontWeight:600, alignSelf:'flex-start' }}>
                     ✎ Editar caso
                   </button>
                 ) : (
@@ -461,6 +463,13 @@ export function CasoCard({ caso, onUpdate, sector, showDelete }: any) {
                         <label style={{ fontSize:11, color:'#6B7280', fontWeight:600, display:'block', marginBottom:3 }}>Email psicólogo</label>
                         <input value={ePsiMail} onChange={e=>setEPsiMail(e.target.value)} style={{ width:'100%', border:'1.5px solid #E5E7EB', borderRadius:6, padding:'7px 10px', fontSize:12, boxSizing:'border-box' }} />
                       </div>
+                    </div>
+                    <div>
+                      <label style={{ fontSize:11, color:'#6B7280', fontWeight:600, display:'block', marginBottom:3 }}>Título / tipo de caso</label>
+                      <select value={eTipoCaso} onChange={e=>setETipoCaso(e.target.value)} style={{ width:'100%', border:'1.5px solid #E5E7EB', borderRadius:6, padding:'7px 10px', fontSize:12, boxSizing:'border-box', background:'#fff' }}>
+                        {!(TIPOS_POR_AREA_REASIGNAR[caso.area]||[]).includes(eTipoCaso) && eTipoCaso && <option value={eTipoCaso}>{eTipoCaso}</option>}
+                        {(TIPOS_POR_AREA_REASIGNAR[caso.area]||[]).map(t=><option key={t} value={t}>{t}</option>)}
+                      </select>
                     </div>
                     <div>
                       <label style={{ fontSize:11, color:'#6B7280', fontWeight:600, display:'block', marginBottom:3 }}>Descripción</label>
