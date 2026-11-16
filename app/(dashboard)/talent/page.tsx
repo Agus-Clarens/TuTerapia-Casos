@@ -11,7 +11,7 @@ export default function TalentPage() {
 
   async function load() {
     const { data } = await supabase.from('casos').select('*').order('created_at', {ascending: false})
-    if (data) setCasos(data.filter((c: any) => c.area === 'Talent' || c.area === 'Admin+Talent'))
+    if (data) setCasos(data.filter((c: any) => (c.area || '').includes('Talent')))
     setLoading(false)
   }
 

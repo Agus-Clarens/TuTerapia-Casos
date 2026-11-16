@@ -11,7 +11,7 @@ export default function Page() {
 
   async function load() {
     const { data } = await supabase.from('casos').select('*').order('created_at', {ascending: false})
-    if (data) setCasos(data.filter((c: Caso) => c.cargado_por === 'Sol CX' || c.area === 'CX'))
+    if (data) setCasos(data.filter((c: Caso) => c.cargado_por === 'Sol CX' || (c.area || '').includes('CX')))
     setLoading(false)
   }
 

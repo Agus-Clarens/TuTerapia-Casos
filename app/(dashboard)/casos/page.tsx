@@ -84,7 +84,7 @@ function PageInner() {
     if (psi && !PSICOS_DESVINCULADOS.includes(psi)) conteoPsi[psi] = (conteoPsi[psi] || 0) + 1
   }
   const psicosRepetidos = Object.entries(conteoPsi).filter(([_, n]) => n >= 3).sort((a, b) => b[1] - a[1])
-  const porSector = filtro === 'Todos' ? base : base.filter(c => c.area === filtro)
+  const porSector = filtro === 'Todos' ? base : base.filter(c => c.area === filtro || (filtro !== 'Admin+Talent' && (c.area || '').includes(filtro)))
   const q = busqueda.trim().toLowerCase()
   const filtrados = !q ? porSector : porSector.filter(c =>
     (c.pac_mail || '').toLowerCase().includes(q) ||
@@ -94,7 +94,7 @@ function PageInner() {
     (c.nro_caso || '').toLowerCase().includes(q)
   )
   const conteoPorSector: Record<string, number> = { Todos: base.length }
-  SECTORES.slice(1).forEach(s => { conteoPorSector[s] = base.filter(c => c.area === s).length })
+  SECTORES.slice(1).forEach(s => { conteoPorSector[s] = base.filter(c => c.area === s || (s !== 'Admin+Talent' && (c.area || '').includes(s))).length })
 
   return (
     <div style={{padding: 24}}>

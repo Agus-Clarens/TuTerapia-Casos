@@ -9,10 +9,10 @@ import { nombreDeUsuario, sectorDelUsuarioCerrado } from '../lib/sectores-usuari
 // Mapea el area de un caso a las rutas del menu donde debe contar
 function rutasDeArea(area: string): string[] {
   const r: string[] = ['/casos']
-  if (area === 'CX') r.push('/cx')
-  if (area === 'Admin') r.push('/admin')
-  if (area === 'Talent') r.push('/talent')
   if (area === 'Admin+Talent') r.push('/admin-talent')
+  if ((area || '').includes('CX')) r.push('/cx')
+  if ((area || '').includes('Admin')) r.push('/admin')
+  if ((area || '').includes('Talent')) r.push('/talent')
   if (area === 'Business') r.push('/business')
   return r
 }

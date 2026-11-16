@@ -23,6 +23,7 @@ const TIPOS_POR_AREA_REASIGNAR: Record<string, string[]> = {
   'Talent': ['Disponibilidad agenda','No confirma sesion','Cancelacion psicologo','Calendario incorrecto','Sesiones pendientes aprobacion','Psicologo fantasmeado','Pocas horas','Sin horas','Mejora perfil','Psicologo lleva pacientes por fuera de plataforma','Otro'],
   'Admin+Talent': ['Devolucion fuera plazo con falla','Sesion sin consentimiento','Sesion marcada realizada no ocurrio','Descontar sesion','Desvinculacion con pacientes activos','Cobra fuera plataforma','Horario incorrecto con dano','Otro'],
   'CX': ['Cargo mal los datos en la factura','Contactar retencion','Derivacion psicologo','Mala experiencia devolucion autonoma','Cancelacion por paciente','Problemas con el cupon','Contacto con la empresa','Solicitar reseñas a los pacientes','Otro'],
+  'CX+Talent': ['Cancelacion por paciente','Derivacion psicologo','Calendario incorrecto','Cancelacion psicologo','Otro'],
   'Business': ['Problemas con el cupon','Contacto con la empresa','Alianza nueva','Renovacion contrato','Reporte a empresa','Seguimiento de facturacion empresa','Otro'],
 }
 
@@ -37,6 +38,11 @@ function calcularEstadoGlobal(area: string, ea: string, et: string, ec: string, 
   if (area === 'Admin+Talent') {
     if (a==='Cerrado'&&t==='Cerrado') return 'Cerrado'
     if (a==='En curso'||t==='En curso'||a==='Cerrado'||t==='Cerrado') return 'En curso'
+    return 'Nuevo'
+  }
+  if (area === 'CX+Talent') {
+    if (c==='Cerrado'&&t==='Cerrado') return 'Cerrado'
+    if (c==='En curso'||t==='En curso'||c==='Cerrado'||t==='Cerrado') return 'En curso'
     return 'Nuevo'
   }
   return 'Nuevo'
@@ -78,7 +84,7 @@ function getAcciones(sector: string, area: string) {
   const cierres: string[] = []
   if (area?.includes('Admin')) cierres.push('Cerrar para Admin')
   if (area?.includes('Talent')) cierres.push('Cerrar para Talent')
-  if (area === 'CX') cierres.push('Cerrar para CX')
+  if (area?.includes('CX')) cierres.push('Cerrar para CX')
   if (area === 'Business') cierres.push('Cerrar para Business')
   return [...base, ...cierres]
 }
@@ -200,7 +206,7 @@ export function CasoCard({ caso, onUpdate, sector, showDelete }: any) {
     if (accion==='En curso' || accion==='Actualización') {
       if (sectorEfectivo==='admin' && caso.area.includes('Admin') && caso.estado_admin !== 'Cerrado') u.estado_admin='En curso'
       if (sectorEfectivo==='talent' && caso.area.includes('Talent') && caso.estado_talent !== 'Cerrado') u.estado_talent='En curso'
-      if (sectorEfectivo==='cx' && caso.area==='CX' && caso.estado_cx !== 'Cerrado') u.estado_cx='En curso'
+      if (sectorEfectivo==='cx' && caso.area.includes('CX') && caso.estado_cx !== 'Cerrado') u.estado_cx='En curso'
       if (sectorEfectivo==='business' && caso.area==='Business' && caso.estado_business !== 'Cerrado') u.estado_business='En curso'
     }
     if (accion==='Cerrar para Admin') u.estado_admin='Cerrado'
@@ -349,7 +355,7 @@ export function CasoCard({ caso, onUpdate, sector, showDelete }: any) {
           <div style={{ display:'flex', alignItems:'center', gap:4, flexWrap:'wrap' }}>
             {caso.area?.includes('Admin') && <Badge label="Admin" estado={caso.estado_admin||'Pendiente'} />}
             {caso.area?.includes('Talent') && <Badge label="Talent" estado={caso.estado_talent||'Pendiente'} />}
-            {caso.area==='CX' && <Badge label="CX" estado={caso.estado_cx||'Pendiente'} />}
+            {caso.area?.includes('CX') && <Badge label="CX" estado={caso.estado_cx||'Pendiente'} />}
             {caso.area==='Business' && <Badge label="Business" estado={caso.estado_business||'Pendiente'} />}
             {showDelete && (del
               ? <><button onClick={eliminar} style={{ background:'#EF4444', color:'#fff', border:'none', borderRadius:5, padding:'3px 9px', fontSize:11, cursor:'pointer', fontWeight:600 }}>Confirmar</button><button onClick={()=>setDel(false)} style={{ background:'#F3F4F6', color:'#374151', border:'none', borderRadius:5, padding:'3px 9px', fontSize:11, cursor:'pointer' }}>Cancelar</button></>
