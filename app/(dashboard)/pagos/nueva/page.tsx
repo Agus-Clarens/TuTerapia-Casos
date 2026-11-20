@@ -49,7 +49,8 @@ export default function Page() {
     if (tipo === 'Pago a proveedor' && !datosCuenta.trim()) return setError('Ingresá los datos de cuenta.')
     if (esInterna && !cuentaSiempre && !datosCuenta.trim()) return setError('Ingresá los datos de cuenta o tildá "la misma de siempre".')
     if (esInterna && files.length === 0) return setError('Adjuntá la factura en PDF.')
-    if (files.some(f => f.type !== 'application/pdf')) return setError('Los archivos deben ser PDF.')
+    const tiposOk = ['application/pdf', 'image/jpeg', 'image/png']
+    if (files.some(f => !tiposOk.includes(f.type))) return setError('Los archivos deben ser PDF, JPG o PNG.')
 
     setSubmitting(true)
 
@@ -63,7 +64,7 @@ export default function Page() {
       const uid = crypto.randomUUID()
       const path = `${yyyymm}/${uid}-${safeName}`
       const { error: upErr } = await supabase.storage.from('pagos').upload(path, f, {
-        contentType: 'application/pdf', upsert: false,
+        contentType: f.type, upsert: false,
       })
       if (upErr) { setError('Error al subir "' + f.name + '": ' + upErr.message); setSubmitting(false); return }
       paths.push({ path, name: f.name })
@@ -222,9 +223,9 @@ export default function Page() {
         {/* PDF */}
         <div style={{ marginBottom: 16 }}>
           <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 4 }}>
-            Factura / comprobante (PDF) {tipo === 'Factura equipo interno' ? '*' : ''} <span style={{ color: '#9CA3AF', fontWeight: 400 }}>(podés elegir varios)</span>
+            Factura / comprobante (PDF, JPG o PNG) {tipo === 'Factura equipo interno' ? '*' : ''} <span style={{ color: '#9CA3AF', fontWeight: 400 }}>(podés elegir varios)</span>
           </label>
-          <input type="file" accept="application/pdf" multiple
+          <input type="file" accept="application/pdf,image/jpeg,image/png" multiple
             onChange={e => setFiles(prev => [...prev, ...Array.from(e.target.files || [])])}
             style={{ width: '100%', padding: '7px 10px', borderRadius: 6, border: '1.5px solid #E5E7EB', fontSize: 13, boxSizing: 'border-box', background: '#fff' }} />
           {files.length > 0 && (
