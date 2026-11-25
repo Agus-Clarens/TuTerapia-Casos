@@ -24,6 +24,7 @@ const TIPOS_POR_AREA_REASIGNAR: Record<string, string[]> = {
   'Admin+Talent': ['Devolucion fuera plazo con falla','Sesion sin consentimiento','Sesion marcada realizada no ocurrio','Descontar sesion','Desvinculacion con pacientes activos','Cobra fuera plataforma','Horario incorrecto con dano','Otro'],
   'CX': ['Cargo mal los datos en la factura','Contactar retencion','Derivacion psicologo','Mala experiencia devolucion autonoma','Cancelacion por paciente','Problemas con el cupon','Contacto con la empresa','Solicitar reseñas a los pacientes','Otro'],
   'CX+Talent': ['Cancelacion por paciente','Derivacion psicologo','Calendario incorrecto','Cancelacion psicologo','Otro'],
+  'CX+Admin': ['Cancelacion por paciente','Problemas con el cupon','Link de pago','Devolucion dentro del plazo','Cambiar modalidad','Otro'],
   'Business': ['Problemas con el cupon','Contacto con la empresa','Alianza nueva','Renovacion contrato','Reporte a empresa','Seguimiento de facturacion empresa','Otro'],
 }
 
@@ -43,6 +44,11 @@ function calcularEstadoGlobal(area: string, ea: string, et: string, ec: string, 
   if (area === 'CX+Talent') {
     if (c==='Cerrado'&&t==='Cerrado') return 'Cerrado'
     if (c==='En curso'||t==='En curso'||c==='Cerrado'||t==='Cerrado') return 'En curso'
+    return 'Nuevo'
+  }
+  if (area === 'CX+Admin') {
+    if (c==='Cerrado'&&a==='Cerrado') return 'Cerrado'
+    if (c==='En curso'||a==='En curso'||c==='Cerrado'||a==='Cerrado') return 'En curso'
     return 'Nuevo'
   }
   return 'Nuevo'
