@@ -122,10 +122,14 @@ export function CasoCard({ caso, onUpdate, sector, showDelete }: any) {
   const [texto, setTexto] = useState('')
   const [autor, setAutor] = useState(CARGADO_POR[0])
   const [autorFijo, setAutorFijo] = useState(false)
+  const [miEmail, setMiEmail] = useState('')
+  const [cerrandoRapido, setCerrandoRapido] = useState(false)
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
-      const nombre = nombreDeUsuario(session?.user?.email || '')
+      const email = session?.user?.email || ''
+      setMiEmail(email.toLowerCase())
+      const nombre = nombreDeUsuario(email)
       if (nombre) { setAutor(nombre); setAutorFijo(true) }
     })
   }, [])
@@ -336,6 +340,26 @@ export function CasoCard({ caso, onUpdate, sector, showDelete }: any) {
     await supabase.from('caso_vistas').upsert({ user_email: email.toLowerCase(), caso_id: caso.id, visto_at: new Date().toISOString() }, { onConflict: 'user_email,caso_id' })
   }
 
+  // Cierre rápido para Talent en casos que son solo "Aviso" (un solo botón)
+  async function cerrarRapidoTalent() {
+    if (!confirm('¿Marcar este caso como visto y cerrado para Talent?')) return
+    setCerrandoRapido(true)
+    const quien = autorFijo ? autor : 'Talent'
+    // Releer estados actuales
+    const { data: actual } = await supabase.from('casos').select('estado_admin,estado_talent,estado_cx,estado_business').eq('id',caso.id).single()
+    const u: any = { estado_talent: 'Cerrado', updated_at: new Date().toISOString(), last_updated_by: quien }
+    u.estado = calcularEstadoGlobal(caso.area, actual?.estado_admin??caso.estado_admin, 'Cerrado', actual?.estado_cx??caso.estado_cx, actual?.estado_business??caso.estado_business)
+    await supabase.from('casos').update(u).eq('id', caso.id)
+    await supabase.from('caso_actualizaciones').insert({ caso_id: caso.id, autor: quien, texto: `[Cerrar para Talent] Visto y cerrado (era solo aviso)` })
+    if (miEmail) await supabase.from('caso_vistas').upsert({ user_email: miEmail, caso_id: caso.id, visto_at: new Date().toISOString() }, { onConflict: 'user_email,caso_id' })
+    setCerrandoRapido(false)
+    onUpdate()
+  }
+
+  // ¿Mostrar el botón de cierre rápido? Caso de Talent, solo aviso, no cerrado para Talent, y usuario de Talent o Agus
+  const esUsuarioTalent = ['people@tuterapia.com.uy','talent@tuterapia.com.ar','talent@tuterapia.com.uy','cbarros@tuterapia.com.uy','aclarens@tuterapia.com.ar'].includes(miEmail)
+  const mostrarCierreRapido = (caso.area || '').includes('Talent') && caso.talent_accion === false && caso.estado_talent !== 'Cerrado' && esUsuarioTalent
+
   useEffect(()=>{ if(open){ loadActs(); marcarVisto() } },[open])
 
   return (
@@ -352,10 +376,16 @@ export function CasoCard({ caso, onUpdate, sector, showDelete }: any) {
             {caso.reabierto && (
               <span style={{ fontSize:10, background:'#FEE2E2', color:'#B91C1C', borderRadius:5, padding:'2px 7px', fontWeight:600 }}>↺ Reabierto</span>
             )}
-            {(caso.area === 'Talent' || caso.area === 'Admin+Talent') && caso.talent_accion !== null && caso.talent_accion !== undefined && (
+            {(caso.area || '').includes('Talent') && caso.talent_accion !== null && caso.talent_accion !== undefined && (
               caso.talent_accion
                 ? <span style={{ fontSize:10, background:'#7C3AED', color:'#fff', borderRadius:5, padding:'2px 7px', fontWeight:700 }}>Accionar</span>
                 : <span style={{ fontSize:10, background:'#FCE7F3', color:'#BE185D', borderRadius:5, padding:'2px 7px', fontWeight:700 }}>Aviso</span>
+            )}
+            {mostrarCierreRapido && (
+              <button onClick={cerrarRapidoTalent} disabled={cerrandoRapido}
+                style={{ fontSize:11, background:'#75B781', color:'#fff', border:'none', borderRadius:6, padding:'3px 11px', fontWeight:700, cursor: cerrandoRapido?'wait':'pointer' }}>
+                {cerrandoRapido ? 'Cerrando...' : '✓ Visto y cerrar (Talent)'}
+              </button>
             )}
           </div>
           <div style={{ display:'flex', alignItems:'center', gap:4, flexWrap:'wrap' }}>
